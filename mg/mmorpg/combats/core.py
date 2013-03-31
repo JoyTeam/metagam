@@ -400,8 +400,8 @@ class Combat(mg.constructor.ConstructorModule, CombatParamsContainer):
     def heartbeat(self):
         "Called on every iteration of the main loop"
         globs = self.globs()
-        self.execute_script("heartbeat", globs, lambda: self._("Combat heartbeat script"))
         self.for_each_member(self.execute_member_script, "heartbeat-member", globs, lambda: self._("Member heartbeat script"))
+        self.execute_script("heartbeat", globs, lambda: self._("Combat heartbeat script"))
 
     def process_commands(self):
         "Process enqueued commands"

@@ -658,14 +658,6 @@ class CombatContent(Parsing.Nonterm):
             member["params"] = params
         self.val["members"] = self.val["members"] + [member]
 
-    def reduceTitle(self, content, cmd, title):
-        "%reduce CombatContent title scalar"
-        if type(title) != str and type(title) != unicode:
-            raise Parsing.SyntaxError(cmd.script_parser._("Combat title must be a string"))
-        title = cmd.script_parser.parse_text(title, cmd.script_parser._("Combat title"))
-        self.val = content.val.copy()
-        self.val["title"] = title
-
 class CombatMemberType(Parsing.Nonterm):
     "%nonterm"
     def reduceExpression(self, expr):

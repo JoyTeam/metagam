@@ -252,19 +252,23 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             # control
             if "control" in minfo:
                 control = minfo["control"]
+                char = getattr(member, "char", None)
                 if control == "ai":
                     aitype = minfo.get("ai", "default")
                     if not aitype:
                         raise CombatRunError(self._("AI type not specified for combat member '%s'") % mtype)
                     ctl = AIController(member, aitype)
+                    member.add_controller(ctl)
+                    if char:
+                        ctl = WebController(member, char)
+                        member.add_controller(ctl)
                 elif control == "web":
-                    char = minfo.get("control_char") or member.param("char")
                     if not char:
                         raise CombatRunError(self._("Controlling character not specified for combat member '%s' with web controller") % mtype)
                     ctl = WebController(member, char)
+                    member.add_controller(ctl)
                 else:
                     raise CombatRunError(self._("Invalid controller type: %s") % control)
-                member.add_controller(ctl)
             # properties
             if "name" in minfo:
                 member.set_name(minfo["name"])
@@ -434,8 +438,8 @@ class WebController(CombatMemberController):
     def __init__(self, member, char, fqn="mg.mmorpg.combats.daemons.WebController"):
         CombatMemberController.__init__(self, member, fqn)
         self.char = char
-        self.tags.add("character-%s" % char.uuid)
         self.outbound = []
+        self.tags.add("character-%s" % char.uuid)
 
     def send(self, method, **kwargs):
         kwargs["method_cls"] = "combat"

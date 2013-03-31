@@ -191,7 +191,7 @@ class CombatScripts(ConstructorModule):
         "Show combat debug message"
         if combat.rulesinfo.get("debug_script_chat"):
             for member in combat.members:
-                char = member.param("char")
+                char = getattr(member, "char", None)
                 if char:
                     if self.call("character.debug-access", char):
                         if callable(msg):
@@ -386,6 +386,8 @@ class CombatScripts(ConstructorModule):
                         val = 1
                         for v in data:
                             val *= v
+                    elif func == "count":
+                        val = len(data)
                     else:
                         raise ScriptRuntimeError(self._("Unknown data aggregation function: %s") % func)
                 except TypeError:

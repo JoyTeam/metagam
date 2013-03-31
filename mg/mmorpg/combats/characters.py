@@ -59,7 +59,7 @@ class Combats(mg.constructor.ConstructorModule):
 class CombatCharacterMember(CombatMember):
     def __init__(self, combat, character, fqn="mg.mmorpg.combats.characters.CombatCharacterMember"):
         CombatMember.__init__(self, combat, fqn)
-        self.set_param("char", character)
+        self.char = character
         self.set_name(character.name)
         self.set_sex(character.sex)
         self._victory = False
@@ -78,24 +78,24 @@ class CombatCharacterMember(CombatMember):
 
     def started(self):
         CombatMember.started(self)
-        self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="start")
+        self.qevent("oncombat", char=self.char, combat=self.combat, member=self, cevent="start")
 
     def victory(self):
         CombatMember.victory(self)
-        self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="victory")
+        self.qevent("oncombat", char=self.char, combat=self.combat, member=self, cevent="victory")
         self._victory = True
 
     def defeat(self):
         CombatMember.defeat(self)
-        self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="defeat")
+        self.qevent("oncombat", char=self.char, combat=self.combat, member=self, cevent="defeat")
 
     def draw(self):
         CombatMember.draw(self)
-        self.qevent("oncombat", char=self.param("char"), combat=self.combat, member=self, cevent="draw")
+        self.qevent("oncombat", char=self.char, combat=self.combat, member=self, cevent="draw")
 
     def stopped(self):
         CombatMember.stopped(self)
-        char = self.param("char")
+        char = self.char
         tokens = []
         quest_given_items = getattr(char, "quest_given_items", None)
         if quest_given_items:
