@@ -334,7 +334,7 @@ class CombatScripts(ConstructorModule):
                 if not set_attr:
                     raise ScriptRuntimeError(self._("'%s' is not settable") % self.call("script.unparse-expression", st[1]), env)
                 tval = type(val)
-                if tval != str and tval != None and tval != unicode and tval != long and tval != float and tval != bool and tval != int:
+                if tval != str and tval != type(None) and tval != unicode and tval != long and tval != float and tval != bool and tval != int:
                     raise ScriptRuntimeError(self._("Can't assign compound values ({val}) to the attributes").format(val=tval.__name__ if tval else None), env)
                 self.combat_debug(combat, lambda: self._("setting {obj}.{attr} = {val}").format(obj=obj, attr=attr, val=val), cls="combat-action", indent=indent)
                 if real_execute:

@@ -1580,7 +1580,7 @@ class Quests(ConstructorModule):
                                             else:
                                                 raise ScriptRuntimeError(self._("'%s' is not an object") % self.call("script.unparse-expression", cmd[1]), env)
                                         tval = type(val)
-                                        if tval != str and tval != None and tval != unicode and tval != long and tval != float and tval != bool and tval != int:
+                                        if tval != str and tval != type(None) and tval != unicode and tval != long and tval != float and tval != bool and tval != int:
                                             raise ScriptRuntimeError(self._("Can't assign compound values ({val}) to the attributes").format(val=tval.__name__ if tval else None), env)
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(val)), cls="quest-action", indent=indent+2)
