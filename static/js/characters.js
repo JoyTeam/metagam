@@ -28,7 +28,9 @@ Characters.menu = function (el) {
         }
     };
     var anyItems = false;
-    this.context_menu.forEach(function (ent) {
+    var cmenu = this.context_menu;
+    for (var i = 0; i < cmenu.length; i++) {
+        var ent = cmenu[i];
         if (MMOScript.evaluate(ent.visible, env)) {
             if (ent.href) {
                 menu.addMenuItem({
@@ -58,7 +60,7 @@ Characters.menu = function (el) {
             }
             anyItems = true;
         }
-    });
+    }
     if (anyItems) {
         menu.show(link_el, 'tl-bl');
         Ext.ux.ManagedIFrame.Manager.showShims();
