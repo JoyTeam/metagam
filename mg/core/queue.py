@@ -164,7 +164,7 @@ class QueueRunner(Module):
                     if not tasks:
                         return
                     task = tasks[0]
-                    self.sql_write.do("update queue_tasks set locked=?, locked_till=? where id=?", instid, self.now(1800), task["id"])
+                    self.sql_write.do("update queue_tasks set locked=?, locked_till=? where id=?", instid, self.now(86400), task["id"])
                     ctl = self.sql_write.selectall_dict("select * from queue_tasks where id=?", task["id"])
                 finally:
                     lock.unlock()
