@@ -28,6 +28,20 @@ class Combats(mg.constructor.ConstructorModule):
         self.rhook("ext-combat.debug", self.combat_debug_log, priv="public")
         self.rhook("character.public-info-menu", self.character_public_info_menu)
         self.rhook("ext-character.combats", self.character_combats, priv="public")
+        self.rhook("characters.context-menu-available", self.context_menu_available)
+
+    def context_menu_available(self, menu):
+        menu.append({
+            "code": "attack",
+            "title": self._("contextmenu///Attack"),
+            "qevent": "attack",
+            "order": 20.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/attack.png",
+            "visible": ['and', ['and', ['not', ['.', ['glob', 'char'], 'combat']], ['not', ['.', ['glob', 'viewer'], 'combat']]],
+                ['!=', ['.', ['glob', 'char'], 'id'], ['.', ['glob', 'viewer'], 'id']],
+            ],
+        })
 
     def child_modules(self):
         return [

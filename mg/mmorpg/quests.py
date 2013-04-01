@@ -1213,9 +1213,23 @@ class Quests(ConstructorModule):
         self.rhook("ext-quest.event", self.ext_quest_event, priv="logged")
         self.rhook("locations.map-zone-event-render", self.location_map_zone_event_render)
         self.rhook("interface.render-button", self.interface_render_button)
+        self.rhook("modules.list", self.modules_list)
 
     def child_modules(self):
-        return ["mg.mmorpg.quests.QuestsAdmin"]
+        modules = ["mg.mmorpg.quests.QuestsAdmin"]
+        if self.conf("module.combats"):
+            modules.extend(["mg.mmorpg.combats.interfaces.Combats"])
+        return modules
+
+    def modules_list(self, modules):
+        modules.extend([
+            {
+                "id": "combats",
+                "name": self._("Combats engine"),
+                "description": self._("Creating highly customizable combats"),
+                "parent": "quests",
+            }
+        ])
 
     @property
     def general_parser_spec(self):
