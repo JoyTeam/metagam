@@ -20,6 +20,7 @@ re_mod_lock = re.compile(r'^q_(.+)_locked$')
 re_remove_dialog = re.compile(r'^([a-z0-9]+)/([a-z0-9]+)$')
 re_remove_lock = re.compile(r'^user/([a-f0-9]{32})/(.+)$')
 re_arg_param = re.compile(r'^arg_(.+)$')
+re_valid_identifier = re.compile(r'^[a-z_][a-z0-9\_]*$', re.IGNORECASE)
 
 class DBCharQuests(CassandraObject):
     clsname = "CharQuests"
@@ -2217,12 +2218,10 @@ class Quests(ConstructorModule):
                 args = {}
                 globs = {}
                 for k, v in req.param_dict().iteritems():
-                    if k == "targetchar":
+                    if k.startswith("targetchar") and re_valid_identifier.match(k):
                         targetchar = self.character(v[0])
                         if targetchar.valid:
-                            globs["targetchar"] = targetchar
-                        else:
-                            globs["targetchar"] = None
+                            globs[k] = targetchar
                     elif re_arg_param.match(k):
                         args[k] = v
                 self.qevent("clicked-%s" % ev, char=character, args=args, **globs)

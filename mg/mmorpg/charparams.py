@@ -37,6 +37,14 @@ class CharacterParamsAdmin(ParamsAdmin):
         self.rhook("ext-admin-characters.params-delivery", self.admin_delivery, priv="characters.params")
         self.rhook("headmenu-admin-characters.context-menu", self.headmenu_context_menu)
         self.rhook("ext-admin-characters.context-menu", self.admin_context_menu, priv="characters.params")
+        self.rhook("advice-admin-characters.params-delivery", self.advice_params_delivery)
+        self.rhook("advice-admin-characters.context-menu", self.advice_context_menu)
+
+    def advice_params_delivery(self, args, advice):
+        advice.append({"title": self._("Character parameters delivery documentation"), "content": self._('You can find detailed information on the character parameters delivery in the <a href="//www.%s/doc/character-menu" target="_blank">character menu page</a> in the reference manual.') % self.main_host})
+
+    def advice_context_menu(self, args, advice):
+        advice.append({"title": self._("Character context menu documentation"), "content": self._('You can find detailed information on the character context menu settings in the <a href="//www.%s/doc/character-menu" target="_blank">character menu page</a> in the reference manual.') % self.main_host})
 
     def require_security_comment(self):
         return True
@@ -357,7 +365,7 @@ class CharacterParamsAdmin(ParamsAdmin):
             {"name": "order", "label": self._("Sorting order"), "value": entry.get("order"), "inline": True},
             {"name": "visible", "label": self._("Menu entry of character 'char' visible for character 'viewer'") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", entry.get("visible", 1))},
             {"type": "fileuploadfield", "name": "image", "label": self._("Menu entry icon") if code == "new" else self._("Replace menu icon")},
-            {"type": "combo", "name": "action", "value": action, "values": [("href", self._("Open hyperlink")), ("onclick", self._("Execute JavaScript code")), ("qevent", self._("Call quest event"))]},
+            {"type": "combo", "name": "action", "label": self._("Menu item action"), "value": action, "values": [("href", self._("Open hyperlink")), ("onclick", self._("Execute JavaScript code")), ("qevent", self._("Call quest event"))]},
             {"name": "href", "value": self.call("script.unparse-text", entry.get("href")), "label": self._("Hyperlink URL") + self.call("script.help-icon-expressions"), "condition": "[action]=='href'"},
             {"name": "onclick", "value": self.call("script.unparse-text", entry.get("onclick")), "label": self._("JavaScript code") + self.call("script.help-icon-expressions"), "condition": "[action]=='onclick'"},
             {"name": "qevent", "value": self.call("script.unparse-text", entry.get("qevent")), "label": self._("Quest event code") + self.call("script.help-icon-expressions"), "condition": "[action]=='qevent'"},

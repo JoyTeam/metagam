@@ -110,6 +110,7 @@ class CombatInterface(mg.constructor.ConstructorModule):
     def response_main_frame(self, rules, template, vars, content):
         combat_design = self.design("combatinterface-%s" % rules)
         game_design = self.design("gameinterface")
+        vars["game_design_root"] = game_design
         self.call("combat.setup-interface", rules, vars)
         content = self.call("design.parse", combat_design, template, content, vars, "combat")
         vars["head"] = vars.get("head", u"") + u'<link rel="stylesheet" type="text/css" href="/st-mg/{ver}/combat/common.css" /><link rel="stylesheet" type="text/css" href="/st-mg/{ver}/combat/internal.css" />'.format(ver=vars["ver"])

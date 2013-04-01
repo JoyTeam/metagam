@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-03-31 22:29+0300\n"
+"PO-Revision-Date: 2013-04-01 11:40+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1169,6 +1169,9 @@ msgstr "Документация на классы персонажей"
 msgid "Character context menu"
 msgstr "Контекстное меню персонажа"
 
+msgid "Character context menu documentation"
+msgstr "Документация на контекстные меню персонажей"
+
 msgid "Character experience"
 msgstr "Опыт персонажа"
 
@@ -1283,6 +1286,9 @@ msgstr "Параметр персонажа, хранящий его опыт"
 
 msgid "Character parameters"
 msgstr "Параметры персонажа"
+
+msgid "Character parameters delivery documentation"
+msgstr "Документация на доставку параметров персонажей"
 
 msgid "Character sex"
 msgstr "Пол персонажа"
@@ -1618,6 +1624,9 @@ msgstr "Боевой интерфейс для правил боя \"{code}\" ({
 msgid "Combat interface height"
 msgstr "Высота интерфейса боя"
 
+msgid "Combat interface template"
+msgstr "Шаблон боевого интерфейса"
+
 msgid "Combat interface template (used when no specific combat-rules-*.html exist)"
 msgstr "Шаблон боевого интерфейса (используется, когда не существуют конкретные combat-rules-*.html)"
 
@@ -1789,6 +1798,9 @@ msgstr "Бои"
 
 msgid "Combats configuration"
 msgstr "Конфигурация боёв"
+
+msgid "Combats documentation"
+msgstr "Документация на бои"
 
 msgid "Combats engine"
 msgstr "Боевой движок"
@@ -4893,6 +4905,9 @@ msgstr "Текст элемента меню"
 
 msgid "Menu item"
 msgstr "Пункт меню"
+
+msgid "Menu item action"
+msgstr "Действие элемента меню"
 
 msgid "Message about character entered location"
 msgstr "Сообщение о том, что персонаж вошёл в локацию"
@@ -8786,8 +8801,16 @@ msgid "You can find detailed information on the character classes system in the 
 msgstr "Подробную информацию о системе классов персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-classes\" target=\"_blank\">Расы и классы персонажей</a>."
 
 #, python-format
+msgid "You can find detailed information on the character context menu settings in the <a href=\"//www.%s/doc/character-menu\" target=\"_blank\">character menu page</a> in the reference manual."
+msgstr "Подробную информацию о настройке контекстных меню персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-menu\" target=\"_blank\">Настройка контекстного меню персонажа</a>."
+
+#, python-format
 msgid "You can find detailed information on the character names system in the <a href=\"//www.%s/doc/character-names\" target=\"_blank\">characer names page</a> in the reference manual."
 msgstr "Подробную информацию о системе имён персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-names\" target=\"_blank\">Система имён персонажей</a>."
+
+#, python-format
+msgid "You can find detailed information on the character parameters delivery in the <a href=\"//www.%s/doc/character-menu\" target=\"_blank\">character menu page</a> in the reference manual."
+msgstr "Подробную информацию о системе доставки параметров персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-menu\" target=\"_blank\">Настройка контекстного меню персонажа</a>."
 
 #, python-format
 msgid "You can find detailed information on the characters equipment system in the <a href=\"//www.%s/doc/equip\" target=\"_blank\">equipment page</a> in the reference manual."
@@ -8796,6 +8819,10 @@ msgstr "Подробную информацию о системе экипиро
 #, python-format
 msgid "You can find detailed information on the characters images system in the <a href=\"//www.%s/doc/character-images\" target=\"_blank\">characters images page</a> in the reference manual."
 msgstr "Подробную информацию о системе образов персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-images\" target=\"_blank\">Система образов персонажей</a>."
+
+#, python-format
+msgid "You can find detailed information on the combats engine in the <a href=\"//www.%s/doc/combats\" target=\"_blank\">combats engine page</a> in the reference manual."
+msgstr "Подробную информацию о боевой системе вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/combats\" target=\"_blank\">Боевая система</a>."
 
 #, python-format
 msgid "You can find detailed information on the email sending system in the <a href=\"//www.%s/doc/emailsender\" target=\"_blank\">email sender page</a> in the reference manual."

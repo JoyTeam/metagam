@@ -45,6 +45,11 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
         self.rhook("headmenu-admin-combats.stats", self.headmenu_stats)
         self.rhook("admin-gameinterface.design-files", self.design_files)
         self.rhook("characters.context-menu-available", self.context_menu_available)
+        self.rhook("advice-admin-combats.index", self.advice_combats)
+
+    def advice_combats(self, hook, args, advice):
+        advice.append({"title": self._("Combats documentation"), "content": self._('You can find detailed information on the combats engine in the <a href="//www.%s/doc/combats" target="_blank">combats engine page</a> in the reference manual.') % self.main_host, "order": 10})
+        advice.append({"title": self._("Scripts documentation"), "content": self._('You can find detailed information on the scripting engine in the <a href="//www.%s/doc/script" target="_blank">scripting engine page</a> in the reference manual.') % self.main_host, "order": 20})
 
     def context_menu_available(self, menu):
         menu.append({
