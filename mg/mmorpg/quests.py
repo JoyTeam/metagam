@@ -1768,25 +1768,26 @@ class Quests(ConstructorModule):
                                     elif cmd_code == "equipbreak":
                                         globs = kwargs.copy()
                                         changed = False
-                                        for slot_id, item in char.equip.equipped_slots():
-                                            globs["slot"] = slot_id
-                                            globs["item"] = item
-                                            fractions = intz(self.call("script.evaluate-expression", cmd[1], globs=globs, description=lambda: self._("Evaluation of damage to the equip")))
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("breaking item {item} in slot {slot}. damage={damage}").format(item=htmlescape(item.name), slot=slot_id, damage=fractions), cls="quest-action", indent=indent+2)
-                                            if fractions > 0:
-                                                spent, destroyed = char.equip.break_item(slot_id, fractions, "break", quest=quest)
-                                                if not spent and debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("could not break item {item} in slot {slot}").format(item=htmlescape(item.name), slot=slot_id), cls="quest-error", indent=indent+3)
-                                                if spent and destroyed:
-                                                    if debug:
-                                                        self.call("debug-channel.character", char, lambda: self._("item {item} in slot {slot} has broken completely").format(item=htmlescape(item.name), slot=slot_id), cls="quest-action", indent=indent+3)
-                                                    if kwargs.get("combat") and kwargs.get("member"):
-                                                        kwargs["combat"].textlog({
-                                                            "text": self._('<span class="combat-log-item">{item}</span> of character <span class="combat-log-member">{name}</span> has been broken').format(item=htmlescape(item.name), name=htmlescape(kwargs["member"].name)),
-                                                            "cls": "combat-log-equipbreak",
-                                                        })
-                                                changed = True
+                                        if char.equip:
+                                            for slot_id, item in char.equip.equipped_slots():
+                                                globs["slot"] = slot_id
+                                                globs["item"] = item
+                                                fractions = intz(self.call("script.evaluate-expression", cmd[1], globs=globs, description=lambda: self._("Evaluation of damage to the equip")))
+                                                if debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("breaking item {item} in slot {slot}. damage={damage}").format(item=htmlescape(item.name), slot=slot_id, damage=fractions), cls="quest-action", indent=indent+2)
+                                                if fractions > 0:
+                                                    spent, destroyed = char.equip.break_item(slot_id, fractions, "break", quest=quest)
+                                                    if not spent and debug:
+                                                        self.call("debug-channel.character", char, lambda: self._("could not break item {item} in slot {slot}").format(item=htmlescape(item.name), slot=slot_id), cls="quest-error", indent=indent+3)
+                                                    if spent and destroyed:
+                                                        if debug:
+                                                            self.call("debug-channel.character", char, lambda: self._("item {item} in slot {slot} has broken completely").format(item=htmlescape(item.name), slot=slot_id), cls="quest-action", indent=indent+3)
+                                                        if kwargs.get("combat") and kwargs.get("member"):
+                                                            kwargs["combat"].textlog({
+                                                                "text": self._('<span class="combat-log-item">{item}</span> of character <span class="combat-log-member">{name}</span> has been broken').format(item=htmlescape(item.name), name=htmlescape(kwargs["member"].name)),
+                                                                "cls": "combat-log-equipbreak",
+                                                            })
+                                                    changed = True
                                         if changed:
                                             char.equip.validate()
                                             char.inventory.store()
