@@ -115,7 +115,10 @@ class ItemType(Module):
         try:
             req = self.req()
         except AttributeError:
-            self._db_item_type = self.obj(DBItemType, self.uuid)
+            try:
+                self._db_item_type = self.obj(DBItemType, self.uuid)
+            except ObjectNotFoundException:
+                self._db_item_type = self.obj(DBItemType, self.uuid, data={})
             return self._db_item_type
         try:
             cache = req._db_item_type_cache
