@@ -1376,7 +1376,7 @@ class Interface(Module):
                         self.call("web.not_found")
         rows = []
         lst = self.objlist(AuthLogList, query_index=index, query_equal=equal, query_reversed=True, query_limit=log_per_page)
-        lst.load()
+        lst.load(silent=True)
         users = {}
         for ent in lst:
             if ent.get("user"):
