@@ -24,9 +24,9 @@ import sys
 
 re_set_cookie = re.compile(r'^Set-Cookie: ', re.IGNORECASE)
 re_service_call = re.compile(r'^service/call/([a-z0-9\-\.]+)/(.+)$')
-re_group_hook_args = re.compile(r'^([a-z0-9\-]+)/([a-z0-9\-\.]+)(?:/(.*)|)')
-re_group_something_unparsed = re.compile(r'^([a-z0-9\-]+)\/(.+)$')
-re_group = re.compile(r'^[a-z0-9\-]+')
+re_group_hook_args = re.compile(r'^([a-z0-9\-_]+)/([a-z0-9\-\._]+)(?:/(.*)|)')
+re_group_something_unparsed = re.compile(r'^([a-z0-9\-_]+)\/(.+)$')
+re_group = re.compile(r'^[a-z0-9\-_]+')
 re_protocol = re.compile(r'^[a-z]+://')
 re_remove_ver = re.compile(r'(?:/|^)ver\d*(?:-\d+)?$')
 re_content = re.compile(r'^(.*)<!--HEAD-->(.*)$', re.DOTALL)
