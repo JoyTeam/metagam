@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-04-01 11:40+0300\n"
+"PO-Revision-Date: 2013-04-01 12:04+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2996,6 +2996,9 @@ msgstr "Выполняется, когда ИИ-участник получае�
 
 msgid "Exit"
 msgstr "Выход"
+
+msgid "Experience"
+msgstr "Опыт"
 
 msgid "Expiration"
 msgstr "Срок годности"
@@ -7952,6 +7955,9 @@ msgstr "Эта платная услуга уже куплена"
 msgid "This parameter defines amount of damage that the character can get in the combat before died"
 msgstr "Этот параметр определяет количество урона, необходимого нанести по персонажу, чтобы он погиб"
 
+msgid "This parameter defines amount of experience gained in combats"
+msgstr "Этот параметр определяет количество опыта, набранного персонажем"
+
 msgid "This parameter is a character class (race, profession, etc)"
 msgstr "Этот параметр является классом персонажа (раса, профессия и т.п.)"
 
@@ -9568,6 +9574,9 @@ msgstr "Урона"
 
 msgid "genitive///Defense"
 msgstr "Защиты"
+
+msgid "genitive///Experience"
+msgstr "Опыта"
 
 msgid "genitive///Hitpoints"
 msgstr "Хитпоинтов"

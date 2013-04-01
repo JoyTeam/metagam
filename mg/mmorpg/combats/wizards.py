@@ -246,6 +246,36 @@ class CombatRulesDialog(ConstructorModule):
         self.script_append("joined", 'set member.%s = member.%s' % (self.param_max_hp, self.param_hp))
         self.script_append("actions-stopped-member", 'if member.active and member.%s <= 0 { set member.active = 0 log \'%s\' cls="dead" }' % (self.param_hp, self._('{class="combat-log-member"}{member.name}{/class} {class="combat-log-dead"}has died{/class}')))
 
+    def store_xp(self, config):
+        m = re_valid_parameter.match(self.param_xp)
+        param = self.call("characters.param", m.group(1))
+        if not param:
+            # register new parameter
+            params = config.get("characters.params", [])[:]
+            order = 0.0
+            for p in params:
+                if p["order"] > order:
+                    order = p["order"]
+            order += 10.0
+            params.append({
+                "code": m.group(1),
+                "order": order,
+                "name": self._("Experience"),
+                "name_g": self._("genitive///Experience"),
+                "owner_visible": True,
+                "zero_visible": True,
+                "important": True,
+                "public": True,
+                "condition": 1,
+                "description": self._("This parameter defines amount of experience gained in combats"),
+                "grp": self._("characters///Combat parameters"),
+                "type": 0,
+                "visual_mode": 0,
+                "library_visible": True,
+            })
+            config.set("characters.params", params)
+            self.call("admin-characters.params-stored", params, config)
+
     def store_hp(self, config):
         m = re_valid_parameter.match(self.param_hp)
         param = self.call("characters.param", m.group(1))
@@ -504,6 +534,7 @@ class AttackBlock(CombatRulesDialog):
     def store(self, config):
         CombatRulesDialog.store(self, config)
         self.store_hp(config)
+        self.store_xp(config)
         self.store_damage(config)
 
 class RoundRobin(CombatRulesDialog):
@@ -615,6 +646,7 @@ class RoundRobin(CombatRulesDialog):
     def store(self, config):
         CombatRulesDialog.store(self, config)
         self.store_hp(config)
+        self.store_xp(config)
         self.store_damage(config)
 
 class TimeLine(CombatRulesDialog):
@@ -785,6 +817,7 @@ class TimeLine(CombatRulesDialog):
     def store(self, config):
         CombatRulesDialog.store(self, config)
         self.store_hp(config)
+        self.store_xp(config)
         self.store_damage(config)
 
 class ActionPoints(CombatRulesDialog):
@@ -965,5 +998,6 @@ class ActionPoints(CombatRulesDialog):
     def store(self, config):
         CombatRulesDialog.store(self, config)
         self.store_hp(config)
+        self.store_xp(config)
         self.store_damage(config)
 
