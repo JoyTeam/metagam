@@ -46,6 +46,7 @@ re_templates_editor = re.compile(r'^templates/([a-f0-9]{32})(?:|/(.+))$')
 re_edit_template = re.compile(r'^(edit|reset)/([a-z0-9_\-]+\.(html|css|js))$')
 re_del_template = re.compile(r'^del/([a-z0-9_\-]+\.html)$')
 re_valid_filename_html = re.compile(r'^[a-z0-9_\-]+\.(?:html|css|js)$')
+re_remove_suffix = re.compile('-.*')
 
 cssutils.ser.prefs.lineSeparator = u' '
 cssutils.ser.prefs.indent = u''
@@ -371,7 +372,7 @@ class DesignZip(Module):
         if len(errors):
             return errors
         try:
-            uri = self.call("cluster.static_upload_zip", "design-%s" % group, self.zip, upload_list)
+            uri = self.call("cluster.static_upload_zip", "design-%s" % re_remove_suffix.sub('', group), self.zip, upload_list)
         except StaticUploadError as e:
             errors.append(unicode(e))
         if len(errors):
@@ -621,7 +622,7 @@ class DesignGenerator(Module):
             css = self.css.get(ent["filename"])
             if css:
                 ent["data"] = ("".join(["%s\n" % rule.cssText for rule in css.cssRules])).encode("utf-8")
-        uri = self.call("cluster.static_upload_zip", "design-%s" % self.group(), None, self.upload_list)
+        uri = self.call("cluster.static_upload_zip", "design-%s" % re_remove_suffix.sub('', self.group()), None, self.upload_list)
         self.design.set("uri", uri)
         self.design.set("title", self.name())
         self.design.store()
