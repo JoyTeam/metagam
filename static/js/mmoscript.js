@@ -308,7 +308,7 @@ MMOScript.dependencies = function (val) {
  */
 MMOScript.dependenciesText = function (val) {
     var self = this;
-    if (!val.length) {
+    if (!val || !val.length) {
         return [];
     }
     if (typeof(val) === 'string') {
