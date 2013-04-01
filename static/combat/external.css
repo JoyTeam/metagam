@@ -1,0 +1,11 @@
+a, a:visited { color: #000040 }
+img { vertical-align: middle; border: none }
+#combat-topmenu { padding: 10px; font-size: 24px; text-align: center; white-space: nowrap }
+#combat-menu { width: 100%; color: #dd6419; margin-bottom: 10px }
+#combat-menu a:link, #combat-menu a:visited { color: #dd6419 }
+#combat-menu a:hover, #combat-menu a:active { color: #ed8449 }
+#combat-menu-left { padding: 0px 10px 5px 0px; }
+#combat-menu-right { padding: 0px 0px 5px 0px; text-align: right; }
+#combat-counters { padding-top: 50px; text-align: right }
+
+.combat-pages { padding: 10px 0 10px 0 }

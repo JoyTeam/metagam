@@ -1,6 +1,6 @@
 from mg.constructor import *
 from mg.mmorpg.inventory import MemberInventory, Item
-from mg.mmorpg.inventory_classes import dna_parse, dna_join
+from mg.mmorpg.inventory_classes import dna_parse, dna_join, DBItemTransfer
 import re
 
 class EquipError(ScriptRuntimeError):
@@ -197,6 +197,9 @@ class CharacterEquip(ConstructorModule):
     def equipped_items(self):
         return self.inv._equipped().values()
 
+    def equipped_slots(self):
+        return self.inv._equipped().items()
+
     def equipped(self, slot_id):
         return self.inv._equipped().get(str(slot_id))
 
@@ -234,6 +237,71 @@ class CharacterEquip(ConstructorModule):
         self._invalidate()
         self.inv._invalidate()
         self.character._invalidate()
+
+    def break_item(self, slot, fractions, description=None, **kwargs):
+        """
+        Breaks item in the given slot for the specified number of fractions.
+        Doesn't store/validate inventory. Need to do equip.validate(), inv.store()
+        manually.
+        """
+        equip_data = self.inv._equip_data()
+        dna = equip_data["slots"].get(slot)
+        if dna is None:
+            return None, None
+        # 1. unequip the item
+        del equip_data["slots"][slot]
+        self.inv._update_equip_data()
+        # 2. take DNA
+        item, quantity = self.inv._take_dna(dna, 1)
+        if not quantity or not item:
+            return None, None
+        # 3. increase "used"
+        new_item_type = item.item_type.copy()
+        if not new_item_type.mods:
+            new_item_type.mods = {}
+        used = new_item_type.mods.get(":used", 0)
+        max_fractions = new_item_type.get("fractions", 1)
+        if used + fractions >= max_fractions:
+            # discard item
+            spent = max_fractions - used
+            destroyed = True
+            new_item_type = None
+        else:
+            spent = fractions
+            destroyed = False
+            # 4. give new DNA
+            new_item_type.mods[":used"] = used + fractions
+            new_item_type.update_dna()
+            self.inv._give(new_item_type.uuid, 1, mod=new_item_type.mods)
+            # 5. equip the item
+            equip_data["slots"][slot] = new_item_type.dna
+            self.inv._update_equip_data()
+        # log the operation
+        if description:
+            performed = kwargs.get("performed") or self.now()
+            trans = self.obj(DBItemTransfer)
+            trans.set("owner", self.inv.uuid)
+            if self.inv.owtype != "char":
+                trans.set("owtype", self.inv.owtype)
+            trans.set("type", item.item_type.uuid)
+            if item.item_type.dna_suffix:
+                trans.set("dna", item.item_type.dna_suffix)
+                trans.set("mod", item.item_type.mods)
+            trans.set("quantity", -1)
+            trans.set("description", description)
+            for k, v in kwargs.iteritems():
+                trans.set(k, v)
+            trans.set("performed", performed)
+            self.inv.trans.append(trans)
+            if new_item_type:
+                data = trans.data
+                trans = self.obj(DBItemTransfer)
+                trans.data = data.copy()
+                trans.set("dna", new_item_type.dna_suffix)
+                trans.set("mod", new_item_type.mods)
+                trans.set("quantity", 1)
+                self.inv.trans.append(trans)
+        return spent, destroyed
 
     @property
     def char_params(self):

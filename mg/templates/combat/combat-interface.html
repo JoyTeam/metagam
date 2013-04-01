@@ -1,0 +1,43 @@
+<script type="text/javascript" src="/st/[%ver%]/js/combat-generic.js"></script>
+<!--HEAD-->
+[%if generic%]
+<script type="text/javascript">
+Ext.onReady(function() {
+    Ext.QuickTips.init();
+    Ext.apply(Ext.QuickTips.getQuickTip(), {
+        maxWidth: 300,
+        minWidth: 200,
+        showDelay: 50,
+        trackMouse: true
+    });
+    var combat = new GenericCombat('[%combat%]');
+    [%if generic_myavatar%]
+        combat.createMyAvatar();
+        combat.myAvatarWidth = [%generic_myavatar_width%];
+    [%end%]
+    [%if generic_enemyavatar%]
+        combat.createEnemyAvatar();
+        combat.enemyAvatarWidth = [%generic_enemyavatar_width%];
+    [%end%]
+    [%if generic_log%]
+        combat.createLog();
+        combat.logLayout = [%generic_log_layout%];
+        [%if generic_log_layout == 0%]combat.combatHeight = [%generic_combat_height%];[%end%]
+        [%if generic_log_layout == 1%]combat.logHeight = [%generic_log_height%];[%end%]
+        combat.logResize = [%generic_log_resize%];
+    [%end%]
+    [%if generic_gobutton%]
+    combat.goButtonText = '[%generic_gobutton_text%]';
+    combat.goButtonEnabled = true;
+    [%end%]
+    combat.targetTemplate = [%generic_target_template%];
+    combat.memberListTemplate = [%generic_member_list_template%];
+    combat.aboveAvatarParams = [%generic_aboveavatar%];
+    combat.belowAvatarParams = [%generic_belowavatar%];
+    combat.avatarWidth = [%combat_avatar_width%];
+    combat.avatarHeight = [%combat_avatar_height%];
+    combat.render();
+    combat.run();
+});
+</script>
+[%end%]

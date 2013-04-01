@@ -1,0 +1,237 @@
+<!-- doc.title Клиентский API боевой системы в конструкторе онлайн-игр -->
+<!-- doc.parent combats -->
+<!-- doc.keywords API, боевая система, бои, онлайн-игры -->
+<!-- doc.description Описание клиентского API боевых систем в играх на конструкторе онлайн-игр -->
+
+<h1>Клиентский API боевой системы</h1>
+
+<p>Практически весь код боевой системы выполняется на серверах конструктора. Клиентская часть может получать информацию о статусе боя и отправлять команды игрока на сервер через специальный API.</p>
+
+<p>Универсальный боевой интерфейс, реализованный по умолчанию в конструкторе, является надстройкой над этим API.</p>
+
+<p>Администратор игры, желающий реализовать свой собственный интерфейс боя, может пойти двумя путями: либо наследовать универсальный интерфейс и заменить отдельные его части, либо реализовать полностью свой собственный. Рассмотрим оба подхода.</p>
+
+<h1>Частичное изменение универсального интерфейса</h1>
+
+<p>Загрузка интерфейса боя осуществляется через шаблон боевого интерфейса <a href="/doc/combat-template/combat-interface.html">combat-interface.html</a>. Чтобы вставить свой загрузчик, вам необходимо исправить этот файл, чтобы он подгружал дополнительный скрипт с вашим кодом:</p>
+
+<pre class="doc-code-sample">
+&lt;script type="text/javascript" src="/st/[%ver%]/js/combat-generic.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="[%design_root%]/super-combat.js"&gt;&lt;/script&gt;
+&lt;!--HEAD--&gt;
+...
+</pre>
+
+<p>Затем измените вызов конструктора GenericCombat на SuperCombat (ваш новый интерфейс):</p>
+<pre class="doc-code-sample">
+var combat = new SuperCombat('[%combat%]');
+</pre>
+
+<p>И наконец положите в архив с шаблоном оформления файл super-combat.js с кодом вашего нового интерфейса:</p>
+<pre class="doc-code-sample">
+var SuperCombat = Ext.extend(GenericCombat, {
+    constructor: function (combatId) {
+        var self = this;
+        SuperCombat.superclass.constructor.call(self, combatId);
+    }
+});
+</pre>
+
+<p>Этот интерфейс ничем не будет отличаться от обычного универсального интерфейса, поскольку ничего в нём не изменяет. Чтобы внести какие-то изменения, вам необходимо переопределить какие-либо методы GenericCombat. Например, сделаем, чтобы при получении права хода в интерфейсе всплывало сообщение об этом. Добавим в SuperCombat реализацию метода turnGot:</p>
+<pre class="doc-code-sample">
+    turnGot: function () {
+        var self = this;
+        SuperCombat.superclass.turnGot.call(self);
+        Game.info('Ход в бою', 'Вам предоставлено право хода в бою');
+    }
+</pre>
+
+<p>Загружаем всё на сервер, выбираем это оформление, и убеждаемся, что всё работает: <img class="doc-screenshot" src="/st/tutorial/combats-22.png" alt="" /></p>
+
+<h1>Полная замена боевого интерфейса</h1>
+
+<p>Этот режим позволяет реализовать собственный боевой интерфейс на любой удобной вам браузерной технологии &mdash; начиная с HTML5 и JavaScript, заканчивая Flash и Unity.</p>
+
+<p>Загрузка интерфейса боя осуществляется через шаблон боевого интерфейса <a href="/doc/combat-template/combat-interface.html">combat-interface.html</a>. Чтобы вставить свой загрузчик, вам необходимо полностью заменить этот файл, чтобы он загружал скрипт с вашим кодом:</p>
+
+<pre class="doc-code-sample">
+&lt;script type="text/javascript" src="[%design_root%]/simple.js"&gt;&lt;/script&gt;
+&lt;!--HEAD--&gt;
+&lt;form&gt;&lt;button onclick="combat.makeTurn(); return false"&gt;Сделать ход&lt;/button&gt;&lt;/form&gt;
+&lt;div id="combatOutput"&gt;&lt;/div&gt;
+&lt;script type="text/javascript"&gt;
+var combat = new SimpleCombat('[%combat%]');
+combat.run();
+&lt;/script&gt;
+</pre>
+
+<p>Этот скрипт подгружает файл simple.js, в котором будет реализован новый интерфейс боя SimpleCombat. Реализация интерфейса должна наследовать класс Combat:</p>
+
+<pre class="doc-code-sample">
+var SimpleCombat = Ext.extend(Combat, {
+});
+</pre>
+
+<p>Добавим в код несколько полезных функций, которые будут выводить на экран всякие записи:</p>
+
+<pre class="doc-code-sample">
+    run: function () {
+        var self = this;
+        SimpleCombat.superclass.run.call(self);
+        self.combatOutput = document.getElementById('combatOutput');
+        self.lineNo = 0;
+    },
+
+    /* Показать информацию на экране */
+    showOutput: function (html) {
+        var self = this;
+        var el = document.createElement('DIV');
+        el.innerHTML = ++self.lineNo + ': ' + html;
+        self.combatOutput.insertBefore(el, self.combatOutput.firstChild);
+    },
+</pre>
+
+<p>Теперь можно обработать некоторые события, которые будут возникать в интерфейсе, и визуализировать их путём вывода на экран:</p>
+
+<pre class="doc-code-sample">
+    turnGot: function () {
+        var self = this;
+        SimpleCombat.superclass.turnGot.call(self);
+        self.showOutput('Вы получили право хода');
+    },
+
+    turnLost: function () {
+        var self = this;
+        SimpleCombat.superclass.turnLost.call(self);
+        self.showOutput('Вы потеряли право хода');
+    },
+
+    setParam: function (key, value, oldValue) {
+        var self = this;
+        SimpleCombat.superclass.setParam.call(self, key, value, oldValue);
+        self.showOutput('combat.' + key + ' = ' + value + ' (old value = ' + oldValue + ')');
+    },
+
+    log: function (entries) {
+        var self = this;
+        SimpleCombat.superclass.log.call(self, entries);
+        for (var i = 0; i &lt; entries.length; i++) {
+            var ent = entries[i];
+            self.showOutput(ent.text);
+        }
+    },
+</pre>
+
+<p>Приведённый выше код будет выводить на экран, когда участник боя получил или потерял право хода, будет выводить строки лога боя, а также любое изменение параметров самого боя.</p>
+
+<p>Следующий шаг &mdash; это наследование класса CombatMember (который представляет собой участника боя) и переопределение его метода setParam. Для начала нам надо сделать, что когда бою надо создать нового участника, он будет создавать не базовый CombatMember, а новый SimpleCombatMember. Для этого добавим метод в SimpleCombat:</p>
+
+<pre class="doc-code-sample">
+    newMember: function (memberId) {
+        var self = this;
+        return new SimpleCombatMember(self, memberId);
+    },
+</pre>
+
+<p>Теперь можно реализовать SimpleCombatMember:</p>
+
+<pre class="doc-code-sample">
+var SimpleCombatMember = Ext.extend(CombatMember, {
+    setParam: function (key, value, oldValue) {
+        var self = this;
+        SimpleCombatMember.superclass.setParam.call(self, key, value, oldValue);
+        self.combat.showOutput('member[' + self.id + '].' + key + ' = ' + value + ' (old value = ' + oldValue + ')');
+    }
+});
+</pre>
+
+<p>Осталось дело за малым &mdash; предоставить возможность игроку делать ходы. Для этого у в шаблоне была сделана кнопка, которая вызывает метод combat.makeTurn(). Добавим реализацию этого метода в SimpleCombat:</p>
+
+<pre class="doc-code-sample">
+    /* Сделать ход */
+    makeTurn: function () {
+        var self = this;
+        self.submitAction({
+            action: 'strike',
+            targets: [(self.myself.id == 1) ? 2 : 1]
+        }, function (err) {
+            if (err) {
+                self.showOutput('Ошибка при отправке хода: ' + err);
+            }
+        });
+    }
+</pre>
+
+<p>Первый параметр submitAction &mdash; это пакет параметров действия.</p>
+
+<h1>Описание методов класса Combat</h1>
+
+<ul>
+    <li>constructor(combatId) &mdash; конструктор класса;</li>
+    <li>run() &mdash; запуск боя;</li>
+    <li>initConstants() &mdash; возможность инициализировать константы на самой ранней стадии работы конструктора;</li>
+    <li>randSuffix() &mdash; возвращает случайный суффикс для URL вида "?rand=0.2354662";</li>
+    <li>queryState() &mdash; запрашивает у боевого сервера текущее состояние боя;</li>
+    <li>abort() &mdash; прерывание боя и редирект на /location. Однако если бой на сервере по-прежнему идёт, то браузер будет обратно отправлен в боевой интерфейс;</li>
+    <li>cleanup() &mdash; очищает состояние боя;</li>
+    <li>combatParamsChanged(params) &mdash; вызывается, когда с сервера приходит уведомление об изменённых параметрах боя. В params записаны изменившиеся параметры;</li>
+    <li>setParam(key, value, oldValue) &mdash; уведомление о том, что в бою параметр key поменялся со значения oldValue на новое значение value;</li>
+    <li>memberJoined(memberId) &mdash; уведомление, что к бою присоединился участник с идентификатором memberId;</li>
+    <li>newMember(memberId) &mdash; создаёт новый экземпляр участника боя с идентификатором memberId;</li>
+    <li>memberParamsChanged(memberId, params) &mdash; вызывается, когда с сервера приходит уведомление об изменённых параметрах участника memberId. В params записаны изменившиеся параметры;</li>
+    <li>setMyself(memberId) &mdash; уведомление, что участник боя, которым управляет данный игрок, имеет идентификатор memberId;</li>
+    <li>actionInfo(action) &mdash; вызывается, когда с сервера приходит информация о действии. Информация о действии имеет поля:<ul>
+        <li>code &mdash; код действия;</li>
+        <li>name &mdash; название действия;</li>
+        <li>description &mdash; синтаксическое дерево описания действия (необходимо пропустить через вычислитель MMOScript, чтобы получить текст);</li>
+        <li>ignore_preselected &mdash; признак того, что данное действие должно игнорировать список целей, присланный в member.targets. Игрок может выбрать любую цель из доступных для этого действия;</li>
+        <li>attributes &mdash; перечень доступных атрибутов действия. Каждый атрибут &mdash; это запись:<ul>
+            <li>code &mdash; код атрибута;</li>
+            <li>order &mdash; порядок сортировки;</li>
+            <li>name &mdash; название атрибута;</li>
+            <li>type &mdash; тип атрибута ("static" &mdash; выбор по списку, "int" &mdash; целочисленный);</li>
+            <li>values &mdash; список допустимых значений (для типа "static"). Каждый элемент &mdash; это запись:<ul>
+                <li>code &mdash; код значения (его надо передавать на сервер в значении атрибута);</li>
+                <li>title &mdash; название данного значения (как показывать игроку);</li>
+            </ul></li>
+        </ul></li>
+    </ul></li>
+    <li>setAvailableActions(actions) &mdash; сообщает игровому интерфейсу, какие действия с какими параметрами в данный момент доступны для выбора игроку. Параметр actions &mdash; это список, каждый элемент которого является записью:<ul>
+        <li>action &mdash; код действия;</li>
+        <li>targets &mdash; список идентификаторов участников, на которых можно использовать это действие;</li>
+        <li>targets_min &mdash; минимальное число целей;</li>
+        <li>targets_max &mdash; максимальное число целей;</li>
+    </ul></li>
+    <li>turnGot() &mdash; уведомление, что игрок получил право хода;</li>
+    <li>turnLost() &mdash; уведомление, что игрок потерял право хода не по таймауту;</li>
+    <li>turnTimeout() &mdash; уведомление, что игрок потерял право хода по таймауту;</li>
+    <li>submitAction(data, callback) &mdash; отправить ход на сервер. callback вызывается либо с аргументом null, если не было ошибки, и с кодом ошибки, если она произошла. Возможные коды:<ul>
+        <li>serverError &mdash; ошибка сервера;</li>
+        <li>combatTerminated &mdash; бой уже завершён;</li>
+        <li>любой другой текст &mdash; показать игроку;</li>
+    </ul>Аргумент data &mdash; это запись со следующими возможными полями:<ul>
+        <li>action &mdash; код действия;</li>
+        <li>targets &mdash; список идентификаторов целей, которые выбрал игрок;</li>
+        <li>a_* &mdash; значения атрибутов действия;</li>
+    </ul></li>
+    <li>log(entries) &mdash; вызывается, когда с сервера приходят строки для лога боя. Параметр entries &mdash; это список записей, каждая из которых имеет следующие поля:<ul>
+        <li>text &mdash; текст для записи в лог;</li>
+        <li>cls &mdash; CSS-класс для оформления данной строки лога (может отсутствовать);</li>
+        <li>любые другие параметры, которые были переданы в качестве атрибутов команд "log" и "syslog".</li>
+    </ul></li>
+</ul>
+
+<h1>Описание методов класса CombatMember</h1>
+
+<ul>
+    <li>constructor(combat, memberId) &mdash; конструктор класса;</li>
+    <li>paramsChanged(params) &mdash; вызывается, когда с сервера приходит уведомление об изменённых параметрах участника. В params записаны изменившиеся параметры;</li>
+    <li>setParam(key, value, oldValue) &mdash; уведомление о том, что параметр участника key поменялся со значения oldValue на новое значение value.</li>
+</ul>
+
+<h1>Дополнительно</h1>
+<ul>
+    <li><a href="/doc/combats">Общая информация о боевой системе конструктора игр</a></li>
+    <li><a href="/doc/design/combatinterface">Оформление боевого интерфейса</a></li>
+    <li><a href="/st/js/combat-generic.js">Исходные тексты универсального боевого интерфейса</a></li>
+</ul>

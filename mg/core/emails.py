@@ -225,9 +225,11 @@ class Email(Module):
         for user in usr:
             self.email_send(self.call("user.email", user), user.get("name"), subject, content, from_email, from_name, immediately=True)
 
-    def exception_report(self, exception):
+    def exception_report(self, exception, e_type=None, e_value=None, e_traceback=None):
         try:
-            dump = traceback.format_exc()
+            if e_type is None:
+                e_type, e_value, e_traceback = sys.exc_info()
+            dump = "".join(traceback.format_exception(e_type, e_value, e_traceback))
             try:
                 msg = u"%s %s" % (exception.__class__.__name__, exception)
             except Exception as e:
@@ -235,10 +237,34 @@ class Email(Module):
             email = self.int_app().config.get("email.exceptions")
             if email:
                 try:
-                    tag = self.app().tag
+                    app = self.app()
+                    try:
+                        tag = app.tag
+                    except AttributeError:
+                        tag = "NOTAG"
+                    try:
+                        project = app.project
+                    except AttributeError:
+                        project = None
                 except AttributeError:
-                    tag = "NOTAG"
+                    tag = "NOAPP"
+                    app = None
+                    project = None
                 vars = {}
+                # project owner
+                if project:
+                    vars["project"] = project.uuid
+                    vars["project_title"] = htmlescape(project.get("title_short"))
+                    vars["project_owner"] = project.get("owner")
+                    if vars["project_owner"]:
+                        try:
+                            owner = self.main_app().obj(User, vars["project_owner"])
+                        except ObjectNotFoundException:
+                            pass
+                        else:
+                            vars["project_owner_name"] = htmlescape(owner.get("name"))
+                    vars["main_host"] = self.main_host
+                    vars["main_protocol"] = self.main_app().protocol
                 try:
                     req = self.req()
                 except AttributeError:

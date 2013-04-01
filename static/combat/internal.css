@@ -1,0 +1,24 @@
+.combat-member-avatar { padding: 5px; text-align: center }
+.combat-member-name { font-weight: bold; font-size: 14px }
+.combat-member-dead { text-decoration: line-through; color: #808080 }
+div.combat-member-image { position: relative; margin: 5px auto 5px auto }
+.combat-member-image { margin: 5px 0 5px 0; border: solid 1px #000000 }
+
+#combat-myavatar { overflow: hidden }
+#combat-enemyavatar { overflow: hidden }
+#combat-log { padding: 5px 5px 0 5px }
+.x-border-layout-ct { background: none }
+.combat-item-deselected { cursor: pointer }
+.combat-item-selected { background-color: #404040; color: #ffffff; cursor: pointer }
+.combat-item-deselected:hover { background-color: #606060; color: #ffffff }
+.combat-item-selected:hover { background-color: #505050; color: #ffffff }
+.combat-action-selector { overflow: hidden; white-space: nowrap }
+.combat-action-attribute-name { font-weight: bold }
+.combat-target-ally.combat-item-deselected { color: #008000 }
+.combat-target-ally.combat-item-selected { background-color: #008000; color: #000000 }
+.combat-target-enemy.combat-item-deselected { color: #c00000 }
+.combat-target-enemy.combat-item-selected { background-color: #f00000; color: #000000 }
+span.combat-bar { width: 200px; display: inline-block; height: 6px }
+div.combat-bar { margin: 2px 0 2px 0 }
+.combat-bar { border: solid 1px #404040; text-align: left }
+.combat-bar-indicator { display: inline-block; height: 6px }

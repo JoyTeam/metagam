@@ -13,6 +13,7 @@ class Documentation(Module):
         self.rhook("ext-doc.index", self.index, priv="public")
         self.rhook("ext-doc.game-template", self.game_template, priv="public")
         self.rhook("ext-doc.socio-template", self.socio_template, priv="public")
+        self.rhook("ext-doc.combat-template", self.combat_template, priv="public")
         self.rhook("ext-doc.handler", self.handler, priv="public")
 
     def index(self):
@@ -94,6 +95,20 @@ class Documentation(Module):
                 "title": '%s - %s' % (req.args, self._("Socio interface template")),
             }
             with open("%s/templates/socio/%s" % (mg.__path__[0], req.args)) as f:
+                content = re.sub(r'\n', '<br />', htmlescape(f.read()))
+                self.call("socio.response", u'<div class="doc-content"><h1>%s</h1><pre class="doc-code-sample">%s</pre><p><a href="/doc/design/templates">%s</a></div>' % (req.args, content, self._("Description of the templates engine")), vars)
+        except IOError:
+            self.call("web.not_found")
+
+    def combat_template(self):
+        req = self.req()
+        if not re_valid_template.match(req.args):
+            self.call("web.not_found")
+        try:
+            vars = {
+                "title": '%s - %s' % (req.args, self._("Combat interface template")),
+            }
+            with open("%s/templates/combat/%s" % (mg.__path__[0], req.args)) as f:
                 content = re.sub(r'\n', '<br />', htmlescape(f.read()))
                 self.call("socio.response", u'<div class="doc-content"><h1>%s</h1><pre class="doc-code-sample">%s</pre><p><a href="/doc/design/templates">%s</a></div>' % (req.args, content, self._("Description of the templates engine")), vars)
         except IOError:

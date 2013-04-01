@@ -2,6 +2,8 @@
 <table border="1">
 [%if host%]<tr><td>Host</td><td><strong>[%host%]</strong></td></tr>[%end%]
 [%if uri%]<tr><td>URL</td><td><strong>[%uri%]</strong></td></tr>[%end%]
+[%if project%]<tr><td>Project</td><td><a href="[%main_protocol%]://www.[%main_host%]/admin#constructor/project-dashboard/[%project%]">[%project_title || project%]</a></td></tr>[%end%]
+[%if project_owner%]<tr><td>Project owner</td><td><a href="[%main_protocol%]://www.[%main_host%]/admin#auth/user-dashboard/[%project_owner%]">[%project_owner_name || project_owner%]</a> (<a href="[%main_protocol%]://www.[%main_host%]/telegrams/user/[%project_owner%]">internal mail</a>)</td></tr>[%end%]
 </table>
 <pre>[%dump%]</pre>
 [%if params%]
