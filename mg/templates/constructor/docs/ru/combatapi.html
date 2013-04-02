@@ -16,15 +16,15 @@
 <p>Загрузка интерфейса боя осуществляется через шаблон боевого интерфейса <a href="/doc/combat-template/combat-interface.html">combat-interface.html</a>. Чтобы вставить свой загрузчик, вам необходимо исправить этот файл, чтобы он подгружал дополнительный скрипт с вашим кодом:</p>
 
 <pre class="doc-code-sample">
-&lt;script type="text/javascript" src="/st/[%ver%]/js/combat-generic.js"&gt;&lt;/script&gt;
-&lt;script type="text/javascript" src="[%design_root%]/super-combat.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="/st/&#x5b;%ver%]/js/combat-generic.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="&#x5b;%design_root%]/super-combat.js"&gt;&lt;/script&gt;
 &lt;!--HEAD--&gt;
 ...
 </pre>
 
 <p>Затем измените вызов конструктора GenericCombat на SuperCombat (ваш новый интерфейс):</p>
 <pre class="doc-code-sample">
-var combat = new SuperCombat('[%combat%]');
+var combat = new SuperCombat('&#x5b;%combat%]');
 </pre>
 
 <p>И наконец положите в архив с шаблоном оформления файл super-combat.js с кодом вашего нового интерфейса:</p>
@@ -55,12 +55,12 @@ var SuperCombat = Ext.extend(GenericCombat, {
 <p>Загрузка интерфейса боя осуществляется через шаблон боевого интерфейса <a href="/doc/combat-template/combat-interface.html">combat-interface.html</a>. Чтобы вставить свой загрузчик, вам необходимо полностью заменить этот файл, чтобы он загружал скрипт с вашим кодом:</p>
 
 <pre class="doc-code-sample">
-&lt;script type="text/javascript" src="[%design_root%]/simple.js"&gt;&lt;/script&gt;
+&lt;script type="text/javascript" src="&#x5b;%design_root%]/simple.js"&gt;&lt;/script&gt;
 &lt;!--HEAD--&gt;
 &lt;form&gt;&lt;button onclick="combat.makeTurn(); return false"&gt;Сделать ход&lt;/button&gt;&lt;/form&gt;
 &lt;div id="combatOutput"&gt;&lt;/div&gt;
 &lt;script type="text/javascript"&gt;
-var combat = new SimpleCombat('[%combat%]');
+var combat = new SimpleCombat('&#x5b;%combat%]');
 combat.run();
 &lt;/script&gt;
 </pre>
