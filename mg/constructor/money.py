@@ -1,8 +1,55 @@
 from mg import *
 from mg.constructor import *
 from mg.core.money_classes import *
+from mg.core.projects import Project, ProjectList
+from mg.core.auth import User, UserList
 
 operations_per_page = 50
+
+class AdminDonate(ConstructorModule):
+    def register(self):
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("admin-money.donate-admins", self.donate_admins)
+
+    def schedule(self, sched):
+        sched.add("admin-money.donate-admins", "0 3 * * *", priority=9)
+
+    def donate_admins(self):
+        self.debug("Evaluating game administrators monthly donate")
+        objlist = self.int_app().objlist(ProjectList, query_index="published")
+        self.debug("Number of games: %d" % len(objlist))
+        # gather statistics
+        admins = {}
+        cnt = 0
+        for lstent in objlist:
+            cnt += 1
+            if (cnt % 1000) == 0:
+                self.debug("Processing project %d" % cnt)
+            try:
+                project = self.int_app().obj(Project, lstent.uuid)
+            except ObjectNotFoundException:
+                continue
+            donate = project.get("monthly_donate", 0)
+            if donate > 0:
+                try:
+                    admins[project.get("owner")] += donate
+                except KeyError:
+                    admins[project.get("owner")] = donate
+        # store admins powers
+        self.debug("Loading list of administrators")
+        objlist = self.main_app().objlist(UserList, query_index="created")
+        self.debug("Number of administrators: %d" % len(objlist))
+        cnt = 0
+        for lstent in objlist:
+            cnt += 1
+            if (cnt % 1000) == 0:
+                self.debug("Processing user %d" % cnt)
+            try:
+                user = self.main_app().obj(User, lstent.uuid)
+            except ObjectNotFoundException:
+                continue
+            user.set("monthly_donate", admins.get(user.uuid, 0))
+            user.store()
 
 class Money(ConstructorModule):
     def register(self):
@@ -13,6 +60,11 @@ class Money(ConstructorModule):
         self.rhook("game.dashboard", self.game_dashboard)
         self.rhook("advice-admin-game.dashboard", self.advice_game_dashboard)
         self.rhook("advice-admin-money.index", self.advice_money)
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("admin-money.donate-stats", self.donate_stats)
+
+    def schedule(self, sched):
+        sched.add("admin-money.donate-stats", "0 1 * * *", priority=10)
 
     def payment_args(self, args, options):
         character = options.get("character")
@@ -208,3 +260,12 @@ class Money(ConstructorModule):
     def advice_money(self, hook, args, advice):
         advice.append({"title": self._("Money system documentation"), "content": self._('Detailed description of the currency setup you can read in the <a href="//www.%s/doc/newgame#money" target="_blank">reference manual page</a>.') % self.main_host})
 
+    def donate_stats(self):
+        try:
+            project = self.app().project
+        except AttributeError:
+            return
+        amount = self.sql_read.selectall("select sum(income_amount-chargebacks_amount) from donate where app=? and period > date_sub(now(), interval 1 month)", self.app().tag)[0][0]
+        amount = nn(amount)
+        project.set("monthly_donate", amount)
+        project.store()

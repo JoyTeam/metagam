@@ -154,6 +154,8 @@ class ProjectDashboard(Module):
         except ObjectNotFoundException:
             self.call("web.not_found")
         vars = {
+            "Identifier": self._("Identifier"),
+            "MonthlyDonate": self._("Monthly donate"),
             "Created": self._("game///Created"),
             "Moderation": self._("Moderation required"),
             "Published": self._("game///Published"),
@@ -178,8 +180,14 @@ class ProjectDashboard(Module):
         if project:
             owner = self.obj(User, project.get("owner"))
             description = re_newline.sub('<br />', htmlescape(app.config.get("gameprofile.description")))
+            monthly_donate = project.get("monthly_donate")
+            if monthly_donate is None:
+                monthly_donate = self._("donate///Never evaluated")
+            else:
+                monthly_donate = "%s RUB" % monthly_donate
             vars["project"] = {
                 "uuid": project.uuid,
+                "monthly_donate": monthly_donate,
                 "title_full": htmlescape(project.get("title_full")),
                 "title_short": htmlescape(project.get("title_short")),
                 "title_code": htmlescape(project.get("title_code")),
@@ -278,6 +286,8 @@ class ProjectDashboard(Module):
                 project.delkey("moderation")
                 project.delkey("moderation_reject")
                 project.set("published", self.now())
+                project.delkey("moderation_rejects")
+                project.delkey("moderation_cooldown")
                 project.store()
                 app.modules.load(["mg.core.money.Xsolla"])
                 if not app.config.get("xsolla.project-id"):
@@ -305,8 +315,14 @@ class ProjectDashboard(Module):
                     if len(errors):
                         self.call("web.response_json", {"success": False, "errors": errors})
                     project.delkey("moderation")
-                    project.set("moderation_reject", self._("Moderation reject reason: %s") % reason)
                     project.delkey("published")
+                    project.set("moderation_reject", self._("Moderation reject reason: %s") % reason)
+                    rejects = project.get("moderation_rejects", 0) + 1
+                    project.set("moderation_rejects", rejects)
+                    if rejects >= 3:
+                        project.set("moderation_cooldown", self.now((2 ** rejects) * 3600))
+                    else:
+                        project.delkey("moderation_cooldown")
                     project.store()
                     app.hooks.call("constructor-project.notify-owner", self._("Moderation reject: %s") % project.get("title_short"), self._("Your game '{0}' hasn't passed moderation.\nReason: {1}").format(project.get("title_short"), reason))
                     app.store_config_hooks()

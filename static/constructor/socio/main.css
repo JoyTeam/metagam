@@ -24,6 +24,11 @@ a:hover, a:active { color: #ed8439 }
 #page-content { padding: 25px 0px 25px 0px }
 #socio-top-search { width: 100px }
 
+/* FORUM */
+.socio-category-pinned { background-color: #ffcaaa; color: #202020 }
+.socio-name { padding-left: 50px }
+.socio-category-pinned .socio-name { background-image: url(/st/constructor/socio/exclamation.png); background-repeat: no-repeat; background-position: 13px 50% }
+
 /* FORM */
 .form { margin-top: 30px }
 #search-form { margin: 0 }
@@ -67,7 +72,7 @@ input.form-file { font-size: 13px }
 .status-todo { font-weight: bold; color: red }
 
 /* REQUEST AUCTION */
-#reqauction-myreq { width: 400px; float: right }
+#reqauction-myreq { width: 400px; float: right; margin-left: 20px }
 #reqauction-content { padding-right: 440px }
 .reqauction-list-title { margin: 0; padding: 0 }
 .reqauction-votes { text-align: right }

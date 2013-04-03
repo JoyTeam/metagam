@@ -304,6 +304,8 @@ class ConstructorProjectAdmin(Module):
             with self.lock(["project.%s" % project.uuid]):
                 project.load()
                 if not project.get("moderation"):
+                    if project.get("moderation_cooldown") and self.now() < project.get("moderation_cooldown"):
+                        self.call("admin.response", self._("The moderator has rejected your game many times. Please spend some time checking your game settings. Remember that your game will be published in lot of places (game catalogs, payments systems, and so on). Read all your titles, all descriptions, all names and fix them carefully. Every wrong attempt will increase cooldown. If you can't do it yourself ask somebody on the forum. Please wait till %s before you can send your game to moderation next time.") % self.call("l10n.time_local", project.get("moderation_cooldown")), {})
                     project.set("moderation", 1)
                     # message to the moderator
                     email = self.main_app().config.get("constructor.moderator-email")

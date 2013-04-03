@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-04-01 12:04+0300\n"
+"PO-Revision-Date: 2013-04-03 23:47+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -571,7 +571,7 @@ msgid "Are you sure want to delete this button?"
 msgstr "Вы уверены, что хотите удалить эту кнопку?"
 
 msgid "Are you sure want to delete this category?"
-msgstr "Вы уверены, что хотите удалить эту категорию?"
+msgstr "Вы уверены, что хотите удалить этот раздел?"
 
 msgid "Are you sure want to delete this color?"
 msgstr "Вы уверены, что хотите удалить этот цвет?"
@@ -1070,8 +1070,11 @@ msgstr "Ограничения грузоподъёмности"
 msgid "Cassandra DB validation"
 msgstr "Валидация БД Cassandra"
 
+msgid "Categories"
+msgstr "Разделы"
+
 msgid "Category"
-msgstr "Категория"
+msgstr "Раздел"
 
 #, python-format
 msgid "Category %s"
@@ -1081,7 +1084,7 @@ msgid "Category description"
 msgstr "Описание раздела"
 
 msgid "Category name"
-msgstr "Название категории"
+msgstr "Название раздела"
 
 msgid "Category tag"
 msgstr "Тег раздела"
@@ -3693,7 +3696,7 @@ msgstr "Я подтверждаю, что являюсь совершеннол�
 msgid "I don't agree"
 msgstr "Я не согласен"
 
-msgid "I want this features"
+msgid "I want these features"
 msgstr "Я хочу эти фичи"
 
 msgid "ID"
@@ -5097,6 +5100,12 @@ msgstr "Блокировки денег"
 msgid "Money system documentation"
 msgstr "Документация на денежную систему"
 
+msgid "Monthly donate"
+msgstr "Месячный влив"
+
+msgid "Monthly income of my games"
+msgstr "Месячный доход моих игр"
+
 msgid "Move"
 msgstr "Перенести"
 
@@ -5470,6 +5479,9 @@ msgstr "Нет такой локации"
 
 msgid "No such user"
 msgstr "Нет такого пользователя"
+
+msgid "No suitable category"
+msgstr "Нет подходящего раздела"
 
 msgid "No users selected"
 msgstr "Пользователи не выбраны"
@@ -6490,9 +6502,6 @@ msgstr "Запрос"
 msgid "Request auction"
 msgstr "Аукцион заявок"
 
-msgid "Request auction documentation"
-msgstr "Документация на аукцион заявок"
-
 msgid "Request auction moderator"
 msgstr "Модератор аукциона заявок"
 
@@ -6507,9 +6516,6 @@ msgstr "Запрос к регистратору прерван по тайма�
 
 msgid "Requests auction"
 msgstr "Аукцион заявок"
-
-msgid "Requests auction control"
-msgstr "Управление аукционом заявок"
 
 msgid "Require email activation"
 msgstr "Требовать активацию e-mail"
@@ -7715,6 +7721,10 @@ msgstr "Самая большая слава"
 msgid "The field is mandatory after this character level ('0' if not mandatory)"
 msgstr "Это поле является обязательным, начиная с этого уровня персонажа ('0', если необязательное)"
 
+#, python-format
+msgid "The moderator has rejected your game many times. Please spend some time checking your game settings. Remember that your game will be published in lot of places (game catalogs, payments systems, and so on). Read all your titles, all descriptions, all names and fix them carefully. Every wrong attempt will increase cooldown. If you can't do it yourself ask somebody on the forum. Please wait till %s before you can send your game to moderation next time."
+msgstr "Модератор отклонил вашу игру много раз. Пожалуйста, потратьте немного времени и проверьте настройки вашей игры. Не забывайте, что ваша игра будет опубликована во множестве мест (каталоги игр, платёжные системы и так далее). Прочтите все ваши заголовки, описания, названия и аккуратно их поправьте. Каждая неудачная попытка будет увеличивать кулдаун. Если вы не можете сделать это самостоятельно, попросите кого-нибудь на форуме. Пожалуйста, подождите до %s, пока вы сможете отправить вашу игру на модерацию в следующий раз."
+
 msgid "The richest"
 msgstr "Самые богатые"
 
@@ -8250,6 +8260,9 @@ msgstr "URL %s - это не изображение"
 
 msgid "URL must start with '/'"
 msgstr "URL должен начинаться с \"/\""
+
+msgid "Uncategorized"
+msgstr "Без раздела"
 
 msgid "Underline"
 msgstr "Подчёркивание"
@@ -9483,6 +9496,9 @@ msgstr "отсоединить"
 msgid "don't want it anymore"
 msgstr "больше не хочу"
 
+msgid "donate///Never evaluated"
+msgstr "Никогда не вычислялся"
+
 msgid "dossier///Performed"
 msgstr "Время"
 
@@ -9993,8 +10009,17 @@ msgstr "ответить"
 msgid "reqauction///Cancel request"
 msgstr "Отменить заявку"
 
+msgid "reqauction///Categories"
+msgstr "Разделы"
+
+msgid "reqauction///Currently being implemented"
+msgstr "Находятся на реализации"
+
 msgid "reqauction///Implemented requests"
 msgstr "Реализованные заявки"
+
+msgid "reqauction///Most rated requests"
+msgstr "Заявки с самым высоким рейтингом"
 
 msgid "reqauction///My requests"
 msgstr "Мои заявки"
@@ -10010,6 +10035,9 @@ msgstr ""
 "\n"
 "Пожалуйста, произведите необходимые действия по модерации: {protocol}://www.{main_host}/reqauction/moderate/{request}"
 
+msgid "reqauction///Number of requests"
+msgstr "Количество заявок"
+
 msgid "reqauction///Parent request"
 msgstr "Родительская заявка"
 
@@ -10019,6 +10047,12 @@ msgid ""
 msgstr ""
 "Заявка \"{title}\", за которую вы голосовали, реализована.\n"
 "Подробности: {protocol}://{host}/reqauction/view/{request}"
+
+msgid "reqauction///Request auction documentation"
+msgstr "Документация на аукцион заявок"
+
+msgid "reqauction///Request category"
+msgstr "Раздел заявки"
 
 msgid "reqauction///Request description"
 msgstr "Описание заявки"
@@ -10036,6 +10070,18 @@ msgstr "Заявка реализована"
 msgid "reqauction///Request moderation: %s"
 msgstr "Модерирование заявки: %s"
 
+msgid "reqauction///Requests auction"
+msgstr "Аукцион заявок"
+
+msgid "reqauction///Requests auction categories"
+msgstr "Разделы аукциона заявок"
+
+msgid "reqauction///Requests auction categories editor"
+msgstr "Редактор разделов аукциона заявок"
+
+msgid "reqauction///Requests auction control"
+msgstr "Управление аукционом заявок"
+
 msgid "reqauction///Requests moderation"
 msgstr "Модерирование заявок"
 
@@ -10045,8 +10091,14 @@ msgstr "Заявки на модерации"
 msgid "reqauction///Select a valid parent request"
 msgstr "Выберите допустимую родительскую заявку"
 
+msgid "reqauction///Uncategorized requests"
+msgstr "Неклассифицированные заявки"
+
 msgid "reqauction///Waiting for implementation"
 msgstr "Ожидающие реализации"
+
+msgid "reqauction///Weight of my vote"
+msgstr "Вес моего голоса"
 
 msgid "reqauction///You have spent all your voices to other requests. If you want to vote for this request remove one of your votes via the rightmost panel"
 msgstr "Вы потратили все свои голоса на другие заявки. Если вы хотите проголосовать за эту заявку, удалите один из ваших голосов через правую панель"
@@ -10071,6 +10123,9 @@ msgstr "отменена"
 msgid "reqauction///cancelled on {time}"
 msgstr "отменена {time}"
 
+msgid "reqauction///clear implementation flag"
+msgstr "снять флаг реализации"
+
 msgid "reqauction///implemented"
 msgstr "реализована"
 
@@ -10080,8 +10135,11 @@ msgstr "реализована {time}"
 msgid "reqauction///link to another request"
 msgstr "присоединить к другой заявке"
 
-msgid "reqauction///recall my vote"
+msgid "reqauction///revoke my vote"
 msgstr "отозвать мой голос"
+
+msgid "reqauction///set implementation flag"
+msgstr "установить флаг реализации"
 
 msgid "reqauction///vote for this request"
 msgstr "проголосовать за эту заявку"
@@ -10477,6 +10535,8 @@ msgstr "{targetchar.name} в другой локации"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid "reqauction///Monthly income"
+#~ msgstr "Месячный доход"
 #~ msgid "Combat title must be a string"
 #~ msgstr "Название боя должно быть строкой"
 #~ msgid ""
@@ -10906,7 +10966,7 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ msgid "Item is discardable (script expression)"
 #~ msgstr "Предмет выбрасываемый (скриптовое выражение)"
 #~ msgid "Category group"
-#~ msgstr "Группа категорий"
+#~ msgstr "Группа разделов"
 #~ msgid "Giving '%s'"
 #~ msgstr "Выдача \"%s\""
 #~ msgid "Throw"

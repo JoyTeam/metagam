@@ -24,6 +24,8 @@
 <p><hook:admin.link href="constructor/project-dashboard/[%project.uuid%]" title="[%Update%]" /></p>
 <table class="menu">
 [%unless project.main%]
+        <tr><td class="header header-nowrap">[%Identifier%]</td><td><strong>[%project.uuid%]</strong></td></tr>
+        <tr><td class="header header-nowrap">[%MonthlyDonate%]</td><td><strong>[%project.monthly_donate%]</strong></td></tr>
 	<tr><td class="header header-nowrap">[%Created%]</td><td><strong>[%project.created%]</strong> [%+ by +%] <hook:admin.link href="auth/user-dashboard/[%owner.uuid%]" title="[%owner.name%]" /></td></tr>
 	[%if project.title_full%]<tr><td class="header header-nowrap">[%TitleFull%]</td><td><div class="moderated">[%project.title_full%]</div></td></tr>[%end%]
 	[%if project.title_short%]<tr><td class="header header-nowrap">[%TitleShort%]</td><td><div class="moderated">[%project.title_short%]</div></td></tr>[%end%]

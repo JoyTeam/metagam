@@ -132,6 +132,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .form-control-padding { padding: 20px 20px 0 0 }
 
 /* LOGS */
+.log-table { margin-bottom: 40px }
 .log-header .log-td { font-weight: bold; border-bottom: solid 1px #404040 }
 .log-td { padding: 5px 30px 0 0; vertical-align: top }
 .log-right { text-align: right }

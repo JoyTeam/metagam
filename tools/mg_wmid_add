@@ -1,0 +1,30 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+import mg
+import os
+import json
+import sys
+from mg.constructor.processes import ConstructorInstance
+from mg.constructor.admin import DBUserWMID
+
+def main():
+    inst = ConstructorInstance("wmid_add", "metagam")
+    # parse cmdline
+    if len(inst.cmdline_args) != 2:
+        print "usage: mg_wmid_add <user> <wmid>"
+        os._exit(1)
+    user = inst.cmdline_args[0]
+    wmid = inst.cmdline_args[1]
+    main_app = inst.appfactory.get_by_tag("main")
+    obj = main_app.obj(DBUserWMID)
+    obj.set("added", main_app.now())
+    obj.set("user", user)
+    obj.set("wmid", wmid)
+    obj.set("cert", 130)
+    obj.set("ip", "127.0.0.1")
+    obj.store()
+    sys.stdout.flush()
+    os._exit(0)
+
+mg.dispatch(main)

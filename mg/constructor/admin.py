@@ -63,14 +63,14 @@ class Constructor(Module):
             "mg.socio.paidservices.PaidServices",
             "mg.core.dbexport.Export",
             "mg.core.money.WebMoney", "mg.core.money.WebMoneyAdmin",
-            "mg.constructor.reqauction.ReqAuction",
+            "mg.constructor.reqauction.ReqAuction", "mg.constructor.reqauction.ReqAuctionAdmin",
             "mg.core.sites.Favicon", "mg.core.sites.FaviconAdmin",
             "mg.core.permissions_editor.Permissions", "mg.core.permissions_editor.PermissionsAdmin",
             "mg.constructor.marketing.MarketingAdmin",
             "mg.constructor.marketing.GoogleAnalytics", "mg.constructor.marketing.GoogleAnalyticsAdmin",
             "mg.constructor.socialnets.SocialNets", "mg.constructor.socialnets.SocialNetsAdmin",
             "mg.core.monitoring.ClusterMonitor",
-            "mg.core.ssl.RedirectSSLModule",
+            "mg.core.ssl.RedirectSSLModule", "mg.constructor.money.AdminDonate",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")
