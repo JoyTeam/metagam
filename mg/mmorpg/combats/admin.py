@@ -352,8 +352,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
                 errors["dim_avatar"] = self._("This field is mandatory")
             else:
                 val = None
-                dimensions = self.call("charimages.dimensions")
-                for dim in self.call("charimages.dimensions"):
+                dimensions = self.call("charimages.dimensions") or [{"width": 120, "height": 220}]
+                for dim in dimensions:
                     if dim_avatar == "%dx%d" % (dim["width"], dim["height"]):
                         val = [dim["width"], dim["height"]]
                         break
