@@ -1168,6 +1168,8 @@ class ReqAuction(ConstructorModule):
         self.children(request_uuid, children)
         parents = set()
         self.parents(request_uuid, parents)
+        request = self.obj(DBRequest, request_uuid)
+        self.update_priority(request)
         request.store()
         for uuid in children:
             request = self.obj(DBRequest, uuid)
