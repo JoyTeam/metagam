@@ -82,6 +82,9 @@ class ConstructorApplicationFactory(ApplicationFactory):
             app.domain = domain
             app.canonical_domain = canonical_domain
             app.project = project
+            lang = project.get("lang")
+            if lang:
+                app.lang = lang
             app.modules.load(["mg.constructor.project.ConstructorProject"])
         return app
 

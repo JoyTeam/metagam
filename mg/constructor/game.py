@@ -1,5 +1,6 @@
 from mg import *
 import re
+import random
 
 re_bad_symbols = re.compile(r'([^\w\- \.,:])', re.UNICODE)
 re_bad_english_symbols = re.compile(r'([^a-z0-9A-Z\-_ \.,:])')
@@ -18,6 +19,8 @@ class Game(Module):
         self.rhook("ext-admin-game.logo", self.ext_logo, priv="game.logo")
         self.rhook("headmenu-admin-game.modules", self.headmenu_modules)
         self.rhook("ext-admin-game.modules", self.ext_modules, priv="project.admin")
+        self.rhook("ext-admin-game.lang", self.ext_lang, priv="game.lang")
+        self.rhook("headmenu-admin-game.lang", self.headmenu_lang)
 
     def recommended_actions(self, recommended_actions):
         req = self.req()
@@ -32,11 +35,14 @@ class Game(Module):
             menu.append({"id": "game/modules", "text": self._("Game system modules"), "leaf": True, "order": 1, "icon": "/st-mg/menu/modules.png"})
 
     def permissions_list(self, perms):
+        perms.append({"id": "game.lang", "name": self._("Game language editor")})
         perms.append({"id": "game.profile", "name": self._("Game profile editor")})
         perms.append({"id": "game.logo", "name": self._("Game logo editor")})
 
     def menu_game_index(self, menu):
         req = self.req()
+        if req.has_access("game.lang"):
+            menu.append({"id": "game/lang", "text": self._("Language"), "leaf": True, "order": 0})
         if req.has_access("game.profile"):
             menu.append({"id": "game/profile", "text": self._("Profile"), "leaf": True, "order": 10, "even_unpublished": True})
         if req.has_access("game.logo"):
@@ -151,6 +157,38 @@ class Game(Module):
         fields.append({"name": "indexpage_description", "label": self._("SEO HTML description for the index page"), "value": indexpage_description})
         fields.append({"name": "indexpage_keywords", "label": self._("SEO HELP keywords for the index page"), "value": indexpage_keywords})
         self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Brief description of this form you can find in the <a href="//www.%s/doc/newgame#profile" target="_blank">reference manual</a>.') % self.main_host})
+        self.call("admin.form", fields=fields)
+
+    def headmenu_lang(self, args):
+        return self._("Game language")
+
+    def ext_lang(self):
+        req = self.req()
+        project = self.app().project
+        if req.param("ok"):
+            errors = {}
+            # lang
+            lang = req.param("v_lang")
+            if lang != "en" and lang != "ru":
+                errors["v_lang"] = self._("Invalid language")
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # store
+            with self.lock(["project.%s" % project.uuid]):
+                project.load()
+                project.set("lang", lang);
+                project.store();
+            self.call("cluster.appconfig_changed")
+            self.call("config.changed")
+            self.call("admin.redirect_top", "/admin?_rand=%s#game/lang" % random.random())
+        # show form
+        lang = self.call("l10n.lang")
+        fields = []
+        languages = []
+        languages.append(("en", self._("English")))
+        languages.append(("ru", self._("Russian")))
+        fields.append({"name": "lang", "type": "combo", "label": self._("Game language"), "value": lang, "values": languages})
         self.call("admin.form", fields=fields)
 
     def ext_logo(self):

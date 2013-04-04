@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-04-04 23:00+0300\n"
+"PO-Revision-Date: 2013-04-04 23:11+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2632,6 +2632,9 @@ msgstr "Конец недели"
 msgid "Enemy's avatar width"
 msgstr "Ширина аватара врага"
 
+msgid "English"
+msgstr "Английский"
+
 msgid "Enter a number (6 digits) from the picture"
 msgstr "Введите число (6 цифр) с картинки"
 
@@ -3316,6 +3319,12 @@ msgstr "Игровые интерфейсы, чтобы позволить гл�
 
 msgid "Game is closed for non-authorized users"
 msgstr "Игра закрыта для неавторизованных пользователей"
+
+msgid "Game language"
+msgstr "Язык игры"
+
+msgid "Game language editor"
+msgstr "Редактирование языка игры"
 
 msgid "Game library"
 msgstr "Библиотека игры"
@@ -4068,6 +4077,9 @@ msgstr "Неверное изображение: [img:%s]"
 msgid "Invalid invitation code"
 msgstr "Неверный пригласительный код"
 
+msgid "Invalid language"
+msgstr "Неверный язык"
+
 #, python-format
 msgid "Invalid line format: '%s'"
 msgstr "Неверный формат строки: \"%s\""
@@ -4321,6 +4333,9 @@ msgstr "Joy Team, Очень Длинное Имя Автора и Ещё Дли
 
 msgid "Jungle"
 msgstr "Джунгли"
+
+msgid "Language"
+msgstr "Язык"
 
 msgid "Last message"
 msgstr "Последнее сообщение"
@@ -6621,6 +6636,9 @@ msgstr "Правила"
 
 msgid "Rules name"
 msgstr "Название правила"
+
+msgid "Russian"
+msgstr "Русский"
 
 msgid "Rusted Metal"
 msgstr "Ржавый Металл"
