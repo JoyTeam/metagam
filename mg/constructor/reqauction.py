@@ -10,6 +10,7 @@ class DBRequest(CassandraObject):
     clsname = "Request"
     indexes = {
         "all": [[], "created"],
+        "title": [[], "title"],
         "draft": [["draft", "author"], "created"],
         "moderation": [["moderation"], "moderation_since"],
         "category": [["category"], "created"],
@@ -61,6 +62,7 @@ class ReqAuction(ConstructorModule):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-reqauction.index", self.index, priv="logged")
+        self.rhook("ext-reqauction.all", self.allreqs, priv="logged")
         self.rhook("ext-reqauction.cat", self.category, priv="logged")
         self.rhook("ext-reqauction.request", self.request, priv="logged")
         self.rhook("ext-reqauction.mine", self.mine, priv="logged")
@@ -187,6 +189,65 @@ class ReqAuction(ConstructorModule):
             "tables": tables,
             "menu_left": [
                 {"html": self._("reqauction///Waiting for implementation")},
+                {"href": "/reqauction/all", "html": self._("reqauction///All requests")},
+                {"href": "/reqauction/mine", "html": self._("reqauction///My requests")},
+                {"href": "/reqauction/request/new", "html": self._("reqauction///New request")},
+            ],
+            "menu_right": [
+                {"href": "/reqauction/implemented", "html": self._("reqauction///Implemented requests")},
+            ]
+        }
+        if req.has_access("reqauction.control"):
+            ent = {"href": "/reqauction/moderation", "html": self._("Moderation")}
+            lst = self.objlist(DBRequestList, query_index="moderation", query_equal="1")
+            if len(lst):
+                ent["suffix"] = ' <span class="menu-counter">(%d)</span>' % len(lst)
+            vars["menu_right"].append(ent)
+        if vars["menu_left"]:
+            vars["menu_left"][-1]["lst"] = True
+        if vars["menu_right"]:
+            vars["menu_right"][-1]["lst"] = True
+        self.response_template("constructor/reqauction/list.html", vars)
+
+    def allreqs(self):
+        req = self.req()
+        # my votes
+        lst = self.objlist(DBRequestVoteList, query_index="user", query_equal=req.user())
+        lst.load(silent=True)
+        myvotes = set()
+        for ent in lst:
+            myvotes.add(ent.get("request"))
+        # list of requests
+        lst = self.objlist(DBRequestList, query_index="title")
+        lst.load(silent=True)
+        req_rows = []
+        for ent in lst:
+            votes = ent.get("votes", 0)
+            if ent.uuid in myvotes:
+                votes = '<img src="/st-mg/icons/ok.png" alt="" /> %s' % votes
+            req_rows.append([
+                {"html": '<a href="/reqauction/view/%s">%s</a>' % (ent.uuid, htmlescape(ent.get("title"))), "cls": "reqauction-title"},
+                {"html": votes, "cls": "reqauction-votes"},
+                {"html": self.format_priority(ent.get("priority")), "cls": "reqauction-priority"},
+            ])
+        # tables
+        tables = []
+        if req_rows:
+            tables.append({
+                "title": self._("reqauction///All requests"),
+                "cols": [
+                    {"title": self._("Title"), "cls": "reqauction-title"},
+                    {"title": self._("Votes"), "cls": "reqauction-votes"},
+                    {"title": self._("Priority"), "cls": "reqauction-priority"},
+                ],
+                "rows": req_rows,
+            })
+        vars = {
+            "title": self._("reqauction///All requests waiting for implementation"),
+            "tables": tables,
+            "menu_left": [
+                {"href": "/reqauction", "html": self._("reqauction///Waiting for implementation")},
+                {"html": self._("reqauction///All requests")},
                 {"href": "/reqauction/mine", "html": self._("reqauction///My requests")},
                 {"href": "/reqauction/request/new", "html": self._("reqauction///New request")},
             ],
