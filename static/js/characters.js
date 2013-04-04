@@ -19,6 +19,9 @@ Characters.params_by_name = function (name) {
 
 Characters.menu = function (el) {
     var params = this.params_by_name(el.innerHTML);
+    if (!params) {
+        return;
+    }
     var link_el = Ext.get(el);
     var menu = new Ext.menu.Menu({});
     var env = {
@@ -31,35 +34,37 @@ Characters.menu = function (el) {
     var cmenu = this.context_menu;
     for (var i = 0; i < cmenu.length; i++) {
         var ent = cmenu[i];
-        if (MMOScript.evaluate(ent.visible, env)) {
-            if (ent.href) {
-                menu.addMenuItem({
-                    icon: ent.image,
-                    text: MMOScript.evaluateText(ent.title, env),
-                    href: MMOScript.evaluateText(ent.href, env),
-                    hrefTarget: '_blank',
-                    hideOnClick: true
-                });
-            } else {
-                menu.addMenuItem({
-                    icon: ent.image,
-                    text: MMOScript.evaluateText(ent.title, env),
-                    hideOnClick: true,
-                    listeners: {
-                        click: function () {
-                            if (ent.onclick) {
-                                eval(MMOScript.evaluateText(ent.onclick, env));
-                            } else if (ent.qevent) {
-                                Game.qevent(ent.qevent, {
-                                    targetchar: params.id
-                                });
+        (function (ent) {
+            if (MMOScript.evaluate(ent.visible, env)) {
+                if (ent.href) {
+                    menu.addMenuItem({
+                        icon: ent.image,
+                        text: MMOScript.evaluateText(ent.title, env),
+                        href: MMOScript.evaluateText(ent.href, env),
+                        hrefTarget: '_blank',
+                        hideOnClick: true
+                    });
+                } else {
+                    menu.addMenuItem({
+                        icon: ent.image,
+                        text: MMOScript.evaluateText(ent.title, env),
+                        hideOnClick: true,
+                        listeners: {
+                            click: function () {
+                                if (ent.onclick) {
+                                    eval(MMOScript.evaluateText(ent.onclick, env));
+                                } else if (ent.qevent) {
+                                    Game.qevent(ent.qevent, {
+                                        targetchar: params.id
+                                    });
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
+                anyItems = true;
             }
-            anyItems = true;
-        }
+        })(ent);
     }
     if (anyItems) {
         menu.show(link_el, 'tl-bl');
