@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-04-05 14:15+0300\n"
+"PO-Revision-Date: 2013-04-05 14:58+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3962,6 +3962,9 @@ msgstr "У целого числа \"{val}\" нет атрибутов"
 
 msgid "Integer value"
 msgstr "Целочисленное значение"
+
+msgid "Intended audience: Mature (16+)"
+msgstr "Материалы, размещённые на этом сайте, предназначены для детей от 16 лет"
 
 msgid "Interactive forum rules"
 msgstr "Интерактивные правила форума"

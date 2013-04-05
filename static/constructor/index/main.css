@@ -6,6 +6,7 @@ img { border: none }
 #page-table { background-image: url(/st/constructor/index/grad.gif); background-repeat: repeat-x; background-position: 0% 50%; height: 100%; width: 100%; }
 #page-td {vertical-align: middle; text-align: center }
 #page-td-cabinet { vertical-align: top; text-align: center }
+#page-disclaimer { position: absolute; z-index: 10; right: 10px; bottom: 10px; color: #ffffff }
 #cab-toplogo { height: 200px; width: 100% }
 #cab-toplogo td { text-align: center }
 #page-bottom { height: 50px; vertical-align: bottom; text-align: center; color: #80b8cd; font-size: 11px; padding: 40px 10px 40px 10px }
