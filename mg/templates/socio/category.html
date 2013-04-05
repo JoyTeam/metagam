@@ -12,6 +12,18 @@
 
 <tr class="socio-catdelim"><td colspan="4"><div class="socio-thick"></div></td></tr>
 
+[%if rules_above%]
+<tr class="socio-rules-above"><td colspan="4">
+    <div class="socio-rules-above-inner">
+        <h1 class="socio-rules-title">[%rules_above_title%]</h1>
+        <ul class="socio-rules">
+            [%foreach rule in rules_above%]<li>[%rule.text%]</li>[%end%]
+        </ul>
+    </div>
+</td></tr>
+<tr class="socio-catdelim"><td colspan="4"><div class="socio-thin"></div></td></tr>
+[%end%]
+
 [%for topic in topics%]
 <tr class="socio-category[%if topic.pinned%]-pinned[%end%]">
 <td class="socio-name">

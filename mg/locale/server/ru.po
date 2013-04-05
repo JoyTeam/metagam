@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-04-04 23:11+0300\n"
+"PO-Revision-Date: 2013-04-05 09:46+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -623,6 +623,9 @@ msgstr "Вы уверены, что хотите удалить это выпа�
 
 msgid "Are you sure want to delete this quest?"
 msgstr "Вы уверены, что хотите удалить этот квест?"
+
+msgid "Are you sure want to delete this rule?"
+msgstr "Вы уверены, что хотите удалить это правило?"
 
 msgid "Are you sure want to delete this slot?"
 msgstr "Вы уверены, что хотите удалить этот слот?"
@@ -1977,6 +1980,9 @@ msgstr "Копирование"
 msgid "Copyright &copy; Joy Team, 2009-%s"
 msgstr "Copyright &copy; Joy Team, 2009-%s"
 
+msgid "Correct answer"
+msgstr "Правильный ответ"
+
 msgid "Correspondence"
 msgstr "Переписка"
 
@@ -2979,6 +2985,9 @@ msgstr "Всё верно. Отправить на модерацию"
 msgid "Everything not related to the game: humor, forum games, hobbies, sport etc."
 msgstr "Всё, что не относится к игре: юмор, форумные игры, хобби, спорт и т.д."
 
+msgid "Exam question"
+msgstr "Вопрос для экзамена"
+
 msgid "Exchange rate"
 msgstr "Курс обмена"
 
@@ -3169,6 +3178,16 @@ msgstr "Модерирование форума"
 
 msgid "Forum paid services"
 msgstr "Платные услуги форума"
+
+msgid "Forum rules"
+msgstr "Правила форума"
+
+msgid "Forum rules editor"
+msgstr "Редактирование правил форума"
+
+#, python-format
+msgid "Forum rules for category '%s'"
+msgstr "Правила форума для раздела \"%s\""
 
 msgid "Forum settings"
 msgstr "Настройки форума"
@@ -3856,6 +3875,9 @@ msgstr "Доход"
 
 msgid "Income structure"
 msgstr "Структура дохода"
+
+msgid "Incorrect answers (semicolon separated)"
+msgstr "Неверные ответы (разделённые точками с запятой)"
 
 msgid "Incorrect number"
 msgstr "Неверное число"
@@ -5379,6 +5401,9 @@ msgstr "Новое состояние квеста"
 msgid "New replies: %s"
 msgstr "Новые ответы: %s"
 
+msgid "New rule"
+msgstr "Новое правило"
+
 msgid "New rules"
 msgstr "Новые правила"
 
@@ -6222,6 +6247,9 @@ msgstr "Квест с таким идентификатором уже суще�
 msgid "Quest: %s"
 msgstr "Квест: %s"
 
+msgid "Question for the exam"
+msgstr "Вопрос для экзамена"
+
 msgid "Quests"
 msgstr "Квесты"
 
@@ -6631,8 +6659,20 @@ msgstr "Рубрикатор"
 msgid "Rubricators"
 msgstr "Рубрикаторы"
 
+msgid "Rule editor"
+msgstr "Редактирование правила"
+
+msgid "Rule text"
+msgstr "Текст правила"
+
+msgid "Rule text (for the list if forum rules)"
+msgstr "Текст правила (для списка правил форума)"
+
 msgid "Rules"
 msgstr "Правила"
+
+msgid "Rules for this category"
+msgstr "Правила этого раздела"
 
 msgid "Rules name"
 msgstr "Название правила"
@@ -7029,6 +7069,9 @@ msgstr "Показать лог боя снизу"
 
 msgid "Show enemy's avatar on the right side"
 msgstr "Показать аватар врага справа"
+
+msgid "Show forum rules above the list of topics"
+msgstr "Показывать правила форума над списком топиков"
 
 msgid "Show in the beginning of every log line"
 msgstr "Показывать в начале каждой строки лога"
@@ -7991,6 +8034,9 @@ msgstr "Этот параметр является классом персона
 
 msgid "This parameter is mandatory"
 msgstr "Это обязательный параметр"
+
+msgid "This rule is shown in all forum categories"
+msgstr "Это правило показывается во всех разделах форума"
 
 msgid "This shop buys goods"
 msgstr "Этот магазин скупает товары"

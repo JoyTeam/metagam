@@ -207,6 +207,7 @@ class ForumAdmin(Module):
                 self.call("web.not_found")
         if req.param("ok"):
             errors = {}
+            values = {}
             title = req.param("title")
             topcat = req.param("topcat")
             description = req.param("description")
@@ -223,6 +224,7 @@ class ForumAdmin(Module):
                 errors["order"] = self._("Enter category order")
             elif not re.match(r'^-?(?:\d+|\d+\.\d+)$', order):
                 errors["order"] = self._("Invalid numeric format")
+            self.call("admin-forum.category-validate", values, errors)
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             categories = self.call("forum.categories")
@@ -237,6 +239,7 @@ class ForumAdmin(Module):
             cat["default_subscribe"] = True if default_subscribe else False
             cat["manual_date"] = manual_date
             cat["allow_skip_notify"] = allow_skip_notify
+            self.call("admin-forum.category-store", values, cat)
             conf = self.app().config_updater()
             conf.set("forum.categories", categories)
             conf.store()
@@ -292,6 +295,7 @@ class ForumAdmin(Module):
                 "type": "checkbox",
             },
         ]
+        self.call("admin-forum.category-form", cat, fields)
         self.call("admin.form", fields=fields)
 
     def headmenu_forum_category(self, args):
@@ -419,6 +423,8 @@ class Socio(Module):
             lst.extend(["mg.constructor.library.Library"])
         if self.conf("module.socialnets"):
             lst.extend(["mg.constructor.socialnets.SocialNets"])
+        if self.conf("module.forum-rules"):
+            lst.extend(["mg.socio.rules.ForumRules"])
         return lst
 
     def modules_list(self, modules):
@@ -442,6 +448,11 @@ class Socio(Module):
                 "id": "socialnets",
                 "name": self._("Social networks interconnection"),
                 "description": self._("Ability to put Google +1 and Facebook Like buttons"),
+                "parent": "socio",
+            }, {
+                "id": "forum-rules",
+                "name": self._("Interactive forum rules"),
+                "description": self._("Administator enters list of rules and they are shown to users in the form of exam"),
                 "parent": "socio",
             }
         ])
@@ -1700,6 +1711,7 @@ class Forum(Module):
         content = req.param("content")
         form = self.call("web.form", action="/forum/topic/" + topic.uuid + "#post-form")
         if req.ok():
+            self.call("forum.rules-agreement", cat, form)
             errors = {}
             if not content:
                 form.error("content", self._("Enter post content"))
