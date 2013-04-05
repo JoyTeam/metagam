@@ -1397,6 +1397,10 @@ class Forum(Module):
                     form.error("created", self._("Invalid datetime format"))
             self.call("forum.topic-form", None, form, "validate")
             if not form.errors:
+                err = self.call("forum.rules-agreement", cat, form)
+                if err:
+                    form.error("content", err)
+            if not form.errors:
                 if req.param("publish"):
                     user = self.obj(User, self.call("socio.user"))
                     topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None, notify=notify)
@@ -1711,13 +1715,16 @@ class Forum(Module):
         content = req.param("content")
         form = self.call("web.form", action="/forum/topic/" + topic.uuid + "#post-form")
         if req.ok():
-            self.call("forum.rules-agreement", cat, form)
             errors = {}
             if not content:
                 form.error("content", self._("Enter post content"))
             elif not self.may_write(cat, rules=rules, roles=roles, errors=errors):
                 form.error("content", errors.get("may_write", self._("Access denied")))
             self.call("forum.reply-form", form, "validate")
+            if not form.errors:
+                err = self.call("forum.rules-agreement", cat, form)
+                if err:
+                    form.error("content", err)
             if not form.errors:
                 if req.param("save"):
                     user = self.obj(User, self.call("socio.user"))

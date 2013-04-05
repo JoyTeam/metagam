@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-04-05 09:46+0300\n"
+"PO-Revision-Date: 2013-04-05 14:15+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -416,6 +416,9 @@ msgstr "Администратор Оффлайн"
 
 msgid "Admin talks"
 msgstr "Общение с администрацией"
+
+msgid "Administator enters list of rules and they are shown to users in the form of exam"
+msgstr "Администратор вводит список правил, и они показываются пользователям в виде экзамена"
 
 msgid "Administration interface"
 msgstr "Административный интерфейс"
@@ -3167,6 +3170,9 @@ msgstr "Раздел форума"
 msgid "Forum category (list of topics)"
 msgstr "Раздел форума (список топиков)"
 
+msgid "Forum category rules"
+msgstr "Правила раздела форума"
+
 msgid "Forum discussion"
 msgstr "Обсуждение на форуме"
 
@@ -3181,6 +3187,9 @@ msgstr "Платные услуги форума"
 
 msgid "Forum rules"
 msgstr "Правила форума"
+
+msgid "Forum rules agreement"
+msgstr "Согласие с правилами форума"
 
 msgid "Forum rules editor"
 msgstr "Редактирование правил форума"
@@ -3953,6 +3962,9 @@ msgstr "У целого числа \"{val}\" нет атрибутов"
 
 msgid "Integer value"
 msgstr "Целочисленное значение"
+
+msgid "Interactive forum rules"
+msgstr "Интерактивные правила форума"
 
 msgid "Interface messages"
 msgstr "Сообщения интерфейса"
@@ -6563,6 +6575,9 @@ msgstr "Аукцион заявок"
 msgid "Require email activation"
 msgstr "Требовать активацию e-mail"
 
+msgid "Require everybody to accept this rule again"
+msgstr "Потребовать у всех заново согласиться с этим правилом"
+
 msgid "Required design files"
 msgstr "Файлы, требуемые для оформления"
 
@@ -9047,6 +9062,13 @@ msgstr "Вы успешно назначили вашей игре доменн�
 msgid "You have entered a combat"
 msgstr "Вы вступили в бой"
 
+#, python-format
+msgid "You have failed the exam unfortunately. Next attempt can be made at %s"
+msgstr "К сожалению, вы не сдали экзамен. Пересдать можно будет %s"
+
+msgid "You have failed the exam unfortunately. You can try again in an hour"
+msgstr "К сожалению, вы не сдали экзамен. Пересдать можно будет через час"
+
 msgid "You have got:"
 msgstr "Вы получили:"
 
@@ -9172,6 +9194,9 @@ msgstr "Ваша игра ещё не опубликована. Чтобы оп�
 
 msgid "Your loginform must contain onsubmit=\"return auth_login();\""
 msgstr "Форма входа в игру (loginform) должна иметь onsubmit=\"return auth_login();\""
+
+msgid "Your message was saved and it will be posted after you pass the exam on forum rules knowledge successfully. Don't close your browser window."
+msgstr "Ваше сообщение сохранено, и оно будет отправлено после того, как вы сдадите экзамен на знание правил форума. Не закрывайте окно вашего браузера."
 
 msgid "Your money"
 msgstr "Ваши деньги"
@@ -10605,6 +10630,8 @@ msgstr "{targetchar.name} в другой локации"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid "Accept"
+#~ msgstr "Принять"
 #~ msgid "reqauction///Monthly income"
 #~ msgstr "Месячный доход"
 #~ msgid "Combat title must be a string"

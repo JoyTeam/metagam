@@ -73,27 +73,32 @@ class ForumRules(mg.Module):
         agreement = self.obj(DBForumRulesAgreement, user, silent=True)
         rules = []
         for rule in self.conf("forum.rules", []):
-            if not agreement.get("rule-%s" % rule["uuid"]):
+            if rule.get("exam") and agreement.get("rule-%s" % rule["uuid"], 0) < rule.get("version", 1):
                 rules.append(rule)
         if not rules:
             return
+        if agreement.get("cooldown") and self.now() < agreement.get("cooldown"):
+            return self._("You have failed the exam unfortunately. Next attempt can be made at %s") % self.call("l10n.time_local", agreement.get("cooldown"))
+        # check exam result
+        if req.param("passed"):
+            for rule in rules:
+                agreement.set("rule-%s" % rule["uuid"], rule.get("version", 1))
+            agreement.store()
+            return
+        if req.param("failed"):
+            agreement.set("cooldown", self.now(3600))
+            agreement.store()
+            return self._("You have failed the exam unfortunately. You can try again in an hour")
         # preserve form data
         for key, values in req.param_dict().iteritems():
             for val in values:
                 form.hidden(str2unicode(key), str2unicode(val))
-        # add first rule
-        rules.insert(0, {
-            "question": self._("Are you ready for the exam?"),
-            "correct_answer": self._("Yes"),
-            "incorrect_answers": [self._("No")],
-        })
         # render rules
         vars = {
             "title": self._("Forum rules agreement"),
-            "note": self._("Your message was preserved and it will be posted after you pass the exam successfully."),
+            "note": self._("Your message was saved and it will be posted after you pass the exam on forum rules knowledge successfully. Don't close your browser window."),
             "rules": json.dumps(rules),
             "form": form.html(),
-            "accept": self._("Accept"),
         }
         self.call("socio.response_template", "rules-exam.html", vars)
 
@@ -163,8 +168,13 @@ class ForumRulesAdmin(mg.Module):
                 new_rule = {}
                 if req.args == "new":
                     new_rule["uuid"] = uuid4().hex
+                    new_rule["version"] = 1
                 else:
                     new_rule["uuid"] = rule["uuid"]
+                    new_rule["version"] = rule.get("version", 1)
+                # version
+                if req.param("increment"):
+                    new_rule["version"] += 1
                 # order
                 new_rule["order"] = floatz(req.param("order"))
                 # text
@@ -225,6 +235,8 @@ class ForumRulesAdmin(mg.Module):
             ]
             for cat in categories:
                 fields.append({"name": "cat-%s" % cat["id"], "label": cat["title"], "type": "checkbox", "checked": rule.get("cat-%s" % cat["id"]), "condition": "![all_categories]"})
+            if req.args != "new":
+                fields.append({"name": "increment", "label": self._("Require everybody to accept this rule again"), "type": "checkbox", "condition": "[exam]"})
             self.call("admin.form", fields=fields)
         # render list
         rows = []

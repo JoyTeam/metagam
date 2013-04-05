@@ -155,3 +155,10 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 
 /* RULES */
 .socio-rules-above-inner { padding: 0 50px 0 50px }
+
+/* EXAM */
+.forum-exam-question { width: 400px; padding: 5px 0 5px 0 }
+.forum-exam-question h1 { font-weight: bold; font-size: 16px }
+.forum-exam-answers { padding: 5px 10px 5px 50px }
+.forum-exam-answers button { padding: 5px; font-weight: bold; font-size: 14px; margin: 0 40px 0 0 }
+.forum-exam-counter { padding-left: 20px; font-size: 16px; font-weight: bold }

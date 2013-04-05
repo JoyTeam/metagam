@@ -2,13 +2,16 @@
 <!--HEAD-->
 <h1>[%title%]</h1>
 <div class="socio-message-top">[%note%]</div>
-<div id="examForm">
+<div id="examForm" style="display: none">
+    <form>
+        <table id="examTable" class="forum-exam-table">
+        </table>
+    </form>
 </div>
 <div id="submitForm" style="display: none">
     [%form%]
 </div>
 <script type="text/javascript">
     examRules = [%rules%];
-    examAccept = '[%accept%]';
     showExam();
 </script>
