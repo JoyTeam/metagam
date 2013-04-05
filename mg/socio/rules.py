@@ -73,8 +73,9 @@ class ForumRules(mg.Module):
         agreement = self.obj(DBForumRulesAgreement, user, silent=True)
         rules = []
         for rule in self.conf("forum.rules", []):
-            if rule.get("exam") and agreement.get("rule-%s" % rule["uuid"], 0) < rule.get("version", 1):
-                rules.append(rule)
+            if rule.get("all_categories") or rule.get("cat-%s" % cat["id"]):
+                if rule.get("exam") and agreement.get("rule-%s" % rule["uuid"], 0) < rule.get("version", 1):
+                    rules.append(rule)
         if not rules:
             return
         if agreement.get("cooldown") and self.now() < agreement.get("cooldown"):
