@@ -320,8 +320,8 @@ class Constructor(Module):
         req = self.req()
         topmenu = []
         cabmenu = []
-        vars["disclaimer"] = self._("Intended audience: Mature (16+)")
         if req.group == "index" and req.hook == "index":
+            vars["disclaimer"] = self._("Intended audience: Mature (16+)")
             vars["global_html"] = "constructor/index_global.html"
         elif req.group == "constructor" and req.hook == "newgame" or req.group == "webmoney":
             vars["global_html"] = "constructor/cabinet_global.html"
