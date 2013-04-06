@@ -962,11 +962,20 @@ class QuestsAdmin(ConstructorModule):
                     result += "\n"
                 result += "  " * indent + "}\n"
                 return result
-            elif val[0] == "soundplay":
-                result = "  " * indent + "soundplay %s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
+            elif val[0] == "sound":
+                result = "  " * indent + "sound %s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
                 options = val[2]
                 if "mode" in options:
                     result += " mode=%s" % self.call("script.unparse-expression", options["mode"])
+                if "volume" in options:
+                    result += " volume=%s" % self.call("script.unparse-expression", options["volume"])
+                result += "\n"
+                return result
+            elif val[0] == "music":
+                result = "  " * indent + "music %s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
+                options = val[2]
+                if "fade" in options:
+                    result += " fade=%s" % self.call("script.unparse-expression", options["fade"])
                 if "volume" in options:
                     result += " volume=%s" % self.call("script.unparse-expression", options["volume"])
                 result += "\n"
@@ -1888,8 +1897,8 @@ class Quests(ConstructorModule):
                                                         tasklet.quest_combat_started[char_uuid] = creq.uuid
                                                     except AttributeError:
                                                         tasklet.quest_combat_started = {char_uuid: creq.uuid}
-                                    elif cmd_code == "soundplay":
-                                        sound = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the sound URL to play"))
+                                    elif cmd_code == "sound":
+                                        url = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the sound URL to play"))
                                         options = cmd[2]
                                         attrs = {}
                                         if "mode" in options:
@@ -1903,8 +1912,25 @@ class Quests(ConstructorModule):
                                                 raise QuestError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__)
                                             attrs["volume"] = volume
                                         if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("playing sound {url}").format(url=sound.split("/")[-1]), cls="quest-action", indent=indent+2)
-                                        self.call("sound.play", char, sound, **attrs)
+                                            self.call("debug-channel.character", char, lambda: self._("playing sound {url}").format(url=url.split("/")[-1]), cls="quest-action", indent=indent+2)
+                                        self.call("sound.play", char, url, **attrs)
+                                    elif cmd_code == "music":
+                                        url = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the music URL to play"))
+                                        options = cmd[2]
+                                        attrs = {}
+                                        if "fade" in options:
+                                            fade = self.call("script.evaluate-expression", options["fade"], globs=kwargs, description=lambda: self._("Evaluation of 'fade' argument"))
+                                            if type(fade) != int:
+                                                raise QuestError(self._("Invalid value type for 'fade' attribute: '%s'") % type(fade).__name__)
+                                            attrs["fade"] = fade
+                                        if "volume" in options:
+                                            volume = self.call("script.evaluate-expression", options["volume"], globs=kwargs, description=lambda: self._("Evaluation of 'volume' argument"))
+                                            if type(volume) != int:
+                                                raise QuestError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__)
+                                            attrs["volume"] = volume
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("playing music {url}").format(url=url.split("/")[-1]), cls="quest-action", indent=indent+2)
+                                        self.call("sound.music", char, url, **attrs)
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:

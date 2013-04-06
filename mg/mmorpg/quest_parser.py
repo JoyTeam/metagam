@@ -169,14 +169,11 @@ class TokenSyslog(Parsing.Token):
 class TokenEquipBreak(Parsing.Token):
     "%token equipbreak"
 
-class TokenSoundPlay(Parsing.Token):
-    "%token soundplay"
+class TokenSound(Parsing.Token):
+    "%token sound"
 
-class TokenSoundLoop(Parsing.Token):
-    "%token soundloop"
-
-class TokenSoundStop(Parsing.Token):
-    "%token soundstop"
+class TokenMusic(Parsing.Token):
+    "%token music"
 
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm [pAttrKey]"
@@ -612,18 +609,31 @@ class QuestAction(Parsing.Nonterm):
         "%reduce equipbreak Expr"
         self.val = ["equipbreak", cond.val]
 
-    def reduceSoundPlay(self, cmd, sound, attrs):
-        "%reduce soundplay scalar ExprAttrs"
-        sound = cmd.script_parser.parse_text(sound.val, cmd.script_parser._("Sound file URL"))
-        mode = get_str_attr(cmd, "soundplay", attrs, "mode")
-        volume = get_str_attr(cmd, "soundplay", attrs, "volume")
-        validate_attrs(cmd, "soundplay", attrs, ["mode"])
+    def reduceSound(self, cmd, url, attrs):
+        "%reduce sound scalar ExprAttrs"
+        url = cmd.script_parser.parse_text(url.val, cmd.script_parser._("Sound file URL"))
+        mode = get_attr(cmd, "sound", attrs, "mode")
+        volume = get_attr(cmd, "sound", attrs, "volume")
+        validate_attrs(cmd, "sound", attrs, ["mode", "volume"])
         options = {}
         if mode is not None:
             options["mode"] = mode
         if volume is not None:
-            options["volume"] = mode
-        self.val = ["soundplay", sound, options]
+            options["volume"] = volume
+        self.val = ["sound", url, options]
+
+    def reduceMusic(self, cmd, url, attrs):
+        "%reduce music scalar ExprAttrs"
+        url = cmd.script_parser.parse_text(url.val, cmd.script_parser._("Music file URL"))
+        fade = get_attr(cmd, "music", attrs, "fade")
+        volume = get_attr(cmd, "music", attrs, "volume")
+        validate_attrs(cmd, "music", attrs, ["fade", "volume"])
+        options = {}
+        if fade is not None:
+            options["fade"] = fade
+        if volume is not None:
+            options["volume"] = volume
+        self.val = ["music", url, options]
 
 class RandomContent(Parsing.Nonterm):
     "%nonterm"
@@ -907,9 +917,8 @@ class QuestScriptParser(ScriptParser):
     syms["log"] = TokenLog
     syms["syslog"] = TokenSyslog
     syms["equipbreak"] = TokenEquipBreak
-    syms["soundplay"] = TokenSoundPlay
-    syms["soundloop"] = TokenSoundLoop
-    syms["soundstop"] = TokenSoundStop
+    syms["sound"] = TokenSound
+    syms["music"] = TokenMusic
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

@@ -89,7 +89,7 @@ class StorageAdmin(Module):
                         if m:
                             ext = m.group(2)
                     # size limits
-                    if ext == ".swf":
+                    if ext == ".swf" or ext == ".mp3":
                         max_size = 20
                     else:
                         max_size = 3
