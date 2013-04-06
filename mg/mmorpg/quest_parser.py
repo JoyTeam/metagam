@@ -169,6 +169,15 @@ class TokenSyslog(Parsing.Token):
 class TokenEquipBreak(Parsing.Token):
     "%token equipbreak"
 
+class TokenSoundPlay(Parsing.Token):
+    "%token soundplay"
+
+class TokenSoundLoop(Parsing.Token):
+    "%token soundloop"
+
+class TokenSoundStop(Parsing.Token):
+    "%token soundstop"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
@@ -603,6 +612,19 @@ class QuestAction(Parsing.Nonterm):
         "%reduce equipbreak Expr"
         self.val = ["equipbreak", cond.val]
 
+    def reduceSoundPlay(self, cmd, sound, attrs):
+        "%reduce soundplay scalar ExprAttrs"
+        sound = cmd.script_parser.parse_text(sound.val, cmd.script_parser._("Sound file URL"))
+        mode = get_str_attr(cmd, "soundplay", attrs, "mode")
+        volume = get_str_attr(cmd, "soundplay", attrs, "volume")
+        validate_attrs(cmd, "soundplay", attrs, ["mode"])
+        options = {}
+        if mode is not None:
+            options["mode"] = mode
+        if volume is not None:
+            options["volume"] = mode
+        self.val = ["soundplay", sound, options]
+
 class RandomContent(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -885,6 +907,9 @@ class QuestScriptParser(ScriptParser):
     syms["log"] = TokenLog
     syms["syslog"] = TokenSyslog
     syms["equipbreak"] = TokenEquipBreak
+    syms["soundplay"] = TokenSoundPlay
+    syms["soundloop"] = TokenSoundLoop
+    syms["soundstop"] = TokenSoundStop
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

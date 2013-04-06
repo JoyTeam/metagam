@@ -962,6 +962,15 @@ class QuestsAdmin(ConstructorModule):
                     result += "\n"
                 result += "  " * indent + "}\n"
                 return result
+            elif val[0] == "soundplay":
+                result = "  " * indent + "soundplay %s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
+                options = val[2]
+                if "mode" in options:
+                    result += " mode=%s" % self.call("script.unparse-expression", options["mode"])
+                if "volume" in options:
+                    result += " volume=%s" % self.call("script.unparse-expression", options["volume"])
+                result += "\n"
+                return result
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
     def headmenu_inventory_actions(self, args):
@@ -1879,6 +1888,23 @@ class Quests(ConstructorModule):
                                                         tasklet.quest_combat_started[char_uuid] = creq.uuid
                                                     except AttributeError:
                                                         tasklet.quest_combat_started = {char_uuid: creq.uuid}
+                                    elif cmd_code == "soundplay":
+                                        sound = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the sound URL to play"))
+                                        options = cmd[2]
+                                        attrs = {}
+                                        if "mode" in options:
+                                            mode = self.call("script.evaluate-expression", options["mode"], globs=kwargs, description=lambda: self._("Evaluation of 'mode' argument"))
+                                            if mode != "wait" and mode != "overlap" and mode != "stop":
+                                                raise QuestError(self._("Invalid value for 'mode' attribute: '%s'") % mode)
+                                            attrs["mode"] = mode
+                                        if "volume" in options:
+                                            volume = self.call("script.evaluate-expression", options["volume"], globs=kwargs, description=lambda: self._("Evaluation of 'volume' argument"))
+                                            if type(volume) != int:
+                                                raise QuestError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__)
+                                            attrs["volume"] = volume
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("playing sound {url}").format(url=sound.split("/")[-1]), cls="quest-action", indent=indent+2)
+                                        self.call("sound.play", char, sound, **attrs)
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
