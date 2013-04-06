@@ -2230,7 +2230,6 @@ class Quests(ConstructorModule):
             elif not re_valid_identifier.match(ev):
                 character.error(self._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
             else:
-                args = {}
                 globs = {}
                 for k, v in req.param_dict().iteritems():
                     if k.startswith("targetchar") and re_valid_identifier.match(k):
@@ -2238,8 +2237,8 @@ class Quests(ConstructorModule):
                         if targetchar.valid:
                             globs[k] = targetchar
                     elif re_arg_param.match(k):
-                        args[k] = v
-                self.qevent("clicked-%s" % ev, char=character, args=args, **globs)
+                        globs[k] = v[0]
+                self.qevent("clicked-%s" % ev, char=character, **globs)
                 redirs = getattr(req, "quest_redirects", None)
                 if redirs:
                     uri = redirs.get(character.uuid)
