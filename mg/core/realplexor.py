@@ -62,7 +62,7 @@ class RealplexorConcurrence(object):
             number of cliens: give each client an unique ID and enumerate
             client IDs in show_only_for_ids to inhibit sending messages to others.
         """
-        data = json.dumps(data)
+        data = json.dumps(data, skipkeys=True)
         pairs = []
         if type(ids) == type("") or type(ids) == unicode:
             if not re_valid_id.match(ids):
