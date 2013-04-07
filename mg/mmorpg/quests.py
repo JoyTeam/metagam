@@ -2307,7 +2307,7 @@ class Quests(ConstructorModule):
                         if targetchar.valid:
                             globs[k] = targetchar
                     elif re_arg_param.match(k):
-                        globs[k] = v[0]
+                        globs[k] = str2unicode(v[0])
                 self.qevent("clicked-%s" % ev, char=character, **globs)
                 redirs = getattr(req, "quest_redirects", None)
                 if redirs:
