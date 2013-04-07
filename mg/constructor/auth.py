@@ -185,9 +185,12 @@ class Auth(ConstructorModule):
         email = user_obj.get("email")
         if email:
             raise Hooks.Return(email)
-        char = self.character(user_obj.uuid)
-        if char.player and char.player.valid:
-            raise Hooks.Return(char.player.email)
+        try:
+            char = self.character(user_obj.uuid)
+            if char.player and char.player.valid:
+                raise Hooks.Return(char.player.email)
+        except ObjectNotFoundException:
+            pass
 
     def name_changed(self, user, old_name, new_name):
         character = self.character(user.uuid)
