@@ -36,25 +36,36 @@ class Combats(mg.constructor.ConstructorModule):
         character = self.character(uuid)
         return character.busy_lock
 
-    def set_busy(self, combat_id, uuid, dry_run=False):
+    def set_busy(self, creq, uuid, dry_run=False):
         character = self.character(uuid)
-        res = character.set_busy("combat", {
+        options = {
             "priority": 100,
-            "show_uri": "/combat/interface/%s" % combat_id,
+            "show_uri": "/combat/interface/%s" % creq.uuid,
             "abort_event": "combats-character.abort-busy",
-            "combat": combat_id
-        }, dry_run)
+            "combat": creq.uuid
+        }
+        rules = creq.get("rules")
+        if rules:
+            rulesinfo = self.conf("combats-%s.rules" % rules, {})
+            if rulesinfo.get("music_playlist"):
+                options["music_playlist"] = rulesinfo.get("music_playlist")
+            if rulesinfo.get("music_volume"):
+                options["music_volume"] = rulesinfo.get("music_volume")
+            if rulesinfo.get("music_fade"):
+                options["music_fade"] = rulesinfo.get("music_fade")
+        print "set busy", options
+        res = character.set_busy("combat", options, dry_run)
         if not dry_run and res:
             character.message(self._("You have entered a combat"))
-            self.call("characters.param-changed", character.uuid, "combat", None, combat_id)
+            self.call("characters.param-changed", character.uuid, "combat", None, creq.uuid)
         return not res
 
-    def unset_busy(self, combat_id, uuid):
+    def unset_busy(self, creq, uuid):
         character = self.character(uuid)
         busy = character.busy
-        if busy and busy["tp"] == "combat" and busy.get("combat") == combat_id:
+        if busy and busy["tp"] == "combat" and busy.get("combat") == creq.uuid:
             character.unset_busy()
-            self.call("characters.param-changed", character.uuid, "combat", combat_id, None)
+            self.call("characters.param-changed", character.uuid, "combat", creq.uuid, None)
 
 class CombatCharacterMember(CombatMember):
     def __init__(self, combat, character, fqn="mg.mmorpg.combats.characters.CombatCharacterMember"):
@@ -122,3 +133,5 @@ class CombatCharacterMember(CombatMember):
         log.set("character", char.uuid)
         log.set("victory", self._victory)
         log.store()
+        # notify other modules
+        self.call("combat.stopped-char", char, self.combat)

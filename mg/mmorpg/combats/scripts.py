@@ -142,6 +142,37 @@ class CombatScriptsAdmin(ConstructorModule):
             elif st_cmd == "giveturn":
                 result = "  " * indent + "giveturn %s\n" % self.call("script.unparse-expression", st[1])
                 lines.append(result)
+            elif st_cmd == "sound":
+                result = "  " * indent + "sound %s" % self.call("script.unparse-expression", self.call("script.unparse-text", st[1]))
+                options = st[2]
+                if "target" in options:
+                    result += " target=%s" % self.call("script.unparse-expression", options["target"])
+                if "mode" in options:
+                    result += " mode=%s" % self.call("script.unparse-expression", options["mode"])
+                if "volume" in options:
+                    result += " volume=%s" % self.call("script.unparse-expression", options["volume"])
+                result += "\n"
+                lines.append(result)
+            elif st_cmd == "music":
+                result = "  " * indent + "music %s" % self.call("script.unparse-expression", st[1])
+                options = st[2]
+                if "target" in options:
+                    result += " target=%s" % self.call("script.unparse-expression", options["target"])
+                if "fade" in options:
+                    result += " fade=%s" % self.call("script.unparse-expression", options["fade"])
+                if "volume" in options:
+                    result += " volume=%s" % self.call("script.unparse-expression", options["volume"])
+                result += "\n"
+                lines.append(result)
+            elif st_cmd == "musicstop":
+                result = "  " * indent + "music stop"
+                options = st[1]
+                if "target" in options:
+                    result += " target=%s" % self.call("script.unparse-expression", options["target"])
+                if "fade" in options:
+                    result += " fade=%s" % self.call("script.unparse-expression", options["fade"])
+                result += "\n"
+                lines.append(result)
             else:
                 lines.append(u"%s<<<%s: %s>>>\n" % ("  " * indent, self._("Invalid script parse tree"), st))
         return u"".join(lines)
@@ -545,6 +576,78 @@ class CombatScripts(ConstructorModule):
                 else:
                     self.combat_debug(combat, lambda: self._("giving turn right to member {member}").format(member=member), cls="combat-action", indent=indent)
                     member.turn_give()
+            elif st_cmd == "sound":
+                url = self.call("script.evaluate-text", st[1], globs=globs, description=lambda: self._("Evaluation of the sound URL to play"))
+                options = st[2]
+                attrs = {}
+                if "mode" in options:
+                    mode = self.call("script.evaluate-expression", options["mode"], globs=globs, description=lambda: self._("Evaluation of 'mode' argument"))
+                    if mode != "wait" and mode != "overlap" and mode != "stop":
+                        raise ScriptRuntimeError(self._("Invalid value for 'mode' attribute: '%s'") % mode, env)
+                    attrs["mode"] = mode
+                if "volume" in options:
+                    volume = self.call("script.evaluate-expression", options["volume"], globs=globs, description=lambda: self._("Evaluation of 'volume' argument"))
+                    if type(volume) != int:
+                        raise ScriptRuntimeError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__, env)
+                    attrs["volume"] = volume
+                if "target" in options:
+                    target = self.call("script.evaluate-expression", options["target"], globs=globs, description=lambda: self._("Evaluation of 'target' argument"))
+                    try:
+                        target.is_a_combat_member()
+                    except AttributeError:
+                        raise ScriptRuntimeError(self._("'%s' is not a combat member") % self.call("script.unparse-expression", options["target"]), env)
+                    self.combat_debug(combat, lambda: self._("playing sound {url} for {member}").format(url=url.split("/")[-1], member=target), cls="quest-action", indent=indent)
+                    target.sound(url, **attrs)
+                else:
+                    self.combat_debug(combat, lambda: self._("playing sound {url} for everybody").format(url=url.split("/")[-1]), cls="quest-action", indent=indent)
+                    for member in combat.members:
+                        member.sound(url, **attrs)
+            elif st_cmd == "music":
+                playlist = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of the music playlist"))
+                options = st[2]
+                attrs = {}
+                if "fade" in options:
+                    fade = self.call("script.evaluate-expression", options["fade"], globs=globs, description=lambda: self._("Evaluation of 'fade' argument"))
+                    if type(fade) != int:
+                        raise ScriptRuntimeError(self._("Invalid value type for 'fade' attribute: '%s'") % type(fade).__name__, env)
+                    attrs["fade"] = fade
+                if "volume" in options:
+                    volume = self.call("script.evaluate-expression", options["volume"], globs=globs, description=lambda: self._("Evaluation of 'volume' argument"))
+                    if type(volume) != int:
+                        raise ScriptRuntimeError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__, env)
+                    attrs["volume"] = volume
+                if "target" in options:
+                    target = self.call("script.evaluate-expression", options["target"], globs=globs, description=lambda: self._("Evaluation of 'target' argument"))
+                    try:
+                        target.is_a_combat_member()
+                    except AttributeError:
+                        raise ScriptRuntimeError(self._("'%s' is not a combat member") % self.call("script.unparse-expression", options["target"]), env)
+                    self.combat_debug(combat, lambda: self._("playing music {playlist} for {member}").format(playlist=playlist, member=target), cls="quest-action", indent=indent)
+                    target.music(playlist, **attrs)
+                else:
+                    self.combat_debug(combat, lambda: self._("playing music {playlist} for everybody").format(playlist=playlist), cls="quest-action", indent=indent)
+                    for member in combat.members:
+                        member.music(playlist, **attrs)
+            elif st_cmd == "musicstop":
+                options = st[1]
+                attrs = {}
+                if "fade" in options:
+                    fade = self.call("script.evaluate-expression", options["fade"], globs=globs, description=lambda: self._("Evaluation of 'fade' argument"))
+                    if type(fade) != int:
+                        raise ScriptRuntimeError(self._("Invalid value type for 'fade' attribute: '%s'") % type(fade).__name__, env)
+                    attrs["fade"] = fade
+                if "target" in options:
+                    target = self.call("script.evaluate-expression", options["target"], globs=globs, description=lambda: self._("Evaluation of 'target' argument"))
+                    try:
+                        target.is_a_combat_member()
+                    except AttributeError:
+                        raise ScriptRuntimeError(self._("'%s' is not a combat member") % self.call("script.unparse-expression", options["target"]), env)
+                    self.combat_debug(combat, lambda: self._("stopping music for {member}").format(member=target), cls="quest-action", indent=indent)
+                    target.music(None, **attrs)
+                else:
+                    self.combat_debug(combat, lambda: self._("stopping music for everybody"), cls="quest-action", indent=indent)
+                    for member in combat.members:
+                        member.music(None, **attrs)
             else:
                 raise CombatSystemError(self._("Unknown combat action '%s'") % st[0])
         def execute_block(block, indent):

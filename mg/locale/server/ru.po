@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-04-06 17:05+0300\n"
+"PO-Revision-Date: 2013-04-08 00:03+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -402,6 +402,9 @@ msgstr "Добавить"
 msgid "Add location image with different dimension"
 msgstr "Добавить картинку локации с другим размером"
 
+msgid "Add tracks to the playlist"
+msgstr "Добавить треки в плейлист"
+
 msgid "Adding template"
 msgstr "Добавление шаблона"
 
@@ -624,6 +627,9 @@ msgstr "Вы уверены, что хотите удалить этот пар�
 msgid "Are you sure want to delete this permission?"
 msgstr "Вы уверены, что хотите удалить эту привилегию?"
 
+msgid "Are you sure want to delete this playlist?"
+msgstr "Вы уверены, что хотите удалить этот плейлист?"
+
 msgid "Are you sure want to delete this popup menu?"
 msgstr "Вы уверены, что хотите удалить это выпадающее меню?"
 
@@ -647,6 +653,9 @@ msgstr "Вы уверены, что хотите удалить это сост�
 
 msgid "Are you sure want to delete this template?"
 msgstr "Вы уверены, что хотите удалить этот шаблон?"
+
+msgid "Are you sure want to delete this track from the playlist?"
+msgstr "Вы уверены, что хотите удалить этот трек из плейлиста?"
 
 msgid "Are you sure want to remove this lock?"
 msgstr "Вы уверены, что хотите снять эту блокировку?"
@@ -808,6 +817,9 @@ msgstr "Цвет тёмных частей фона"
 
 msgid "Background light color"
 msgstr "Цвет светлых частей фона"
+
+msgid "Background music"
+msgstr "Фоновая музыка"
 
 msgid "Bad symbols in the title"
 msgstr "Некорректные символы в названии"
@@ -1863,6 +1875,12 @@ msgstr "Конфигурация"
 msgid "Configuration of Google Analytics"
 msgstr "Конфигурация Google Analytics"
 
+msgid "Configuration of locations music"
+msgstr "Настройка музыки в локациях"
+
+msgid "Configuration of music playlists"
+msgstr "Конфигурация музыкальных плейлистов"
+
 msgid "Configuration stored"
 msgstr "Конфигурация сохранена"
 
@@ -2244,6 +2262,9 @@ msgstr "Удалить изображение %s"
 msgid "Delete this image"
 msgstr "Удалить это изображение"
 
+msgid "Deleted"
+msgstr "Удален"
+
 msgid "Deleting users' modifiers"
 msgstr "Удаление модификаторов пользователей"
 
@@ -2390,6 +2411,9 @@ msgstr "Земля №1"
 msgid "Disable sending letters to {email}"
 msgstr "Отключить отправку писем на {email}"
 
+msgid "Disabled"
+msgstr "Отключено"
+
 msgid "Discard"
 msgstr "Выбросить"
 
@@ -2498,6 +2522,9 @@ msgstr "Не проверять DNS-серверы"
 
 msgid "Don't show time"
 msgstr "Не показывать время"
+
+msgid "Don't touch background music"
+msgstr "Не трогать фоновую музыку"
 
 msgid "Dossier"
 msgstr "Досье"
@@ -2879,6 +2906,9 @@ msgstr "Вычисление аргумента \"fade\""
 msgid "Evaluation of 'mode' argument"
 msgstr "Вычисление аргумента \"mode\""
 
+msgid "Evaluation of 'target' argument"
+msgstr "Вычисление аргумента \"target\""
+
 msgid "Evaluation of 'volume' argument"
 msgstr "Вычисление аргумента \"volume\""
 
@@ -2961,8 +2991,11 @@ msgstr "Вычисление условия"
 msgid "Evaluation of the data"
 msgstr "Вычисление данных"
 
-msgid "Evaluation of the music URL to play"
-msgstr "Вычисление URL музыки, которую следует воспроизвести"
+msgid "Evaluation of the music playlist"
+msgstr "Вычисление музыкального плейлиста"
+
+msgid "Evaluation of the music playlist identifier"
+msgstr "Вычисление идентификатора музыкального плейлиста"
 
 msgid "Evaluation of the sound URL to play"
 msgstr "Вычисление URL звука, который следует воспроизвести"
@@ -5230,8 +5263,29 @@ msgstr "Интерфейс локации в виде нескольких ст�
 msgid "Multiple static images with different dimensions"
 msgstr "Несколько статических изображений с различными размерами"
 
-msgid "Music file URL"
-msgstr "URL файла с музыкой"
+msgid "Music"
+msgstr "Музыка"
+
+msgid "Music crossfade (in milliseconds)"
+msgstr "Плавный переход музыки (в миллисекундах)"
+
+msgid "Music documentation"
+msgstr "Документация на музыку"
+
+msgid "Music during combat"
+msgstr "Музыка во время боя"
+
+msgid "Music in the game"
+msgstr "Музыка в игре"
+
+msgid "Music playlists"
+msgstr "Музыкальные плейлисты"
+
+msgid "Music settings"
+msgstr "Настройки музыки"
+
+msgid "Music volume (0-100)"
+msgstr "Громкость музыки (0-100)"
 
 msgid "Must start with capital letter, may not be written in caps, words must be delimited by space, may not be an abbreviation"
 msgstr "Должно начинаться с заглавной буквы, не должно быть написано капсом, слова должны разделяться пробелами, не должно быть аббревиатурой или сокращением"
@@ -5429,6 +5483,9 @@ msgstr "Новый пароль"
 msgid "New permission"
 msgstr "Новая привилегия"
 
+msgid "New playlist"
+msgstr "Новый плейлист"
+
 msgid "New popup menu"
 msgstr "Новое выпадающее меню"
 
@@ -5473,6 +5530,9 @@ msgstr "Новая тема: %s"
 
 msgid "New topics in '{topcat} / {cat}'"
 msgstr "Новые темы в '{topcat} / {cat}'"
+
+msgid "New tracks"
+msgstr "Новые треки"
 
 msgid "New updates related to the abandoned dungeon"
 msgstr "Новые обновления, связанные с заброшенным подземельем"
@@ -5547,6 +5607,9 @@ msgstr "Локации отсутствуют."
 msgid "No more letters will be delivered to {email}, sorry for inconvinience."
 msgstr "Письма на {email} больше отправляться не будут. Приносим извинения за доставленные неудобства."
 
+msgid "No music"
+msgstr "Нет музыки"
+
 msgid "No quests currently undergo"
 msgstr "В данный момент вы не проходите ни одного квеста"
 
@@ -5585,6 +5648,9 @@ msgstr "Несуществующее боевое действие"
 
 msgid "None (not applicable)"
 msgstr "Нет (не применимо)"
+
+msgid "Nonnegative integer expected"
+msgstr "Требуется целое неотрицательное число"
 
 msgid "Not authorized WMID"
 msgstr "Неавторизованный WMID"
@@ -6031,6 +6097,18 @@ msgstr "Ширина аватара основного персонажа"
 
 msgid "Players authentication settings"
 msgstr "Настройки аутентификации игроков"
+
+msgid "Playlist code (for use in scripting)"
+msgstr "Код плейлиста (для использования в скриптах)"
+
+msgid "Playlist identifier must start with a latin letter and contain latin letters, digits and underscores only"
+msgstr "Идентификатор плейлиста должен начинаться с латинской буквы и содержать только латинские буквы, цифры и символы \"_\""
+
+msgid "Playlist name"
+msgstr "Название плейлиста"
+
+msgid "Playlist with such code already exists"
+msgstr "Плейлист с таким кодом уже существует"
 
 msgid "Poems, prose, pictures, photos, music about the game"
 msgstr "Стихи, проза, рисунки, фотографии, музыка по игре"
@@ -6850,6 +6928,9 @@ msgstr "Выберите верную локацию"
 msgid "Select a valid payer"
 msgstr "Выберите корректного плательщика"
 
+msgid "Select a valid playlist"
+msgstr "Выберите корректный плейлист"
+
 msgid "Select a valid timezone"
 msgstr "Выберите верный часовой пояс"
 
@@ -7439,8 +7520,17 @@ msgstr "Порядок сортировки"
 msgid "Sound"
 msgstr "Звук"
 
+msgid "Sound documentation"
+msgstr "Документация на звуковую подсистему"
+
 msgid "Sound file URL"
 msgstr "URL звукового файла"
+
+msgid "Sounds"
+msgstr "Звуки"
+
+msgid "Sounds in the game"
+msgstr "Звуки в игре"
 
 #, python-format
 msgid "Source '%s' is not a combat member"
@@ -8192,6 +8282,9 @@ msgstr "Чтобы получить доступ к этой странице, �
 msgid "To access this page you must enter the game from another browser window. Character with administrative rights must be online when using administrative interface."
 msgstr "Чтобы получить доступ к этой странице, вы должны зайти в игру из другого окна браузера. Чтобы использовать административный интерфейс, персонаж с административными правами должен быть онлайн."
 
+msgid "To add new tracks to the playlist you need to <hook:admin.link href=\"storage/static\" title=\"upload them\" /> to the storage first"
+msgstr "Чтобы добавить новые треки к плейлисту, вам необходимо предварительно <hook:admin.link href=\"storage/static\" title=\"загрузить их\" /> в хранилище"
+
 msgid "To create races and classes system go to the '{href}' page first and create one or more parameters with 'character class' option"
 msgstr "Чтобы создать систему рас и классов, сначала зайдите на страницу \"{href}\" и создайте один или несколько параметров с опцией \"класс персонажа\""
 
@@ -8278,6 +8371,9 @@ msgstr "Отследить персонажа"
 
 msgid "Track items"
 msgstr "Отследить предметы"
+
+msgid "Track list"
+msgstr "Список треков"
 
 msgid "Track player"
 msgstr "Отследить игрока"
@@ -8453,6 +8549,10 @@ msgstr "Неизвестная команда: /%s"
 
 msgid "Unsubscribe - {protocol}://{domain}/email/unsubscribe/{code}"
 msgstr "Отписаться - {protocol}://{domain}/email/unsubscribe/{code}"
+
+#, python-format
+msgid "Unsupported combat rules: %s"
+msgstr "Неподдерживаемые правила боя: %s"
 
 #, python-format
 msgid "Unsupported combat turn order: %s"
@@ -8993,6 +9093,10 @@ msgid "You can find detailed information on the library system in the <a href=\"
 msgstr "Подробную информацию о настройке библиотеки вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/library\" target=\"_blank\">Библиотека игры</a>."
 
 #, python-format
+msgid "You can find detailed information on the location music system in the <a href=\"//www.%s/doc/sound\" target=\"_blank\">sounds page</a> in the reference manual."
+msgstr "Подробную информацию о музыке в локациях вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/sound\" target=\"_blank\">Звук</a>."
+
+#, python-format
 msgid "You can find detailed information on the location special functions system in the <a href=\"//www.%s/doc/locfunc\" target=\"_blank\">special functions page</a> in the reference manual."
 msgstr "Подробную информацию о системе спецфункций локаций вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/locfunc\" target=\"_blank\">Спецфункции локаций</a>."
 
@@ -9027,6 +9131,10 @@ msgstr "Подробную информацию о системе магазин
 #, python-format
 msgid "You can find detailed information on the social networks interconnection in the <a href=\"//www.%s/doc/socialnets\" target=\"_blank\">Social networks page</a> in the reference manual."
 msgstr "Подробную информацию о системе взаимодействия с социальными сетями вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/socialnets\" target=\"_blank\">Взаимодействие с социальными сетями</a>."
+
+#, python-format
+msgid "You can find detailed information on the sound engine in the <a href=\"//www.%s/doc/sound\" target=\"_blank\">sound engine page</a> in the reference manual."
+msgstr "Подробную информацию о звуковом движке вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/sound\" target=\"_blank\">Звук</a>."
 
 #, python-format
 msgid "You can find detailed information on the starting locations system in the <a href=\"//www.%s/doc/startloc\" target=\"_blank\">starting locations page</a> in the reference manual."
@@ -9385,6 +9493,9 @@ msgstr "ломаем предмет {item} в слоте {slot}. поврежд�
 
 msgid "btn///Confirm"
 msgstr "Подтвердить"
+
+msgid "btntext///Add selected tracks to the playlist"
+msgstr "Добавить выбранные треки в плейлист"
 
 msgid "button///Go"
 msgstr "Вперёд!"
@@ -10059,11 +10170,23 @@ msgstr "Зарег"
 msgid "players///Ret"
 msgstr "Возвр"
 
-msgid "playing music {url}"
-msgstr "воспроизводим музыку {url}"
+msgid "playing music {playlist}"
+msgstr "воспроизводим музыку {playlist}"
+
+msgid "playing music {playlist} for everybody"
+msgstr "воспроизводим музыку {playlist} для всех"
+
+msgid "playing music {playlist} for {member}"
+msgstr "воспроизводим музыку {playlist} для {member}"
 
 msgid "playing sound {url}"
 msgstr "воспроизводим звук {url}"
+
+msgid "playing sound {url} for everybody"
+msgstr "воспроизводим звук {url} для всех"
+
+msgid "playing sound {url} for {member}"
+msgstr "воспроизводим звук {url} для {member}"
 
 msgid "plus"
 msgstr "плюс"
@@ -10411,6 +10534,15 @@ msgstr "{action_name} \"{func_title}\""
 msgid "status///unknown"
 msgstr "неизвестен"
 
+msgid "stopping music"
+msgstr "останавливаем музыку"
+
+msgid "stopping music for everybody"
+msgstr "останавливаем музыку для всех"
+
+msgid "stopping music for {member}"
+msgstr "останавливаем музыку для {member}"
+
 msgid "subscribe"
 msgstr "подписаться"
 
@@ -10478,6 +10610,9 @@ msgstr "Открыта"
 
 msgid "track"
 msgstr "отследить"
+
+msgid "track list"
+msgstr "список треков"
 
 msgid "transfer"
 msgstr "передать"
@@ -10678,6 +10813,8 @@ msgstr "{targetchar.name} в другой локации"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid "Music file URL"
+#~ msgstr "URL файла с музыкой"
 #~ msgid "Accept"
 #~ msgstr "Принять"
 #~ msgid "reqauction///Monthly income"
@@ -11445,8 +11582,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ msgstr "Анимированные фоны не поддерживаются"
 #~ msgid "Abort"
 #~ msgstr "Прервать"
-#~ msgid "Background"
-#~ msgstr "Фон"
 #~ msgid "Padding"
 #~ msgstr "Подложка"
 #~ msgid "Effects"

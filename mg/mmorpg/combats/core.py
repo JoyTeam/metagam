@@ -62,12 +62,12 @@ class CombatLocker(mg.constructor.ConstructorModule):
             for minfo in self.cobj.get("members", []):
                 obj = minfo["object"]
                 mtype = obj[0]
-                if self.call("combats-%s.set-busy" % mtype, self.cobj.uuid, *obj[1:], dry_run=True):
+                if self.call("combats-%s.set-busy" % mtype, self.cobj, *obj[1:], dry_run=True):
                     raise CombatMemberBusyError(format_gender(minfo.get("sex", 0), self._("%s is busy and can't join combat") % minfo.get("name", mtype)))
             for minfo in self.cobj.get("members", []):
                 obj = minfo["object"]
                 mtype = obj[0]
-                self.call("combats-%s.set-busy" % mtype, self.cobj.uuid, *obj[1:])
+                self.call("combats-%s.set-busy" % mtype, self.cobj, *obj[1:])
 
     def unset_busy(self):
         "Mark all members not busy"
@@ -75,7 +75,7 @@ class CombatLocker(mg.constructor.ConstructorModule):
             for minfo in self.cobj.get("members", []):
                 obj = minfo["object"]
                 mtype = obj[0]
-                self.call("combats-%s.unset-busy" % mtype, self.cobj.uuid, *obj[1:])
+                self.call("combats-%s.unset-busy" % mtype, self.cobj, *obj[1:])
 
 class CombatParamsContainer(object):
     def __init__(self):
@@ -1105,6 +1105,14 @@ class CombatMember(CombatObject, CombatParamsContainer):
     def __str__(self):
         return utf2str(unicode(self))
 
+    def sound(self, *args, **kwargs):
+        for controller in self.controllers:
+            controller.deliver_sound(*args, **kwargs)
+
+    def music(self, *args, **kwargs):
+        for controller in self.controllers:
+            controller.deliver_music(*args, **kwargs)
+
 class RequestStateCommand(CombatCommand):
     "Request combat state and deliver it to the controller"
     def __init__(self, controller, marker, fqn="mg.mmorpg.combats.core.RequestStateCommand"):
@@ -1286,6 +1294,12 @@ class CombatMemberController(CombatObject):
 
     def deliver_log(self, entries):
         "Called when we have to deliver some combat log entries to the client"
+
+    def deliver_sound(self, *args, **kwargs):
+        "Send sound command to the member"
+
+    def deliver_music(self, *args, **kwargs):
+        "Send music command to the member"
 
 class CombatSystemInfo(object):
     "CombatInfo is an object describing rules of the combat system"

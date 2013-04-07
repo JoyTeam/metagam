@@ -63,6 +63,15 @@ class TokenRandomAction(Parsing.Token):
 class TokenGiveTurn(Parsing.Token):
     "%token giveturn"
 
+class TokenSound(Parsing.Token):
+    "%token sound"
+
+class TokenMusic(Parsing.Token):
+    "%token music"
+
+class TokenStop(Parsing.Token):
+    "%token stop"
+
 class CombatAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -223,6 +232,50 @@ class CombatStatement(Parsing.Nonterm):
         "%reduce giveturn Expr"
         self.val = ["giveturn", member.val]
 
+    def reduceSound(self, cmd, url, attrs):
+        "%reduce sound scalar ExprAttrs"
+        url = cmd.script_parser.parse_text(url.val, cmd.script_parser._("Sound file URL"))
+        target = get_attr(cmd, "sound", attrs, "target")
+        mode = get_attr(cmd, "sound", attrs, "mode")
+        volume = get_attr(cmd, "sound", attrs, "volume")
+        validate_attrs(cmd, "sound", attrs, ["mode", "volume", "target"])
+        options = {}
+        if target is not None:
+            options["target"] = target
+        if mode is not None:
+            options["mode"] = mode
+        if volume is not None:
+            options["volume"] = volume
+        self.val = ["sound", url, options]
+
+    def reduceMusic(self, cmd, playlist, attrs):
+        "%reduce music Expr ExprAttrs"
+        playlist = playlist.val
+        target = get_attr(cmd, "sound", attrs, "target")
+        fade = get_attr(cmd, "music", attrs, "fade")
+        volume = get_attr(cmd, "music", attrs, "volume")
+        validate_attrs(cmd, "music", attrs, ["fade", "volume", "target"])
+        options = {}
+        if target is not None:
+            options["target"] = target
+        if fade is not None:
+            options["fade"] = fade
+        if volume is not None:
+            options["volume"] = volume
+        self.val = ["music", playlist, options]
+
+    def reduceMusicStop(self, cmd, stop, attrs):
+        "%reduce music stop ExprAttrs"
+        target = get_attr(cmd, "sound", attrs, "target")
+        fade = get_attr(cmd, "music", attrs, "fade")
+        validate_attrs(cmd, "music", attrs, ["fade", "target"])
+        options = {}
+        if target is not None:
+            options["target"] = target
+        if fade is not None:
+            options["fade"] = fade
+        self.val = ["musicstop", options]
+
 class SelectorDataSource(Parsing.Nonterm):
     "%nonterm"
     def reduceMembers(self, val):
@@ -308,6 +361,9 @@ class CombatScriptParser(ScriptParser):
     syms["turn"] = TokenTurn
     syms["randomaction"] = TokenRandomAction
     syms["giveturn"] = TokenGiveTurn
+    syms["sound"] = TokenSound
+    syms["music"] = TokenMusic
+    syms["stop"] = TokenStop
 
     funcs = ScriptParser.funcs.copy()
     funcs.add("count")

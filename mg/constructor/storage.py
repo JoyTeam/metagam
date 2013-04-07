@@ -13,6 +13,7 @@ class DBStaticObject(CassandraObject):
     indexes = {
         "all": [[], "filename_lower"],
         "created": [[], "created"],
+        "content_type": [["content_type"], "created"],
     }
 
 class DBStaticObjectList(CassandraObjectList):

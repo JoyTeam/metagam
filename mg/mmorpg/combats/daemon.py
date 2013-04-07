@@ -284,6 +284,8 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             self.combat.join(member)
 
     def run_combat(self):
+        if not self.combat.rulesinfo:
+            raise CombatRunError(self._("Unsupported combat rules: %s") % self.combat.rules)
         tord = self.combat.rulesinfo.get("turn_order", "round-robin")
         if tord == "round-robin":
             turn_order = CombatRoundRobinTurnOrder(self.combat)
@@ -312,10 +314,6 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             while not self.combat.stopped():
                 self.combat.process()
             self.combat.notify_stopped()
-            # free members
-            locker = CombatLocker(self.app(), self.cobj)
-            locker.unset_busy()
-            self.cobj.remove()
         except CombatRunError as e:
             self.call("exception.report", e)
             self.call("combats.debug", self.combat, e.val, cls="combat-error")
@@ -323,6 +321,10 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
             self.exception(e)
         finally:
             self.combat.close()
+            # free members
+            locker = CombatLocker(self.app(), self.cobj)
+            locker.unset_busy()
+            self.cobj.remove()
             self.app().inst.csrv = None
 
 class CombatInterface(mg.constructor.ConstructorModule):
@@ -447,6 +449,10 @@ class WebController(CombatMemberController):
         kwargs["combat"] = self.combat.uuid
         self.outbound.append(kwargs)
 
+    def idle(self):
+        CombatMemberController.idle(self)
+        self.char.invalidate_sessions()
+
     def flush(self):
         if self.outbound:
             outbound = self.outbound
@@ -494,3 +500,9 @@ class WebController(CombatMemberController):
 
     def deliver_log(self, entries):
         self.send("log", entries=entries)
+
+    def deliver_sound(self, *args, **kwargs):
+        self.call("sound.play", self.char, *args, **kwargs)
+
+    def deliver_music(self, *args, **kwargs):
+        self.call("sound.music", self.char, *args, **kwargs)

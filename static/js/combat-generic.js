@@ -209,7 +209,10 @@ var GenericCombat = Ext.extend(Combat, {
      */
     forEachElement: function (cls, callback) {
         var self = this;
-        Ext.getBody().query('.c-' + cls).forEach(callback);
+        var els = Ext.getBody().query('.c-' + cls);
+        for (var i = 0; i < els.length; i++) {
+            callback(els[i]);
+        }
     },
 
     /*
@@ -886,9 +889,10 @@ var GenericCombatActionSelector = Ext.extend(Object, {
         var targeted = {};
         if (self.action) {
             if (self.myself.params.targets && self.myself.params.targets.forEach && !self.actionInfo.ignore_preselected) {
-                self.myself.params.targets.forEach(function (targetId) {
-                    targeted[targetId] = true;
-                });
+                var targets = self.myself.params.targets;
+                for (var i = 0; i < targets.length; i++) {
+                    targeted[targets[i]] = true;
+                }
             } else {
                 var targets = self.action.targets;
                 if (targets) {

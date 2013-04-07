@@ -972,12 +972,19 @@ class QuestsAdmin(ConstructorModule):
                 result += "\n"
                 return result
             elif val[0] == "music":
-                result = "  " * indent + "music %s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
+                result = "  " * indent + "music %s" % self.call("script.unparse-expression", val[1])
                 options = val[2]
                 if "fade" in options:
                     result += " fade=%s" % self.call("script.unparse-expression", options["fade"])
                 if "volume" in options:
                     result += " volume=%s" % self.call("script.unparse-expression", options["volume"])
+                result += "\n"
+                return result
+            elif val[0] == "musicstop":
+                result = "  " * indent + "music stop"
+                options = val[1]
+                if "fade" in options:
+                    result += " fade=%s" % self.call("script.unparse-expression", options["fade"])
                 result += "\n"
                 return result
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
@@ -1915,7 +1922,7 @@ class Quests(ConstructorModule):
                                             self.call("debug-channel.character", char, lambda: self._("playing sound {url}").format(url=url.split("/")[-1]), cls="quest-action", indent=indent+2)
                                         self.call("sound.play", char, url, **attrs)
                                     elif cmd_code == "music":
-                                        url = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the music URL to play"))
+                                        playlist = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the music playlist identifier"))
                                         options = cmd[2]
                                         attrs = {}
                                         if "fade" in options:
@@ -1929,8 +1936,19 @@ class Quests(ConstructorModule):
                                                 raise QuestError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__)
                                             attrs["volume"] = volume
                                         if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("playing music {url}").format(url=url.split("/")[-1]), cls="quest-action", indent=indent+2)
-                                        self.call("sound.music", char, url, **attrs)
+                                            self.call("debug-channel.character", char, lambda: self._("playing music {playlist}").format(playlist=playlist), cls="quest-action", indent=indent+2)
+                                        self.call("sound.music", char, playlist, **attrs)
+                                    elif cmd_code == "musicstop":
+                                        options = cmd[1]
+                                        attrs = {}
+                                        if "fade" in options:
+                                            fade = self.call("script.evaluate-expression", options["fade"], globs=kwargs, description=lambda: self._("Evaluation of 'fade' argument"))
+                                            if type(fade) != int:
+                                                raise QuestError(self._("Invalid value type for 'fade' attribute: '%s'") % type(fade).__name__)
+                                            attrs["fade"] = fade
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("stopping music"), cls="quest-action", indent=indent+2)
+                                        self.call("sound.music", char, None, **attrs)
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:

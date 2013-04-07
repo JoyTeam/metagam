@@ -175,6 +175,9 @@ class TokenSound(Parsing.Token):
 class TokenMusic(Parsing.Token):
     "%token music"
 
+class TokenStop(Parsing.Token):
+    "%token stop"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
@@ -622,9 +625,9 @@ class QuestAction(Parsing.Nonterm):
             options["volume"] = volume
         self.val = ["sound", url, options]
 
-    def reduceMusic(self, cmd, url, attrs):
-        "%reduce music scalar ExprAttrs"
-        url = cmd.script_parser.parse_text(url.val, cmd.script_parser._("Music file URL"))
+    def reduceMusic(self, cmd, playlist, attrs):
+        "%reduce music Expr ExprAttrs"
+        playlist = playlist.val
         fade = get_attr(cmd, "music", attrs, "fade")
         volume = get_attr(cmd, "music", attrs, "volume")
         validate_attrs(cmd, "music", attrs, ["fade", "volume"])
@@ -633,7 +636,16 @@ class QuestAction(Parsing.Nonterm):
             options["fade"] = fade
         if volume is not None:
             options["volume"] = volume
-        self.val = ["music", url, options]
+        self.val = ["music", playlist, options]
+
+    def reduceMusicStop(self, cmd, stop, attrs):
+        "%reduce music stop ExprAttrs"
+        fade = get_attr(cmd, "music stop", attrs, "fade")
+        validate_attrs(cmd, "music stop", attrs, ["fade"])
+        options = {}
+        if fade is not None:
+            options["fade"] = fade
+        self.val = ["musicstop", options]
 
 class RandomContent(Parsing.Nonterm):
     "%nonterm"
@@ -919,6 +931,7 @@ class QuestScriptParser(ScriptParser):
     syms["equipbreak"] = TokenEquipBreak
     syms["sound"] = TokenSound
     syms["music"] = TokenMusic
+    syms["stop"] = TokenStop
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

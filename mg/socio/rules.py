@@ -116,7 +116,7 @@ class ForumRulesAdmin(mg.Module):
         self.rhook("objclasses.list", self.objclasses_list)
 
     def objclasses_list(self, objclasses):
-        objclasses["ForumRulesAgreement"] = (ForumRulesAgreement, None)
+        objclasses["ForumRulesAgreement"] = (DBForumRulesAgreement, None)
 
     def design_files(self, files):
         files.append({"filename": "rules.html", "description": self._("Forum category rules"), "doc": "/doc/design/forum"})

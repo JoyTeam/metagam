@@ -302,12 +302,14 @@ class Character(Module):
             self._db_busy.set("busy", options)
             self._db_busy.store()
             self._busy = options
+            self.call("character.busy-changed", self)
         return True
 
     def unset_busy(self):
         self._db_busy.set("busy", None)
         self._db_busy.store()
         self._busy = None
+        self.call("character.busy-changed", self)
 
     @property
     def db_settings(self):
@@ -331,6 +333,10 @@ class Character(Module):
             self._sessions = []
             self.call("session.character-sessions", self, self._sessions)
             return self._sessions
+
+    @property
+    def stream_channels(self):
+        return ["id_%s" %i for i in self.sessions]
 
     @property
     def money(self):

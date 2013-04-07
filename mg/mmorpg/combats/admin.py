@@ -425,6 +425,8 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             # script debug
             info["debug_script_chat"] = True if req.param("debug_script_chat") else False
             info["debug_script_log"] = True if req.param("debug_script_log") else False
+            # custom fields
+            self.call("admin-combats.profile-update", info, errors)
             # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -535,6 +537,7 @@ class CombatsAdmin(mg.constructor.ConstructorModule):
             header = self._("Items below avatar in the generic interface"),
             newtitle = self._("Create new item below avatar"),
         )
+        self.call("admin-combats.profile-form", info, fields)
         self.call("admin.form", fields=fields)
 
     def rules_edit_actions(self, code):
