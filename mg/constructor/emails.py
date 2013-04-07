@@ -252,7 +252,7 @@ class EmailSender(ConstructorModule):
         except TemplateException as e:
             if param == "content":
                 param = "error"
-            errors[param] = self._("Error parsing template: %s") % str(e)
+            errors[param] = self._("Error parsing template: %s") % utf2str(e)
 
     def deliver(self, message, params, errors):
         req = self.req()
