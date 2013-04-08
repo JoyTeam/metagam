@@ -916,7 +916,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
         m = re_param_attr.match(attr)
         if m:
             return self.set_param(attr, val)
-        raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr, env, None)
+        raise ScriptRuntimeError(self._("Invalid attribute name: '%s'") % attr, env)
 
     def store(self):
         pass
