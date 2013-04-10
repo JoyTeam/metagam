@@ -442,15 +442,62 @@ class ScriptEngine(ConstructorModule):
                 if len(val) >= 3:
                     return self._evaluate(random.choice(val[2:]), env)
                 return None
-            elif fname == "floor":
+            elif fname == "floor" or fname == "round" or fname == "ceil" or fname == "abs" or fname == "sqrt" or fname == "sqr" or fname == "log" or fname == "exp" or fname == "sin" or fname == "cos" or fname == "tan" or fname == "asin" or fname == "acos" or fname == "atan":
                 if len(val) != 3:
                     raise ScriptRuntimeError(self._("Function {fname} must be called with single argument").format(fname=fname), env)
                 v = self._evaluate(val[2], env)
                 if type(v) is str or type(v) is unicode:
                     v = floatz(v)
                 elif type(v) is not int and type(v) is not float:
-                    return 0
-                return nn(math.floor(v))
+                    v = 0
+                try:
+                    if fname == "floor":
+                        return math.floor(v)
+                    elif fname == "round":
+                        return round(v)
+                    elif fname == "ceil":
+                        return math.ceil(v)
+                    elif fname == "abs":
+                        return abs(v)
+                    elif fname == "sqrt":
+                        return math.sqrt(v)
+                    elif fname == "sqr":
+                        return v * v
+                    elif fname == "log":
+                        return math.log(v)
+                    elif fname == "exp":
+                        return math.exp(v)
+                    elif fname == "sin":
+                        return math.sin(v)
+                    elif fname == "cos":
+                        return math.cos(v)
+                    elif fname == "tan":
+                        return math.tan(v)
+                    elif fname == "asin":
+                        return math.asin(v)
+                    elif fname == "acos":
+                        return math.acos(v)
+                    elif fname == "atan":
+                        return math.atan(v)
+                except ValueError:
+                    return float('nan')
+            elif fname == "pow":
+                if len(val) != 4:
+                    raise ScriptRuntimeError(self._("Function {fname} must be called with two arguments").format(fname=fname), env)
+                v1 = self._evaluate(val[2], env)
+                if type(v1) is str or type(v1) is unicode:
+                    v1 = floatz(v1)
+                elif type(v1) is not int and type(v1) is not float:
+                    v1 = 0
+                v2 = self._evaluate(val[3], env)
+                if type(v2) is str or type(v2) is unicode:
+                    v2 = floatz(v2)
+                elif type(v2) is not int and type(v2) is not float:
+                    v2 = 0
+                try:
+                    return math.pow(v1, v2)
+                except ValueError:
+                    return float('nan')
             else:
                 raise ScriptRuntimeError(self._("Function {fname} is not supported in expression context").format(fname=fname), env)
         elif cmd == "random":

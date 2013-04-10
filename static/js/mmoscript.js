@@ -195,9 +195,21 @@ MMOScript.evaluate = function (val, env) {
             }
             return undefined;
         }
-        if (fname == 'floor') {
+        if (fname == 'floor' || fname == 'round' || fname == 'ceil' || fname == 'abs' ||
+                fname == 'sqrt' || fname == 'exp' || fname == 'sin' || fname == 'cos' ||
+                fname == 'tan' || fname == 'asin' || fname == 'acos' || fname == 'atan' ||
+                fname == 'log') {
             var v = self.toNumber(self.evaluate(val[2], env));
-            return Math.floor(v);
+            return Math[fname](v);
+        }
+        if (fname == 'sqr') {
+            var v = self.toNumber(self.evaluate(val[2], env));
+            return v * v;
+        }
+        if (fname == 'pow') {
+            var v1 = self.toNumber(self.evaluate(val[2], env));
+            var v2 = self.toNumber(self.evaluate(val[3], env));
+            return Math.pow(v1, v2);
         }
         return undefined;
     }
