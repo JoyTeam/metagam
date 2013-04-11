@@ -23,16 +23,16 @@ import random
 import sys
 
 re_set_cookie = re.compile(r'^Set-Cookie: ', re.IGNORECASE)
-re_service_call = re.compile(r'^service/call/([a-z0-9\-\.]+)/(.+)$')
-re_group_hook_args = re.compile(r'^([a-z0-9\-_]+)/([a-z0-9\-\._]+)(?:/(.*)|)')
-re_group_something_unparsed = re.compile(r'^([a-z0-9\-_]+)\/(.+)$')
-re_group = re.compile(r'^[a-z0-9\-_]+')
+re_service_call = re.compile(r'^service/call/([a-zA-Z0-9\-\.]+)/(.+)$')
+re_group_hook_args = re.compile(r'^([a-zA-Z0-9\-_]+)/([a-zA-Z0-9\-\._]+)(?:/(.*)|)')
+re_group_something_unparsed = re.compile(r'^([a-zA-Z0-9\-_]+)\/(.+)$')
+re_group = re.compile(r'^[a-zA-Z0-9\-_]+')
 re_protocol = re.compile(r'^[a-z]+://')
 re_remove_ver = re.compile(r'(?:/|^)ver\d*(?:-\d+)?$')
 re_content = re.compile(r'^(.*)<!--HEAD-->(.*)$', re.DOTALL)
-re_hooks_split = re.compile(r'(<hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*/>|\[hook:[a-z0-9_-]+\.[a-z0-9_\.-]+(?:\s+[a-z0-9_-]+="[^"]*")*\s*\])')
-re_hook_parse = re.compile(r'^(<|\[)hook:([a-z0-9_-]+\.[a-z0-9_\.-]+)((?:\s+[a-z0-9_-]+="[^"]*")*)\s*(/>|\])$')
-re_hook_args = re.compile(r'\s+([a-z0-9_-]+)="([^"]*)"')
+re_hooks_split = re.compile(r'(<hook:[a-zA-Z0-9_-]+\.[a-zA-Z0-9_\.-]+(?:\s+[a-zA-Z0-9_-]+="[^"]*")*\s*/>|\[hook:[a-zA-Z0-9_-]+\.[a-zA-Z0-9_\.-]+(?:\s+[a-zA-Z0-9_-]+="[^"]*")*\s*\])')
+re_hook_parse = re.compile(r'^(<|\[)hook:([a-zA-Z0-9_-]+\.[a-zA-Z0-9_\.-]+)((?:\s+[a-zA-Z0-9_-]+="[^"]*")*)\s*(/>|\])$')
+re_hook_args = re.compile(r'\s+([a-zA-Z0-9_-]+)="([^"]*)"')
 
 class Request(object):
     "HTTP request"
