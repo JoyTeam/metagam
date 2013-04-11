@@ -404,6 +404,7 @@ class Sound(mg.constructor.ConstructorModule):
     def music(self, char, playlist_code, fade=3000, volume=50):
         playlist = {}
         if playlist_code:
+            urls = []
             for p in self.conf("music.playlists", []):
                 if p["code"] == playlist_code:
                     lst = self.objlist(DBStaticObjectList, uuids=p.get("tracks", []))
@@ -411,6 +412,7 @@ class Sound(mg.constructor.ConstructorModule):
                     urls = []
                     for ent in lst:
                         urls.append(ent.get("uri"))
+                    break
             for url in urls:
                 m = hashlib.md5()
                 m.update(url)
