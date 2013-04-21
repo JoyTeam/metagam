@@ -683,7 +683,7 @@ combat rules=<strong>"правила"</strong> [ctitle=<strong>"название
         member virtual team=2 name="Дерзкий" sex=0 image="..." p_damage=4 p_defense=8 p_hp=40
     }
 }</pre></li>
-    <li>нападение одним персонажем на другого (через ссылку "Напасть" в контекстном меню:
+    <li>нападение одним персонажем на другого (через ссылку "Напасть" в контекстном меню):
 <pre class="doc-code-sample">clicked "attack" {
     if char.id != targetchar.id {
         combat rules="demo" ctitle="{char.name} [char.sex:напал,напала] на {targetchar.name}" flags="pvp" {
