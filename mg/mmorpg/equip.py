@@ -2,6 +2,8 @@ from mg.constructor import *
 from mg.mmorpg.inventory import MemberInventory, Item
 from mg.mmorpg.inventory_classes import dna_parse, dna_join, DBItemTransfer
 import re
+import cStringIO
+from PIL import Image
 
 class EquipError(ScriptRuntimeError):
     pass
@@ -548,8 +550,11 @@ class EquipAdmin(ConstructorModule):
                 if not slot:
                     self.call("admin.redirect", "equip/slots")
             if req.ok():
+                self.call("web.upload_handler")
                 slot = slot.copy()
                 errors = {}
+                upload = []
+                delete_images = []
                 # id
                 sid = req.param("id").strip()
                 if not sid:
@@ -600,6 +605,43 @@ class EquipAdmin(ConstructorModule):
                                 errors[key_size] = self._("Maximal size is 128x128")
                             else:
                                 slot[key_size] = [width, height]
+
+                            # Image should be parsed only if dimensions are defined
+                            key_empty = "ifempty-%s" % iface["id"]
+                            if req.param("ifdelempty-%s" % iface["id"]):
+                                if key_empty in slot:
+                                    delete_images.append(slot[key_empty])
+                                    del slot[key_empty]
+                            else:
+                                image_data = req.param_raw(key_empty)
+                                if image_data:
+                                    try:
+                                        image = Image.open(cStringIO.StringIO(image_data))
+                                        if image.load() is None:
+                                            raise IOError
+                                    except IOError:
+                                        errors[key_empty] = self._("Image format not recognized")
+                                    else:
+                                        ext, content_type = self.image_format(image)
+                                        form = image.format
+                                        trans = image.info.get("transparency")
+                                        w, h = image.size
+                                        if ext is None:
+                                            errors[key_empty] = self._("Valid formats are: PNG, GIF, JPEG")
+                                        elif w != width or h != height:
+                                            errors[key_empty] = self._("Dimensions of the image must match slot dimensions ({width}x{height} uploaded, {ewidth}x{eheight} expected)").format(width=w, height=h, ewidth=width, eheight=height)
+                                        else:
+                                            data = cStringIO.StringIO()
+                                            if form == "JPEG":
+                                                image.save(data, form, quality=95)
+                                            elif form == "GIF":
+                                                if trans:
+                                                    image.save(data, form, transparency=trans)
+                                                else:
+                                                    image.save(data, form)
+                                            else:
+                                                image.save(data, form)
+                                            upload.append((slot, key_empty, image, ext, content_type, data))
                     else:
                         slot[key] = False
                 # visible
@@ -607,9 +649,14 @@ class EquipAdmin(ConstructorModule):
                 slot["visible"] = self.call("script.admin-expression", "visible", errors, globs={"char": char})
                 # enabled
                 slot["available"] = self.call("script.admin-expression", "available", errors, globs={"char": char})
-                # handling errors
+                # handle errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
+                # upload images
+                for slot, key, image, ext, content_type, data in upload:
+                    uri = self.call("cluster.static_upload", "item", ext, content_type, data.getvalue())
+                    delete_images.append(slot.get(key))
+                    slot[key] = uri
                 # storing
                 slots = [s for s in slots if s["id"] != slot["id"]]
                 slot["id"] = sid
@@ -620,6 +667,10 @@ class EquipAdmin(ConstructorModule):
                     config.set("equip.max-slot", sid)
                 config.set("equip.slots", slots)
                 config.store()
+                # delete old images
+                for uri in delete_images:
+                    if uri:
+                        self.call("cluster.static_delete", uri)
                 self.call("admin.redirect", "equip/slots")
             fields = [
                 {"label": self._("Slot ID (integer number)"), "name": "id", "value": slot.get("id")},
@@ -635,8 +686,14 @@ class EquipAdmin(ConstructorModule):
                 fields.append({"name": key, "label": iface["title"], "type": "checkbox", "checked": slot.get(key)})
                 key_size = "ifsize-%s" % iface["id"]
                 size = slot.get(key_size, [60, 60])
-                fields.append({"name": key_size, "label": self._("Slot dimensions (ex: 60x60)"), "value": "%dx%d" % (size[0], size[1]), "condition": "[%s]" % key, "inline": True})
-            self.call("admin.form", fields=fields)
+                fields.append({"name": key_size, "label": self._("Slot dimensions (ex: 60x60)"), "value": "%dx%d" % (size[0], size[1]), "condition": "[%s]" % key})
+                key_empty = "ifempty-%s" % iface["id"]
+                if slot.get(key_empty):
+                    fields.append({"type": "checkbox", "name": "ifdelempty-%s" % iface["id"], "label": self._("Delete empty slot image")})
+                    fields.append({"name": key_empty, "label": (u'<p><img src="%s" alt="" /></p>' % slot[key_empty]) + self._("Replace empty slot image"), "type": "fileuploadfield", "condition": "[%s] && ![ifdelempty-%s]" % (key, iface["id"])})
+                else:
+                    fields.append({"name": key_empty, "label": self._("Empty slot image"), "type": "fileuploadfield", "condition": "[%s]" % key})
+            self.call("admin.form", fields=fields, modules=["FileUploadField"])
         rows = []
         for slot in slots:
             rows.append([
@@ -1125,6 +1182,11 @@ class Equip(ConstructorModule):
                             ritem["hint"] = {
                                 "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
                             }
+                            img = slot.get("ifempty-%s" % iface_id)
+                            if img:
+                                ritem["image"] = {
+                                    "src": img
+                                }
                             if description:
                                 ritem["hint"]["html"] = jsencode(description)
                             if self.call("script.evaluate-expression", slot.get("available", 1), {"char": character}, description=self._("Availability of slot '%s'") % slot["name"]):

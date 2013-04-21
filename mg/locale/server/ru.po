@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-04-21 10:50+0300\n"
+"PO-Revision-Date: 2013-04-21 12:04+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2265,6 +2265,9 @@ msgstr "Удалить"
 msgid "Delete %s image"
 msgstr "Удалить изображение %s"
 
+msgid "Delete empty slot image"
+msgstr "Удалить изображение пустого слота"
+
 msgid "Delete this image"
 msgstr "Удалить это изображение"
 
@@ -2401,6 +2404,9 @@ msgstr "Размеры в инвентаре"
 
 msgid "Dimensions in the library"
 msgstr "Размеры в библиотеке"
+
+msgid "Dimensions of the image must match slot dimensions ({width}x{height} uploaded, {ewidth}x{eheight} expected)"
+msgstr "Размеры изображения должны совпадать с размерами слота (загружено {width}x{height}, ожидалось {ewidth}x{eheight})"
 
 msgid "Diplomacy"
 msgstr "Дипломатия"
@@ -2640,6 +2646,9 @@ msgstr "Пустые размеры"
 
 msgid "Empty hostname"
 msgstr "Пустое имя хоста"
+
+msgid "Empty slot image"
+msgstr "Изображение пустого слота"
 
 msgid "Empty space"
 msgstr "Пустое место"
@@ -6644,6 +6653,9 @@ msgstr "Замените '???' правильным окончанием"
 
 msgid "Replace all images"
 msgstr "Заменить все изображения"
+
+msgid "Replace empty slot image"
+msgstr "Заменить изображение пустого слота"
 
 msgid "Replace images"
 msgstr "Замена изображений"
