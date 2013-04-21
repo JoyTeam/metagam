@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-04-10 19:15+0300\n"
+"PO-Revision-Date: 2013-04-21 10:50+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -761,6 +761,12 @@ msgstr "Автопродление: включено"
 
 msgid "Availability condition"
 msgstr "Условие доступности"
+
+msgid "Availability for buy"
+msgstr "Доступность для покупки"
+
+msgid "Availability for sell"
+msgstr "Доступность для продажи"
 
 msgid "Availability of class variant '{variant}' in class '{cls}'"
 msgstr "Доступность варианта \"{variant}\" класса \"{cls}\""
@@ -2920,6 +2926,10 @@ msgstr "Вычисление условия видимости параметр�
 
 msgid "Evaluation of action duration"
 msgstr "Выражение длительности действия"
+
+#, python-format
+msgid "Evaluation of availability of item %s"
+msgstr "Вычисление доступности предмета \"%s\""
 
 msgid "Evaluation of chat HTML"
 msgstr "Вычисление HTML для чата"

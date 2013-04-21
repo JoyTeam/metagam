@@ -158,10 +158,12 @@ class ShopsAdmin(ConstructorModule):
             if req.ok():
                 new_assortment = assortment.copy()
                 errors = {}
+                item = self.call("admin-inventory.sample-item")
+                char = self.character(req.user())
                 for item_type in item_types:
                     uuid = item_type.uuid
                     for tp in ["sell", "buy"]:
-                        for key in ["%s-%s", "%s-store-%s", "%s-price-%s", "%s-currency-%s"]:
+                        for key in ["%s-%s", "%s-store-%s", "%s-price-%s", "%s-currency-%s", "%s-available-%s"]:
                             key2 = key % (tp, uuid)
                             if key2 in new_assortment:
                                 del new_assortment[key2]
@@ -187,6 +189,8 @@ class ShopsAdmin(ConstructorModule):
                                         new_assortment["%s-price-%s" % (tp, uuid)] = price
                                 if curr == "":
                                     errors["v_%s-currency-%s" % (tp, uuid)] = self._("Currency is not specified")
+                            key = "%s-available-%s" % (tp, uuid)
+                            new_assortment[key] = self.call("script.admin-expression", key, errors, globs={"char": char, "item": item})
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 config = self.app().config_updater()
@@ -205,10 +209,12 @@ class ShopsAdmin(ConstructorModule):
                     fields.append({"name": "sell-store-%s" % uuid, "type": "checkbox", "checked": assortment.get("sell-store-%s" % uuid), "label": self._("Sell from the store only"), "condition": "[sell-%s]" % uuid})
                     fields.append({"name": "sell-price-%s" % uuid, "value": assortment.get("sell-price-%s" % uuid), "label": self._("Sell price"), "condition": "[sell-%s]" % uuid})
                     fields.append({"name": "sell-currency-%s" % uuid, "value": assortment.get("sell-currency-%s" % uuid), "label": self._("Sell currency"), "type": "combo", "values": currencies_list, "inline": True, "condition": "[sell-%s]" % uuid})
+                    fields.append({"name": "sell-available-%s" % uuid, "value": self.call("script.unparse-expression", assortment.get("sell-available-%s" % uuid, 1)), "label": self._("Availability for sell") + self.call("script.help-icon-expressions"), "condition": "[sell-%s]" % uuid, "inline": True})
                 if func.get("shop_buy"):
                     fields.append({"name": "buy-store-%s" % uuid, "type": "checkbox", "checked": assortment.get("buy-store-%s" % uuid), "label": self._("Put bought items to the store"), "condition": "[buy-%s]" % uuid})
                     fields.append({"name": "buy-price-%s" % uuid, "value": assortment.get("buy-price-%s" % uuid), "label": self._("Buy price"), "condition": "[buy-%s]" % uuid})
                     fields.append({"name": "buy-currency-%s" % uuid, "value": assortment.get("buy-currency-%s" % uuid), "label": self._("Buy currency"), "type": "combo", "values": currencies_list, "inline": True, "condition": "[buy-%s]" % uuid})
+                    fields.append({"name": "buy-available-%s" % uuid, "value": self.call("script.unparse-expression", assortment.get("buy-available-%s" % uuid, 1)), "label": self._("Availability for buy") + self.call("script.help-icon-expressions"), "condition": "[buy-%s]" % uuid, "inline": True})
             self.call("admin.advice", {"title": self._("Shop prices"), "content": self._("If a price is not specified balance price will be used. If currency is specified but price not then the balance price will be converted to the currency given")})
             self.call("admin.form", fields=fields)
         rows = []
@@ -539,12 +545,16 @@ class Shops(ConstructorModule):
                     cat = misc
                 if cat is None:
                     continue
+                # item availability
+                available = assortment.get("%s-available-%s" % (mode, item_type.uuid), 1)
+                if not self.call("script.evaluate-expression", available, globs={"char": character, "item": item_type}, description=lambda: self._("Evaluation of availability of item %s") % item_type.name):
+                    continue
                 # item price
                 price = assortment.get("%s-price-%s" % (mode, item_type.uuid))
                 if price is None:
                     price = item_type.get("balance-price")
                     balance_currency = item_type.get("balance-currency")
-                    # items without balance price and without shop price are ignores
+                    # items without balance price and without shop price are ignored
                     if price is None:
                         continue
                     currency = assortment.get("%s-currency-%s" % (mode, item_type.uuid), balance_currency)
