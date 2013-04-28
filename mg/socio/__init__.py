@@ -2445,8 +2445,14 @@ class Forum(Module):
 
     def notify_newtopic(self, topic_uuid):
         try:
+            req = self.req()
+        except AttributeError:
+            req = None
+        try:
             topic = self.obj(ForumTopic, topic_uuid)
         except ObjectNotFoundException:
+            if req is None:
+                return
             self.call("web.response_json", {"error": "Topic not found"})
         subscribers = self.objlist(UserForumSettingsList, query_index="notify_any", query_equal="1")
         subscribers.load()
@@ -2475,12 +2481,20 @@ class Forum(Module):
 
     def notify_reply(self, topic_uuid, page, post_uuid):
         try:
+            req = self.req()
+        except AttributeError:
+            req = None
+        try:
             topic = self.obj(ForumTopic, topic_uuid)
         except ObjectNotFoundException:
+            if req is None:
+                return
             self.call("web.response_json", {"error": "Topic not found"})
         try:
             post = self.obj(ForumPost, post_uuid)
         except ObjectNotFoundException:
+            if req is None:
+                return
             self.call("web.response_json", {"error": "Post not found"})
         subscribers = self.objlist(ForumLastReadList, query_index="topic_subscribed", query_equal="%s-1" % topic.uuid)
         subscribers.load()
