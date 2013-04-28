@@ -224,6 +224,7 @@ class CharQuest(object):
         return self.quests.finished.get(self.qid)
 
 def parse_quest_tp(qid, tp):
+    print tp
     if tp[0] == "event":
         return "event-%s-%s" % (qid, tp[1])
     elif tp[0] == "expired":
@@ -231,8 +232,7 @@ def parse_quest_tp(qid, tp):
             return "expired-timer-%s-%s" % (qid, tp[2])
     elif tp[0] == "button":
         return "button-%s-%s" % (qid, tp[1])
-    else:
-        return "-".join(tp)
+    return "-".join(tp)
 
 class QuestsAdmin(ConstructorModule):
     def register(self):
