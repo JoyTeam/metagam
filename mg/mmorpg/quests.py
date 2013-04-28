@@ -224,7 +224,6 @@ class CharQuest(object):
         return self.quests.finished.get(self.qid)
 
 def parse_quest_tp(qid, tp):
-    print tp
     if tp[0] == "event":
         return "event-%s-%s" % (qid, tp[1])
     elif tp[0] == "expired":
