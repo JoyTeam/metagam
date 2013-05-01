@@ -1439,7 +1439,7 @@ class Quests(ConstructorModule):
                                         ev = "event-%s-%s" % (target_quest, target_event)
                                         args = cmd[3]
                                         if "char" in args:
-                                            char_id = utf2str(unicode(self.call("script.evaluate-expression", args["char"])))
+                                            char_id = utf2str(unicode(self.call("script.evaluate-expression", args["char"], globs=kwargs, description=lambda: self._("target character for call"))))
                                             target_char = self.character(char_id)
                                             if target_char.valid:
                                                 if debug:
@@ -1653,22 +1653,22 @@ class Quests(ConstructorModule):
                                     elif cmd_code == "modifier":
                                         mid = cmd[1]
                                         op = cmd[2]
-                                        modval = self.call("script.evaluate-expression", cmd[4]) if len(cmd) >= 5 else 1
+                                        modval = self.call("script.evaluate-expression", cmd[4], globs=kwargs, description=lambda: self._("modifier value")) if len(cmd) >= 5 else 1
                                         timeout = intz(self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description))
                                         if timeout is None:
                                             if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("setting modifier '{modifier}' infinitely").format(modifier=mid), cls="quest-action", indent=indent+2)
+                                                self.call("debug-channel.character", char, lambda: self._("setting modifier '{modifier}'={modval} infinitely").format(modifier=mid, modval=modval), cls="quest-action", indent=indent+2)
                                             char.modifiers.add(mid, modval, None)
                                         elif timeout > 0:
                                             if timeout > 100e6:
                                                 timeout = 100e6
                                             if op == "add":
                                                 if debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("adding modifier '{modifier}' for {sec} sec").format(modifier=mid, sec=timeout), cls="quest-action", indent=indent+2)
+                                                    self.call("debug-channel.character", char, lambda: self._("adding modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
                                                 char.modifiers.add(mid, modval, self.now(timeout))
                                             elif op == "prolong":
                                                 if debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("prolonging modifier '{modifier}' for {sec} sec").format(modifier=mid, sec=timeout), cls="quest-action", indent=indent+2)
+                                                    self.call("debug-channel.character", char, lambda: self._("prolonging modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
                                                 char.modifiers.prolong(mid, modval, timeout)
                                     elif cmd_code == "dialog":
                                         if debug:

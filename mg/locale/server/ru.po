@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-04-21 12:04+0300\n"
+"PO-Revision-Date: 2013-05-01 22:29+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -9495,8 +9495,8 @@ msgstr "Короткий удар"
 msgid "actionname///Strike"
 msgstr "Удар"
 
-msgid "adding modifier '{modifier}' for {sec} sec"
-msgstr "установка модификатора \"{modifier}\" на {sec} сек"
+msgid "adding modifier '{modifier}'={modval} for {sec} sec"
+msgstr "установка модификатора \"{modifier}\"={modval} на {sec} сек"
 
 msgid "artifical intelligence algorithms"
 msgstr "алгоритмы искусственного интеллекта"
@@ -10034,6 +10034,9 @@ msgstr "разрешить"
 msgid "moderation///reject"
 msgstr "отклонить"
 
+msgid "modifier value"
+msgstr "значение модификатора"
+
 msgid "money///Amount must be greater than 0"
 msgstr "Сумма должна быть больше 0"
 
@@ -10231,8 +10234,8 @@ msgstr "не опубликован"
 msgid "projstatus///published"
 msgstr "опубликован"
 
-msgid "prolonging modifier '{modifier}' for {sec} sec"
-msgstr "продление модификатора \"{modifier}\" на {sec} сек"
+msgid "prolonging modifier '{modifier}'={modval} for {sec} sec"
+msgstr "продление модификатора \"{modifier}\"={modval} на {sec} сек"
 
 msgid "public offer, terms and conditions"
 msgstr "публичная оферта, условия использования"
@@ -10517,8 +10520,8 @@ msgstr "включена"
 msgid "service///inactive"
 msgstr "неактивна"
 
-msgid "setting modifier '{modifier}' infinitely"
-msgstr "установка модификатора \"{modifier}\" навсегда"
+msgid "setting modifier '{modifier}'={modval} infinitely"
+msgstr "установка модификатора \"{modifier}\"={modval} навсегда"
 
 msgid "setting timer '{timer}' for {sec} sec"
 msgstr "установка таймера \"{timer}\" на {sec} сек"
@@ -10594,6 +10597,9 @@ msgstr "забираем {quantity} предметов с точным ДНК \"
 
 msgid "taking {quantity} items with type '{type}' and any DNA ({result})"
 msgstr "забираем {quantity} предметов с типом \"{type}\" и любым ДНК ({result})"
+
+msgid "target character for call"
+msgstr "целевой персонаж для call"
 
 msgid "telegrams menu///Post"
 msgstr "Почта"
