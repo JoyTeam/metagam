@@ -127,6 +127,8 @@ class MemberModifiers(Module):
         for ent in self._mods.get("mods"):
             kind = ent.get("kind")
             val = ent.get("value")
+            if type(val) != int and type(val) != float:
+                val = floatz(val)
             till = ent.get("till")
             if till:
                 if now is None:
