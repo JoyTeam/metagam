@@ -210,7 +210,7 @@ class CombatInterfaceAdmin(mg.constructor.ConstructorModule):
                 target = participants[1]
                 attack = random.choice(attacks)
                 max_hp = random.randrange(50, 10000)
-                damage = random.randrange(30, max_hp - 20)
+                damage = random.randrange(20, max_hp - 20)
                 hp = random.randrange(0, max_hp - damage)
                 if random.random() < 0.2:
                     cls = "combat-log-important"
