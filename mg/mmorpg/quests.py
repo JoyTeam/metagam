@@ -1497,6 +1497,7 @@ class Quests(ConstructorModule):
                                         if cmd[1]:
                                             item_type = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                             it_obj = self.item_type(item_type)
+                                            print "quantity=%s, fractions=%s" % (quantity, fractions)
                                             if fractions is not None:
                                                 if fractions >= 1:
                                                     max_fractions = it_obj.get("fractions", 0)
@@ -1506,6 +1507,7 @@ class Quests(ConstructorModule):
                                                 else:
                                                     deleted = 0
                                             elif quantity is None or quantity >= 1:
+                                                print "quantity=%s" % quantity
                                                 deleted = char.inventory.take_type(item_type, quantity, "quest.take", quest=quest, any_dna=True)
                                             else:
                                                 deleted = 0
@@ -1526,7 +1528,10 @@ class Quests(ConstructorModule):
                                                 raise AbortHandler()
                                         elif cmd[2]:
                                             dna = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
-                                            it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
+                                            if quantity is None or quantity >= 1:
+                                                it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
+                                            else:
+                                                deleted = 0
                                             if debug:
                                                 it_obj = self.item_type(dna)
                                                 if it_obj.valid():
