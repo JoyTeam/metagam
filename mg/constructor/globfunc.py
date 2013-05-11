@@ -165,6 +165,8 @@ class GlobalFunctionsAdmin(ConstructorModule):
                     if fn["id"] == fn_id:
                         func = fn.copy()
                         break
+                if func is None:
+                    self.call("admin.redirect", "globfunc/editor")
             # Available interfaces
             if func.get("custom"):
                 function_types = []
