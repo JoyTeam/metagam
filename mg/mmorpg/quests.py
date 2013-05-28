@@ -1532,8 +1532,8 @@ class Quests(ConstructorModule):
                                                 it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
                                             else:
                                                 deleted = 0
-                                            if debug:
                                                 it_obj = self.item_type(dna)
+                                            if debug:
                                                 if it_obj.valid():
                                                     name = it_obj.name
                                                 else:
