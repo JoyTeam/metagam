@@ -1530,6 +1530,8 @@ class Quests(ConstructorModule):
                                             dna = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
                                             if quantity is None or quantity >= 1:
                                                 it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
+                                                if it_obj is None:
+                                                    it_obj = self.item_type(dna)
                                             else:
                                                 deleted = 0
                                                 it_obj = self.item_type(dna)
