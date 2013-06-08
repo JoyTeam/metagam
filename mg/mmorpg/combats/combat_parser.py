@@ -207,7 +207,7 @@ class CombatStatement(Parsing.Nonterm):
         "%reduce action Expr Expr ExprAttrs"
         for k, v in attrs.val.iteritems():
             if not re_valid_attribute_code.match(k):
-                raise Parsing.SyntaxError(any_obj.script_parser._("'{obj}' has no attribute '{attr}'").format(obj="action", attr=k))
+                raise Parsing.SyntaxError(cmd.script_parser._("'{obj}' has no attribute '{attr}'").format(obj="action", attr=k))
         args = {
             "source": source.val,
             "attrs": attrs.val
@@ -225,7 +225,7 @@ class CombatStatement(Parsing.Nonterm):
         text = cmd.script_parser.parse_text(text.val, cmd.script_parser._("Random actions list"))
         for k, v in attrs.val.iteritems():
             if not re_valid_attribute_code.match(k):
-                raise Parsing.SyntaxError(any_obj.script_parser._("'{obj}' has no attribute '{attr}'").format(obj="randomaction", attr=k))
+                raise Parsing.SyntaxError(cmd.script_parser._("'{obj}' has no attribute '{attr}'").format(obj="randomaction", attr=k))
         self.val = ["randomaction", source.val, text, attrs.val]
 
     def reduceGiveTurn(self, cmd, member):
