@@ -489,7 +489,7 @@ class CombatScripts(ConstructorModule):
                     raise ScriptRuntimeError(self._("Source '%s' is not a combat member") % self.call("script.unparse-expression", source), env)
                 targets = source.targets
                 if not targets:
-                    raise ScriptRuntimeError(self._("Targets list is empty") % self.call("script.unparse-expression", targets), env)
+                    raise ScriptRuntimeError(self._("Targets list '%s' is empty") % self.call("script.unparse-expression", targets), env)
                 action = CombatAction(combat)
                 action.set_code(tp)
                 for tid in targets:
