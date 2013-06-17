@@ -510,6 +510,10 @@ class CombatScripts(ConstructorModule):
                 self.combat_debug(combat, lambda: self._("executing turn order command: {cmd}").format(cmd=cmd), cls="combat-action", indent=indent)
             elif st_cmd == "randomaction":
                 source = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of combat action source"))
+                try:
+                    source.is_a_combat_member()
+                except AttributeError:
+                    raise ScriptRuntimeError(self._("'%s' is not a combat member") % self.call("script.unparse-expression", st[1]), env)
                 actions = self.call("script.evaluate-text", st[2], globs=globs, description=lambda: self._("Evaluation of random actions list"))
                 attrs = st[3]
                 actions = re_comma.split(actions)
