@@ -12,6 +12,7 @@ use LWP::UserAgent;
 my $inst = mg::instance->new;
 
 while (1) {
+    sleep 15 + int(rand(5));
 
     # Load list of running instances
     my $ip = $inst->conf->lget('global', 'addr') or die "global.addr not specified in metagam.conf\n";
@@ -61,6 +62,4 @@ while (1) {
             }
         }
     }
-
-    sleep 15 + int(rand(5));
 }
