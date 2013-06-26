@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-05-01 22:29+0300\n"
+"PO-Revision-Date: 2013-06-17 12:18+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -290,6 +290,9 @@ msgstr "Возможность вручную создавать новые пр
 
 msgid "Ability to create special parameters of characters 'classes' and require player to select a class on character creation"
 msgstr "Возможность создавать специальные параметры персонажей - \"классы\" - и требовать от игрока выбирать класс при создании персонажа"
+
+msgid "Ability to place static visual objects to the locations"
+msgstr "Возможность размещать статические визуальные объекты на локациях"
 
 msgid "Ability to play sounds in the game"
 msgstr "Возможность воспроизводить звуки в игре"
@@ -4698,6 +4701,9 @@ msgstr "Документация на локации"
 msgid "Locations editor"
 msgstr "Редактор локаций"
 
+msgid "Locations objects"
+msgstr "Объекты на локациях"
+
 msgid "Locations parameters"
 msgstr "Параметры локаций"
 
@@ -5758,6 +5764,9 @@ msgstr "У объекта \"{val}\" нет атрибута \"{att}\""
 
 msgid "Object '{val}' has no attributes"
 msgstr "У объекта \"{val}\" нет атрибутов"
+
+msgid "Objects"
+msgstr "Объекты"
 
 msgid "Odd number of coordinates"
 msgstr "Нечётное количество координат"
@@ -7679,6 +7688,9 @@ msgstr "Статический список"
 msgid "Static objects"
 msgstr "Статические объекты"
 
+msgid "Static objects on the locations"
+msgstr "Статические объекты на локациях"
+
 msgid "Static storage"
 msgstr "Статическое хранилище"
 
@@ -7874,8 +7886,9 @@ msgstr "Целевая локация"
 msgid "Target with given id not found"
 msgstr "Цель с данным идентификатором не найдена"
 
-msgid "Targets list is empty"
-msgstr "Список целей пуст"
+#, python-format
+msgid "Targets list '%s' is empty"
+msgstr "Список целей '%s' пуст"
 
 msgid "Targets number limit"
 msgstr "Ограничение числа целей"
@@ -7929,6 +7942,10 @@ msgstr "Тест"
 
 msgid "Test delivery (to the administrator)"
 msgstr "Тестовая доставка (администратору)"
+
+#, fuzzy
+msgid "Test error"
+msgstr "Ошибка безопасности"
 
 msgid "Text color in the 'About' and 'News' blocks"
 msgstr "Цвет текста в блоках \"Об игре\" и \"Новости\""
@@ -8218,6 +8235,9 @@ msgstr "Этот магазин продаёт товары"
 
 msgid "This slot is currently unavailable"
 msgstr "Этот слот в данный момент недоступен"
+
+msgid "This type of location visualization is not supported by location objects subsystem"
+msgstr "Этот тип визуализации локации не поддерживается подсистемой объектов на локациях"
 
 msgid "This unsubscription link has expired already"
 msgstr "Эта ссылка на отписку уже устарела"
@@ -11345,8 +11365,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ msgstr "Демонстрационный совет"
 #~ msgid "Look to the right to read some recommendations"
 #~ msgstr "Смотрите направо, чтобы прочитать полезные рекомендации"
-#~ msgid "Security error"
-#~ msgstr "Ошибка безопасности"
 #~ msgid "Socio interface design package must contain an HTML file"
 #~ msgstr "Пакет с оформлением социалки должен содержать HTML-файл"
 #~ msgid ""

@@ -356,12 +356,13 @@ Form = Ext.extend(AdminResponsePanel, {
             form_id: form_id,
             changeHandler: data.changeHandler,
             successHandler: data.successHandler,
-                javascripts: javascripts,
-                showHandler: function(form) {
+            javascripts: javascripts,
+            showHandler: function(form) {
                 for (var i = 0; i < form.javascripts.length; i++) {
                     eval(form.javascripts[i]);
                 }
-            }
+            },
+            errorHandler: data.errorHandler
         });
         this.add(form);
         this.enforce_conditions(true);
@@ -419,6 +420,11 @@ Form = Ext.extend(AdminResponsePanel, {
             },
             failure: function(f, action) {
                 if (action.failureType === Ext.form.Action.SERVER_INVALID) {
+                    if (f.errorHandler) {
+                        if (f.errorHandler(f, action.result)) {
+                            return;
+                        }
+                    }
                     var txt = action.result.errormsg || action.result.errmsg || action.result.error;
                     if (txt) {
                         Ext.Msg.alert(gt.gettext('Error'), txt);

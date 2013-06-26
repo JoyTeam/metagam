@@ -91,6 +91,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.core.emails.EmailSender", "mg.constructor.emails.EmailSender"])
             if self.conf("module.sound"):
                 lst.extend(["mg.constructor.sound.Sound"])
+            if self.conf("module.locobjects"):
+                lst.extend(["mg.mmorpg.locobjects.LocationObjects"])
         return lst
 
     def modules_list(self, modules):
@@ -153,6 +155,11 @@ class ConstructorProject(Module):
             "id": "sound",
             "name": self._("Sound"),
             "description": self._("Ability to play sounds in the game"),
+        })
+        modules.append({
+            "id": "locobjects",
+            "name": self._("Static objects on the locations"),
+            "description": self._("Ability to place static visual objects to the locations"),
         })
 
     def project_title(self):

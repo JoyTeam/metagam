@@ -150,7 +150,7 @@ class SoundAdmin(mg.constructor.ConstructorModule):
     def locations_links(self, location, links):
         req = self.req()
         if req.has_access("music.locations"):
-            links.append({"hook": "locations/music/%s" % location.uuid, "text": self._("Music"), "order": 30})
+            links.append({"hook": "locations/music/%s" % location.uuid, "text": self._("Music"), "order": 40})
 
     def permissions_list(self, perms):
         perms.append({"id": "music.playlists", "name": self._("Configuration of music playlists")})

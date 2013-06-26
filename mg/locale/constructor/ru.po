@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2013-03-23 19:43+0300\n"
+"PO-Revision-Date: 2013-06-17 01:20+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -24,8 +24,17 @@ msgstr "Прервать мастер"
 msgid "Action is not selected"
 msgstr "Действие не выбрано"
 
+msgid "Active zone vertices"
+msgstr "Вершины активной зоны"
+
 msgid "Add arbitrary image"
 msgstr "Добавить произвольное изображение"
+
+msgid "Add new visual object"
+msgstr "Добавить новый визуальный объект"
+
+msgid "Add new visual object to the location"
+msgstr "Добавить новый визуальный объект на локацию"
 
 msgid "Apply"
 msgstr "Применить"
@@ -35,6 +44,12 @@ msgstr "Обзор..."
 
 msgid "Buy MM$"
 msgstr "Купить MM$"
+
+msgid "Center X"
+msgstr "Центр X"
+
+msgid "Center Y"
+msgstr "Центр Y"
 
 msgid "Character image"
 msgstr "Образ персонажа"
@@ -133,6 +148,9 @@ msgstr "Не выбрано: %s"
 msgid "Number of corrdinates must not be odd"
 msgstr "Количество координат не может быть нечётным"
 
+msgid "Object"
+msgstr "Объект"
+
 msgid "Or provide image URL"
 msgstr "Или укажите его URL"
 
@@ -220,6 +238,9 @@ msgstr "Загрузите изображение"
 
 msgid "Uploading data..."
 msgstr "Отправка данных..."
+
+msgid "Visibility condition"
+msgstr "Условие видимости"
 
 msgid "Your action is already being sent to server"
 msgstr "Ваше действие уже отправляется на сервер"
