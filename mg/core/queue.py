@@ -170,7 +170,7 @@ class QueueRunner(Module):
                             self.debug("No tasks in the queue")
                             return
                         task = tasks[0]
-                        self.debug("Taking task %s", task)
+                        self.debug("Taking task %s", str(task))
                         self.sql_write.do("update queue_tasks set locked=?, locked_till=? where id=?", instid, self.now(86400), task["id"])
                         ctl = self.sql_write.selectall_dict("select * from queue_tasks where id=?", task["id"])
                     finally:
