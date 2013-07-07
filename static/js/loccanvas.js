@@ -56,6 +56,14 @@ wait(['location', 'objects', 'hints'], function () {
             LocObjectsManager.superclass.constructor.call(self);
             self.clear();
             self.canvas = document.getElementById('location-canvas');
+            if (!self.canvas) {
+                return;
+            }
+            if (!LocCanvas.width) {
+                LocCanvas.width = self.canvas.width;
+                LocCanvas.height = self.canvas.height;
+                LocCanvas.scale = 1.0;
+            }
             self.canvasEl = Ext.get(self.canvas);
             try { G_vmlCanvasManager.initElement(canvas); } catch (e) {}
             self.ctx = self.canvas.getContext('2d');
