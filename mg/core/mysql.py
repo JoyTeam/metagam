@@ -243,9 +243,12 @@ class MySQLConnection(object):
 
     def disconnect(self):
         "Disconnect from the cluster"
-        if self.dbh:
-            self.dbh.close()
-            self.dbh = None
+        try:
+            if self.dbh:
+                self.dbh.close()
+                self.dbh = None
+        except Exception as e:
+            logging.exception(e)
 
     def _close_result(self):
         if self.result is not None and isinstance(self.result, client.ResultSet):

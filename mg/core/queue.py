@@ -146,71 +146,87 @@ class QueueRunner(Module):
         self.queue_task_running = False
 
     def queue_task_runner(self):
+        self.debug("Queue task runner")
         inst = self.app().inst
         instid = inst.instid
         cls = inst.cls
         try:
-            # Free my tasks
-            self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-1 where cls=? and locked=?", cls, instid)
-            # Free tasks locked too long
-            self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-1 where locked_till<?", self.now())
-            while True:
-                lock = self.lock(["queue"])
-                if not lock.trylock():
-                    return
-                try:
-                    # Find task to run
-                    tasks = self.sql_write.selectall_dict("select * from queue_tasks where cls=? and locked='' and at<=? order by priority desc limit 1", cls, self.now())
-                    if not tasks:
+            try:
+                self.debug("Updating queue_tasks")
+                # Free my tasks
+                self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-1 where cls=? and locked=?", cls, instid)
+                # Free tasks locked too long
+                self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-1 where locked_till<?", self.now())
+                while True:
+                    lock = self.lock(["queue"])
+                    if not lock.trylock():
+                        self.debug("Queue lock not acquired")
                         return
-                    task = tasks[0]
-                    self.sql_write.do("update queue_tasks set locked=?, locked_till=? where id=?", instid, self.now(86400), task["id"])
-                    ctl = self.sql_write.selectall_dict("select * from queue_tasks where id=?", task["id"])
-                finally:
-                    lock.unlock()
-                # Execute task
-                app_tag = str(task["app"])
-                hook = str(task["hook"])
-                args = json.loads(task["data"])
-                app = self.app().inst.appfactory.get_by_tag(app_tag)
-                if app is None:
-                    self.info("Found queue event for unknown application %s", app_tag)
-                    main_app = self.main_app()
-                    if main_app.call("project.missing", app_tag):
-                        self.info("Removing missing project %s", app_tag)
-                        main_app.call("project.cleanup", app_tag)
-                else:
-                    schedule = args.get("schedule")
-                    at = args.get("at")
-                    if schedule:
-                        del args["schedule"]
-                        if at:
-                            del args["at"]
+                    self.debug("Queue lock acquired")
                     try:
-                        app.call(hook, **args)
-                        success = True
-                    except Exception as e:
-                        self.exception(e)
-                        success = False
-                    if success:
-                        # Reschedule finished task to later time
-                        if schedule:
-                            try:
-                                sched = self.obj(Schedule, app_tag)
-                                entries = sched.get("entries")
-                            except ObjectNotFoundException:
-                                entries = {}
-                            params = entries.get(hook)
-                            if params is not None:
-                                self.call("queue.schedule_task", task.get("cls"), app_tag, hook, params)
-                        self.sql_write.do("delete from queue_tasks where id=?", task["id"])
+                        # Find task to run
+                        tasks = self.sql_write.selectall_dict("select * from queue_tasks where cls=? and locked='' and at<=? order by priority desc limit 1", cls, self.now())
+                        if not tasks:
+                            self.debug("No tasks in the queue")
+                            return
+                        task = tasks[0]
+                        self.debug("Taking task %s", str(task))
+                        self.sql_write.do("update queue_tasks set locked=?, locked_till=? where id=?", instid, self.now(86400), task["id"])
+                        ctl = self.sql_write.selectall_dict("select * from queue_tasks where id=?", task["id"])
+                    finally:
+                        self.debug("Taking tasks finished")
+                        lock.unlock()
+                        self.debug("Queue lock released")
+                    # Execute task
+                    app_tag = str(task["app"])
+                    hook = str(task["hook"])
+                    args = json.loads(task["data"])
+                    self.debug("Executing %s.%s(%s)", app_tag, hook, args)
+                    app = self.app().inst.appfactory.get_by_tag(app_tag)
+                    if app is None:
+                        self.info("Found queue event for unknown application %s", app_tag)
+                        main_app = self.main_app()
+                        if main_app.call("project.missing", app_tag):
+                            self.info("Removing missing project %s", app_tag)
+                            main_app.call("project.cleanup", app_tag)
                     else:
-                        self.error("Failed task %s (%s in application %s)", task["id"], task["hook"], task["app"])
-                        self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-10, at=? where id=? and locked=?", self.now(5), task["id"], instid)
+                        schedule = args.get("schedule")
+                        at = args.get("at")
+                        if schedule:
+                            del args["schedule"]
+                            if at:
+                                del args["at"]
+                        try:
+                            app.call(hook, **args)
+                            success = True
+                        except Exception as e:
+                            self.exception(e)
+                            success = False
+                        self.debug("Queue task executed with result: %s", success)
+                        if success:
+                            # Reschedule finished task to later time
+                            if schedule:
+                                try:
+                                    sched = self.obj(Schedule, app_tag)
+                                    entries = sched.get("entries")
+                                except ObjectNotFoundException:
+                                    entries = {}
+                                params = entries.get(hook)
+                                if params is not None:
+                                    self.call("queue.schedule_task", task.get("cls"), app_tag, hook, params)
+                            self.sql_write.do("delete from queue_tasks where id=?", task["id"])
+                        else:
+                            self.error("Failed task %s (%s in application %s)", task["id"], task["hook"], task["app"])
+                            self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-10, at=? where id=? and locked=?", self.now(5), task["id"], instid)
+                        self.debug("Queue task processing finished")
+            except Exception as e:
+                self.exception(e)
         finally:
             self.queue_task_running = False
+            self.debug("Quitting queue runner")
 
     def fastidle(self):
+        self.debug("Fastidle. queue_task_running=%s", self.queue_task_running)
         if not self.queue_task_running:
             self.queue_task_running = True
             Tasklet.new(self.queue_task_runner)()
