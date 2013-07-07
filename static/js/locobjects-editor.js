@@ -77,7 +77,7 @@ VisualObject.prototype.render = function(form) {
                     id: 'elem_polygon-' + this.id,
                     items: { 
                         id: 'form-field-polygon-' + this.id,
-                        fieldLabel: gt.gettext('Active zone vertices'),
+                        fieldLabel: gt.gettext('Active zone vertices (relative to the object pivot)'),
                         readOnly: true,
                         name: 'polygon-' + this.id,
                         value: this.getPolygonStr(),
@@ -327,6 +327,9 @@ VisualObject.prototype.update_form = function() {
 
 VisualObject.prototype.loadImage = function () {
     var obj = this;
+    if (!obj.image) {
+        return;
+    }
     var img = new Image();
     img.onload = function () {
         obj.img = img;
@@ -395,6 +398,16 @@ LocObjectsEditor.init = function(submit_url, width, height) {
                         LocObjectsEditor.add_object();
                     }
                 }
+            },
+            {
+                text: gt.gettext('Add new clickable area'),
+                xtype: 'button',
+                icon: '/st-mg/icons/polygon.png',
+                listeners: {
+                    click: function() {
+                        LocObjectsEditor.add_area();
+                    }
+                }
             }
         ],
         errorHandler: function (form, error) {
@@ -442,7 +455,7 @@ LocObjectsEditor.add_object = function () {
                     var cmp = Ext.getCmp('upload-window');
                     if (cmp)
                         cmp.close();
-		    var res = Ext.util.JSON.decode(action.response.responseText);
+                    var res = Ext.util.JSON.decode(action.response.responseText);
                     var obj = th.new_object();
                     th.active_object = obj;
                     obj.x = Math.floor(th.width / 2 + 0.5);
@@ -471,6 +484,36 @@ LocObjectsEditor.add_object = function () {
         ]
     });
     win.show();
+};
+
+LocObjectsEditor.add_area = function () {
+    var th = this;
+    th.cancel();
+    var cmp = Ext.getCmp('upload-window');
+    if (cmp) {
+        cmp.close();
+    }
+    var obj = th.new_object();
+    th.active_object = obj;
+    obj.x = Math.floor(th.width / 2 + 0.5);
+    obj.y = Math.floor(th.height / 2 + 0.5);
+    obj.width = 100;
+    obj.height = 100;
+    obj.visible = '1';
+    obj.action = 'none';
+    obj.render(th.form);
+    th.form.enforce_conditions(true);
+    th.form.doLayout();
+    obj.activate();
+    obj.poly.push({x: Math.floor(-obj.width / 2), y: Math.floor(-obj.height / 2)});
+    obj.poly.push({x: Math.floor(+obj.width / 2), y: Math.floor(-obj.height / 2)});
+    obj.poly.push({x: Math.floor(+obj.width / 2), y: Math.floor(+obj.height / 2)});
+    obj.poly.push({x: Math.floor(-obj.width / 2), y: Math.floor(+obj.height / 2)});
+    obj.poly.push(obj.poly[0]);
+    th.mode = undefined;
+    th.touch_active_object();
+    th.paint();
+    obj.update_form();
 };
 
 LocObjectsEditor.run = function() {

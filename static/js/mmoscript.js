@@ -456,4 +456,69 @@ MMOScript.toString = function (val) {
     return val + '';
 };
 
+/*
+ * Dynamic Value is a function(t) representing a value changing
+ * with time.
+ */
+function DynamicValue(val)
+{
+    var self = this;
+    if (typeof(val) != 'object') {
+        self.staticValue = val;
+    } else {
+        self.dynamic = true;
+        self.expr = val;
+    }
+}
+
+/*
+ * Set maximal time until evaluation of the expression
+ * should be performed.
+ */
+DynamicValue.prototype.setTill = function (till) {
+    var self = this;
+    self.till = till;
+    self.tillDefined = true;
+};
+
+/*
+ * Forget expression if "till" is set before specified time
+ */
+DynamicValue.prototype.forget = function (before) {
+    var self = this;
+    if (self.dynamic && self.tillDefined && self.till <= before) {
+        self.staticValue = self.evaluate(self.till);
+        self.dynamic = false;
+    }
+};
+
+/*
+ * Evaluate and return current value
+ */
+DynamicValue.prototype.evaluate = function (t) {
+    var self = this;
+    if (self.dynamic) {
+        if (self.tillDefined && t > self.till) {
+            t = self.till;
+        }
+        var env = {
+            globs: {
+                t: t
+            }
+        };
+        return MMOScript.evaluate(self.expr, env);
+    } else {
+        return self.staticValue;
+    }
+};
+
+/*
+ * Evaluate and forget dynamic expression if "till" time passed
+ */
+DynamicValue.prototype.evaluateAndForget = function (t) {
+    var self = this;
+    self.forget(t);
+    return self.evaluate(t);
+};
+
 loaded('mmoscript');

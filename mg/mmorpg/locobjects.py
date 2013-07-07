@@ -8,13 +8,6 @@ re_del = re.compile(r'del/(.+)')
 re_action = re.compile(r'^(u_[a-z_][a-z0-9_]*)/action/([a-z0-9_]+)(?:|/(.+))$', re.IGNORECASE)
 re_polygon_param = re.compile(r'^polygon-(\d+)$')
 
-class LocationObjects(ConstructorModule):
-    def register(self):
-        pass
-
-    def child_modules(self):
-        return ["mg.mmorpg.locobjects.LocationObjectsAdmin"]
-
 class LocationObjectsAdmin(ConstructorModule):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
@@ -26,7 +19,8 @@ class LocationObjectsAdmin(ConstructorModule):
     def links(self, location, links):
         req = self.req()
         if req.has_access("locations.objects"):
-            links.append({"hook": "locations/objects/%s" % location.uuid, "text": self._("Objects"), "order": 30})
+            if location.image_type == "canvas":
+                links.append({"hook": "locations/objects/%s" % location.uuid, "text": self._("Objects"), "order": 30})
         
     def permissions_list(self, perms):
         perms.append({"id": "locations.objects", "name": self._("Locations objects")})
@@ -39,7 +33,7 @@ class LocationObjectsAdmin(ConstructorModule):
         location = self.location(req.args)
         if not location.valid():
             self.call("admin.redirect", "locations/editor")
-        if location.image_type == "static":
+        if location.image_type == "canvas":
             image = location.db_location.get("image_static")
             width = location.db_location.get("image_static_w")
             height = location.db_location.get("image_static_h")
@@ -79,9 +73,7 @@ class LocationObjectsAdmin(ConstructorModule):
                         obj["height"] = intz(height)
                     # image
                     image = req.param("image-%d" % obj_id)
-                    if not image:
-                        errors["error"] = self._("Image not specified")
-                    else:
+                    if image:
                         obj["image"] = image
                     # polygon data
                     obj["polygon"] = req.param("polygon-%d" % obj_id)
@@ -186,9 +178,39 @@ class LocationObjectsAdmin(ConstructorModule):
         self.call("admin.response_template", "admin/locations/objects.html", vars)
 
     def valid_transitions(self, db_loc, valid_transitions):
-        if db_loc.get("image_type") == "static":
+        if db_loc.get("image_type") == "canvas":
             if db_loc.get("static_objects"):
                 for obj in db_loc.get("static_objects"):
                     if obj.get("action") == "move" and obj.get("loc"):
                         valid_transitions.add(obj.get("loc"))
 
+class LocationObjects(ConstructorModule):
+    def register(self):
+        self.rhook("location.render", self.location_render)
+
+    def child_modules(self):
+        return ["mg.mmorpg.locobjects.LocationObjectsAdmin"]
+
+    def location_render(self, character, location, vars):
+        if location.image_type == "canvas":
+            loc_init = vars.get("loc_init", [])
+            vars["loc_init"] = loc_init
+            loc_init.append("LocObjects.init();");
+            loc_init.append("LocObjects.setBackgroundImage('%s');" % location.db_location.get("image_static"))
+            db_loc = location.db_location
+            if db_loc.get("static_objects"):
+                ident = 0
+                order = 0
+                for obj in db_loc.get("static_objects"):
+                    ident += 1
+                    order += 1
+                    loc_init.append("LocObjects.addStaticObject(%s);" % json.dumps({
+                        "id": ident,
+                        "width": obj["width"],
+                        "height": obj["height"],
+                        "position": [obj["x"], order, obj["y"]],
+                        "image": obj.get("image"),
+                        "polygon": obj["polygon"],
+                        "hint": obj["hint"],
+                    }))
+            loc_init.append("LocObjects.run();");

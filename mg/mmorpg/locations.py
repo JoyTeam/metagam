@@ -39,6 +39,7 @@ class LocationsAdmin(ConstructorModule):
         files.append({"filename": "location-static.html", "description": self._("Static image location interface"), "doc": "/doc/locations"})
         files.append({"filename": "location-multistatic.html", "description": self._("Multiple static images location interface"), "doc": "/doc/locations"})
         files.append({"filename": "location-transitions.html", "description": self._("List of transitions in the location"), "doc": "/doc/locations"})
+        files.append({"filename": "location-canvas.html", "description": self._("HTML5 Canvas location interface"), "doc": "/doc/locations"})
 
     def links(self, location, links):
         req = self.req()
@@ -107,6 +108,7 @@ class LocationsAdmin(ConstructorModule):
         lst = [
             "mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin",
             "mg.mmorpg.locations.LocationsMultiStaticImages", "mg.mmorpg.locations.LocationsMultiStaticImagesAdmin",
+            "mg.mmorpg.locations.LocationsCanvas", "mg.mmorpg.locations.LocationsCanvasAdmin",
             "mg.mmorpg.locparams.LocationParams", "mg.mmorpg.locfunctions.LocationFunctions"]
         return lst
 
@@ -497,6 +499,7 @@ class Locations(ConstructorModule):
             },
             "update_script": None if req.param("noupdate") else self.update_js(character),
             "debug_ext": self.conf("debug.ext"),
+            "loc_modules": set(["parent", "hints", "location"]),
         }
         self.call("game.add_common_vars", vars)
         transitions = []
@@ -508,7 +511,11 @@ class Locations(ConstructorModule):
         vars["transitions"] = transitions
         design = self.design("gameinterface")
         self.call("locfunctions.menu", character, vars)
+        self.call("location.render", character, location, vars)
         html = self.call("design.parse", design, "location-layout.html", None, vars)
+        vars["loc_modules"] = [{"name": mod} for mod in vars["loc_modules"]]
+        if len(vars["loc_modules"]):
+            vars["loc_modules"][-1]["lst"] = True
         self.call("game.response_internal", "location.html", vars, html)
 
     def update_js(self, character):
@@ -700,18 +707,73 @@ class LocationsStaticImages(ConstructorModule):
                 "image": location.db_location.get("image_static"),
             }
             vars["zones"] = zones
-            # stretching
-            loc_init = vars.get("loc_init", [])
-            vars["loc_init"] = loc_init
-            if location.db_location.get("image_static_stretch"):
-                margin_x = location.db_location.get("image_static_margin_x", 200)
-                margin_y = location.db_location.get("image_static_margin_y", 80)
-                loc_init.append("Loc.margins(%d, %d);" % (margin_x, margin_y))
-                width = location.db_location.get("image_static_w", 1)
-                height = location.db_location.get("image_static_h", 1)
-                loc_init.append("Loc.stretch(%d, %d);" % (width, height))
+            self.render_stretch(location, vars)
             design = self.design("gameinterface")
             raise Hooks.Return(self.call("design.parse", design, "location-static.html", None, vars))
+
+    def render_stretch(self, location, vars):
+        loc_init = vars.get("loc_init", [])
+        vars["loc_init"] = loc_init
+        if location.db_location.get("image_static_stretch"):
+            margin_x = location.db_location.get("image_static_margin_x", 200)
+            margin_y = location.db_location.get("image_static_margin_y", 80)
+            loc_init.append("Loc.margins(%d, %d);" % (margin_x, margin_y))
+            width = location.db_location.get("image_static_w", 1)
+            height = location.db_location.get("image_static_h", 1)
+            loc_init.append("Loc.stretch(%d, %d);" % (width, height))
+
+# HTML5 Canvas
+
+class LocationsCanvas(LocationsStaticImages):
+    def register(self):
+        self.rhook("locations.render", self.render)
+
+    def render(self, location, vars):
+        if location.image_type == "canvas":
+            vars["loc"] = {
+                "id": location.uuid,
+                "image": location.db_location.get("image_static"),
+                "image_w": location.db_location.get("image_static_w"),
+                "image_h": location.db_location.get("image_static_h"),
+            }
+            vars["loc_modules"].add("loccanvas");
+            design = self.design("gameinterface")
+            req = self.req()
+            if req.param("saved"):
+                vars["saved"] = {"text": self._("Location data saved successfully")}
+            self.render_stretch(location, vars)
+            raise Hooks.Return(self.call("design.parse", design, "location-canvas.html", None, vars))
+
+class LocationsCanvasAdmin(ConstructorModule):
+    def register(self):
+        self.rhook("admin-locations.editor-form-render", self.form_render, priority=-5)
+        self.rhook("admin-locations.editor-form-validate", self.form_validate)
+        self.rhook("admin-locations.render", self.render)
+
+    def form_render(self, db_loc, fields):
+        for fld in fields:
+            if fld.get("name") == "image_type":
+                fld["values"].append(("canvas", self._("HTML5 Canvas")))
+
+    def form_validate(self, db_loc, flags, errors):
+        req = self.req()
+        if db_loc.get("image_static"):
+            flags["old_image_static"] = db_loc.get("image_static")
+        if req.param("v_image_type") == "canvas":
+            flags["image_type_valid"] = True
+
+    def render(self, location, fields):
+        if location.image_type == "canvas":
+            vars = {
+                "loc": {
+                    "id": location.uuid,
+                    "image": location.db_location.get("image_static"),
+                }
+            }
+            req = self.req()
+            if req.param("saved"):
+                vars["saved"] = {"text": self._("Location data saved successfully")}
+            fields.insert(0, {"type": "html", "html": self.call("web.parse_layout", "admin/locations/imagemap-render.html", vars)})
 
 class ImageMapEditor(ConstructorModule):
     def __init__(self, app, location, fqn="mg.mmorpg.locations.ImageMapEditor"):
@@ -832,13 +894,13 @@ class LocationsStaticImagesAdmin(ConstructorModule):
 
     def form_render(self, db_loc, fields):
         for fld in fields:
-            if fld["name"] == "image_type":
+            if fld.get("name") == "image_type":
                 fld["values"].append(("static", self._("Static image")))
-        fields.append({"name": "image_static", "type": "fileuploadfield", "label": self._("Replace location image (if necessary)") if db_loc.get("image_static") else self._("Upload location image"), "condition": "[image_type]=='static'"})
-        fields.append({"type": "header", "html": self._("Resizing"), "condition": "[image_type]=='static'"})
-        fields.append({"name": "image_static_stretch", "type": "checkbox", "label": self._("Resize image to fill entire frame"), "checked": db_loc.get("image_static_stretch"), "condition": "[image_type]=='static'"})
-        fields.append({"name": "image_static_margin_x", "label": self._("X frame margin"), "value": db_loc.get("image_static_margin_x", 200), "condition": "[image_type]=='static' && [image_static_stretch] || [image_type]=='multistatic'"})
-        fields.append({"name": "image_static_margin_y", "label": self._("Y frame margin"), "value": db_loc.get("image_static_margin_y", 80), "condition": "[image_type]=='static' && [image_static_stretch] || [image_type]=='multistatic'", "inline": True})
+        fields.append({"name": "image_static", "type": "fileuploadfield", "label": self._("Replace location image (if necessary)") if db_loc.get("image_static") else self._("Upload location image"), "condition": "[image_type]=='static' || [image_type]=='canvas'"})
+        fields.append({"type": "header", "html": self._("Resizing"), "condition": "[image_type]=='static' || [image_type]=='canvas'"})
+        fields.append({"name": "image_static_stretch", "type": "checkbox", "label": self._("Resize image to fill entire frame"), "checked": db_loc.get("image_static_stretch"), "condition": "[image_type]=='static' || [image_type]=='canvas'"})
+        fields.append({"name": "image_static_margin_x", "label": self._("X frame margin"), "value": db_loc.get("image_static_margin_x", 200), "condition": "([image_type]=='static' || [image_type]=='canvas') && [image_static_stretch] || [image_type]=='multistatic'"})
+        fields.append({"name": "image_static_margin_y", "label": self._("Y frame margin"), "value": db_loc.get("image_static_margin_y", 80), "condition": "([image_type]=='static' || [image_type]=='canvas') && [image_static_stretch] || [image_type]=='multistatic'", "inline": True})
 
     def form_validate(self, db_loc, flags, errors):
         req = self.req()
@@ -846,6 +908,7 @@ class LocationsStaticImagesAdmin(ConstructorModule):
             flags["old_image_static"] = db_loc.get("image_static")
         if req.param("v_image_type") == "static":
             flags["image_type_valid"] = True
+        if req.param("v_image_type") == "static" or req.param("v_image_type") == "canvas":
             image_data = req.param_raw("image_static")
             if image_data:
                 try:
