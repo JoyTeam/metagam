@@ -261,6 +261,7 @@ class QuestsAdmin(ConstructorModule):
 
     def design_files(self, files):
         files.append({"filename": "dialog.html", "description": self._("Quest dialog"), "doc": "/doc/quests"})
+        files.append({"filename": "quests.html", "description": self._("Quests list"), "doc": "/doc/quests"})
 
     def interface_button_action(self, btn):
         if btn.get("qevent"):
