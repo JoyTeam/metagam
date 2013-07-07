@@ -71,6 +71,11 @@ class LocationObjectsAdmin(ConstructorModule):
                         errors["error"] = self._("Invalid image height")
                     else:
                         obj["height"] = intz(height)
+                    # visible
+                    visible = req.param("visible-%d" % obj_id)
+                    if visible:
+                        char = self.character(req.user())
+                        obj["visible"] = self.call("script.admin-expression", "visible-%d" % obj_id, errors, globs={"char": char, "loc": char.location})
                     # image
                     image = req.param("image-%d" % obj_id)
                     if image:
@@ -154,6 +159,7 @@ class LocationObjectsAdmin(ConstructorModule):
                 "loc": jsencode(obj.get("loc")),
                 "url": jsencode(obj.get("url")),
                 "hint": jsencode(obj.get("hint")),
+                "visible": jsencode(self.call("script.unparse-expression", obj.get("visible", 1))),
             }
             self.call("admin-locations.map-zone-%s-render" % robj["action"], obj, robj)
             objects.append(robj)
@@ -202,9 +208,24 @@ class LocationObjects(ConstructorModule):
                 ident = 0
                 order = 0
                 for obj in db_loc.get("static_objects"):
+                    if not self.call("script.evaluate-expression", obj.get("visible", 1), globs={"char": character, "loc": location}, description=lambda: self._("Evaluation of location object visibility")):
+                        continue
                     ident += 1
                     order += 1
-                    loc_init.append("LocObjects.addStaticObject(%s);" % json.dumps({
+                    rclick = {}
+                    if obj.get("action"):
+                        rclick["action"] = obj["action"]
+                    if obj.get("loc"):
+                        rclick["loc"] = obj["loc"]
+                    if obj.get("ev"):
+                        rclick["ev"] = obj["ev"]
+                    if obj.get("globfunc"):
+                        rclick["globfunc"] = obj["globfunc"]
+                    if obj.get("specfunc"):
+                        rclick["specfunc"] = obj["specfunc"]
+                    if obj.get("url"):
+                        rclick["url"] = obj["url"]
+                    robj = {
                         "id": ident,
                         "width": obj["width"],
                         "height": obj["height"],
@@ -212,5 +233,7 @@ class LocationObjects(ConstructorModule):
                         "image": obj.get("image"),
                         "polygon": obj["polygon"],
                         "hint": obj["hint"],
-                    }))
+                        "click": rclick
+                    }
+                    loc_init.append("LocObjects.addStaticObject(%s);" % json.dumps(robj))
             loc_init.append("LocObjects.run();");
