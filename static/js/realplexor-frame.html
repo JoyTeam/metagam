@@ -94,8 +94,16 @@ Dklab_Realplexor_Loader = {
 	// Process a single part.
 	_processPart: function(part) {
 		var errors = 0;
-		
-		// Extract IDs.
+
+                // Handle time sync packet
+                if (part.time) {
+                    try {
+                        parent.onServerTime(part.time);
+                    } catch (e) {
+                    }
+                }
+
+                // Extract IDs.
 		var pairs = part.ids;
 		if (pairs == null) {
 			throw "Cannot find \"ids\" property within the response part";
@@ -149,7 +157,7 @@ Dklab_Realplexor_Loader = {
 		text = text.replace(/^[\s\S]*?(?=\[)/g, '');
 		this._log("Received response:\n" + text);
 		// Parse.
-		var parts = this._parseResponseTextIntoParts(text);
+                var parts = this._parseResponseTextIntoParts(text);
 		// Process.
 		var errors = 0;
 		for (var i = 0; i < parts.length; i++) {

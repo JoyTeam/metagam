@@ -195,7 +195,7 @@ class LocationObjects(ConstructorModule):
         self.rhook("location.render", self.location_render)
 
     def child_modules(self):
-        return ["mg.mmorpg.locobjects.LocationObjectsAdmin"]
+        return ["mg.mmorpg.locobjects.LocationObjectsAdmin", "mg.core.timesync.TimeSync"]
 
     def location_render(self, character, location, vars):
         if location.image_type == "canvas":
