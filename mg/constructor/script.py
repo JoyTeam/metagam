@@ -82,7 +82,7 @@ class ScriptEngine(ConstructorModule):
                 prio = 9
             elif cmd == '|':
                 prio = 8
-            elif cmd == '*' or cmd == '/':
+            elif cmd == '*' or cmd == '/' or cmd == '%':
                 prio = 7
             elif cmd == '+' or cmd == '-':
                 prio = 6
@@ -125,7 +125,7 @@ class ScriptEngine(ConstructorModule):
             elif cmd == '+' or cmd == '*' or cmd == "and" or cmd == "or" or cmd == "&" or cmd == "|":
                 # (a OP b) OP c == a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val))
-            elif cmd == '-' or cmd == '/' or cmd == "==" or cmd == "!=" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">" or cmd == "in":
+            elif cmd == '-' or cmd == '/' or cmd == '%' or cmd == "==" or cmd == "!=" or cmd == "<=" or cmd == ">=" or cmd == "<" or cmd == ">" or cmd == "in":
                 # (a OP b) OP c != a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val, False))
             elif cmd == '?':
@@ -286,6 +286,17 @@ class ScriptEngine(ConstructorModule):
         env.text = save_text
         return res
 
+    def isString(self, val):
+        return type(val) is str or type(val) is unicode
+
+    def toNumber(self, val):
+        if type(val) is str or type(val) is unicode:
+            return floatz(val)
+        elif type(val) is not int and type(val) is not float:
+            return 0
+        else:
+            return val
+
     def _evaluate(self, val, env):
         if type(val) is not list:
             return val
@@ -298,50 +309,117 @@ class ScriptEngine(ConstructorModule):
             # this is a real error
             raise ScriptRuntimeError(self._("Max recursion depth exceeded"), env)
         cmd = val[0]
-        if cmd == '+' or cmd == '-' or cmd == '*' or cmd == '/':
+        if cmd == '+':
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
-            # Strings concatenation
-            if cmd == '+' and (type(arg1) is str or type(arg1) is unicode) and (type(arg2) is str or type(arg2) is unicode):
+            # Strings are concatenated
+            if self.isString(arg1) and self.isString(arg2):
                 return arg1 + arg2
-            # Validating type of the left operand
-            if type(arg1) is str or type(arg1) is unicode:
-                arg1 = floatz(arg1)
-            elif type(arg1) is not int and type(arg1) is not float:
-                arg1 = 0
-            # Validating type of the right operand
-            if type(arg2) is str or type(arg2) is unicode:
-                arg2 = floatz(arg2)
-            elif type(arg2) is not int and type(arg2) is not float:
-                arg2 = 0
-            # Evaluating
-            if cmd == '+':
-                return arg1 + arg2
-            elif cmd == '-':
-                return arg1 - arg2
-            elif cmd == '*':
-                return arg1 * arg2
-            elif cmd == '/':
-                if arg2 == 0:
-                    raise ScriptRuntimeError(self._("Division by zero: '{val}' == 0").format(val=self.unparse_expression(val[2])), env)
+            # Adding None does not affect the value
+            if arg1 is None:
+                return arg2
+            if arg2 is None:
+                return arg1
+            # Vectors can be added only to vectors
+            if isinstance(arg1, Vec3):
+                if isinstance(arg2, Vec3):
+                    return Vec3(arg1.x + arg2.x, arg1.y + arg2.y, arg1.z + arg2.z)
                 else:
-                    return float(arg1) / arg2
+                    return None
+            if isinstance(arg2, Vec3):
+                return None
+            # Numeric operation
+            arg1 = self.toNumber(arg1)
+            arg2 = self.toNumber(arg2)
+            return arg1 + arg2
+        if cmd == '-':
+            if len(val) == 2:
+                arg1 = None
+                arg2 = self._evaluate(val[1], env)
+            else:
+                arg1 = self._evaluate(val[1], env)
+                arg2 = self._evaluate(val[2], env)
+            # Substracting None does not affect the value
+            if arg2 is None:
+                return arg1
+            # Vectors are substracted only from vectors
+            if isinstance(arg1, Vec3):
+                if isinstance(arg2, Vec3):
+                    return Vec3(arg1.x - arg2.x, arg1.y - arg2.y, arg1.z - arg2.z)
+                else:
+                    return None
+            if isinstance(arg2, Vec3):
+                if arg1 is None:
+                    return Vec3(-arg2.x, -arg2.y, -arg2.z)
+                else:
+                    return None
+            # Numeric operation
+            arg1 = self.toNumber(arg1)
+            arg2 = self.toNumber(arg2)
+            return arg1 - arg2
+        if cmd == '*':
+            arg1 = self._evaluate(val[1], env)
+            arg2 = self._evaluate(val[2], env)
+            # Vectors may be multiplied by numbers only
+            if isinstance(arg1, Vec3):
+                arg2 = self.toNumber(arg2)
+                return Vec3(arg1.x * arg2, arg1.y * arg2, arg1.z * arg2)
+            if isinstance(arg2, Vec3):
+                arg1 = self.toNumber(arg1)
+                return Vec3(arg2.x * arg1, arg2.y * arg1, arg2.z * arg1)
+            # Numeric operation
+            arg1 = self.toNumber(arg1)
+            arg2 = self.toNumber(arg2)
+            return arg1 * arg2
+        if cmd == '/':
+            arg1 = self._evaluate(val[1], env)
+            arg2 = self._evaluate(val[2], env)
+            # Vectors may be divided by numbers only
+            if isinstance(arg1, Vec3):
+                arg2 = self.toNumber(arg2)
+                if arg2 == 0:
+                    return None
+                else:
+                    return Vec3(float(arg1.x) / arg2, float(arg1.y) / arg2, float(arg1.z) / arg2)
+            # Numeric operation
+            arg1 = self.toNumber(arg1)
+            arg2 = self.toNumber(arg2)
+            if arg2 == 0:
+                return None
+            else:
+                return float(arg1) / arg2
+        if cmd == '%':
+            arg1 = int(self.toNumber(self._evaluate(val[1], env)))
+            arg2 = int(self.toNumber(self._evaluate(val[2], env)))
+            if arg2 == 0:
+                return None
+            else:
+                return arg1 % arg2
         elif cmd == "==" or cmd == "!=":
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
-            s1 = type(arg1) is str or type(arg1) is unicode
-            s2 = type(arg2) is str or type(arg2) is unicode
-            # Validating type of the left operand
-            if s1 and not s2:
-                arg1 = floatz(arg1)
-            # Validating type of the right operand
-            if s2 and not s1:
-                arg2 = floatz(arg2)
+            if isinstance(arg1, Vec3):
+                if isinstance(arg2, Vec3):
+                    equals = (arg1.x == arg2.x) and (arg1.y == arg2.y) and (arg1.z == arg2.z)
+                else:
+                    equals = False
+            elif isinstance(arg2, Vec3):
+                equals = False
+            else:
+                s1 = self.isString(arg1)
+                s2 = self.isString(arg2)
+                # Validating type of the left operand
+                if s1 and not s2:
+                    arg1 = floatz(arg1)
+                # Validating type of the right operand
+                if s2 and not s1:
+                    arg2 = floatz(arg2)
+                equals = arg1 == arg2
             # Evaluating
             if cmd == "==":
-                return 1 if arg1 == arg2 else 0
+                return 1 if equals else 0
             else:
-                return 1 if arg1 != arg2 else 0
+                return 0 if equals else 1
         elif cmd == "in":
             arg1 = str2unicode(self._evaluate(val[1], env))
             arg2 = str2unicode(self._evaluate(val[2], env))
@@ -349,24 +427,38 @@ class ScriptEngine(ConstructorModule):
         elif cmd == "<" or cmd == ">" or cmd == "<=" or cmd == ">=":
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
-            # Validating type of the left operand
-            if type(arg1) is str or type(arg1) is unicode:
-                arg1 = floatz(arg1)
-            elif type(arg1) is not int and type(arg1) is not float:
-                arg1 = 0
-            # Validating type of the right operand
-            if type(arg2) is str or type(arg2) is unicode:
-                arg2 = floatz(arg2)
-            elif type(arg2) is not int and type(arg2) is not float:
-                arg2 = 0
+            if isinstance(arg1, Vec3) and isinstance(arg2, Vec3):
+                if arg1.x < arg2.x:
+                    res = -1
+                elif arg1.x > arg2.x:
+                    res = 1
+                elif arg1.y < arg2.y:
+                    res = -1
+                elif arg1.y > arg2.y:
+                    res = 1
+                elif arg1.z < arg2.z:
+                    res = -1
+                elif arg1.z > arg2.z:
+                    res = 1
+                else:
+                    res = 0
+            else:
+                arg1 = self.toNumber(arg1)
+                arg2 = self.toNumber(arg2)
+                if arg1 < arg2:
+                    res = -1
+                elif arg1 > arg2:
+                    res = 1
+                else:
+                    res = 0
             if cmd == "<":
-                return 1 if arg1 < arg2 else 0
+                return 1 if res == -1 else 0
             if cmd == ">":
-                return 1 if arg1 > arg2 else 0
+                return 1 if res == 1 else 0
             if cmd == "<=":
-                return 1 if arg1 <= arg2 else 0
+                return 1 if res <= 0 else 0
             if cmd == ">=":
-                return 1 if arg1 >= arg2 else 0
+                return 1 if res >= 0 else 0
         elif cmd == "~":
             arg1 = intz(self._evaluate(val[1], env))
             return ~arg1
@@ -548,6 +640,11 @@ class ScriptEngine(ConstructorModule):
             return self.formatter(env).clsbegin(self._evaluate(val[1], env))
         elif cmd == "clsend":
             return self.formatter(env).clsend()
+        elif cmd == "vec3":
+            arg1 = self.toNumber(self._evaluate(val[1], env))
+            arg2 = self.toNumber(self._evaluate(val[2], env))
+            arg3 = self.toNumber(self._evaluate(val[3], env))
+            return Vec3(arg1, arg2, arg3)
         else:
             raise ScriptRuntimeError(self._("Unknown script engine operation: {op}").format(op=cmd), env)
 

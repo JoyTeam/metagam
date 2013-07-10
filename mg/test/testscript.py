@@ -6,7 +6,7 @@ from concurrence import dispatch, Tasklet, Timeout, TimeoutError
 from mg.core import *
 from mg.core.cass import CassandraPool
 from mg.core.memcached import MemcachedPool
-from mg.constructor.script_classes import ScriptParserError
+from mg.constructor.script_classes import ScriptParserError, Vec3
 from mg.mmorpg.combats.core import *
 from mg.mmorpg.combats.simulation import SimulationCombat
 from cassandra.ttypes import *
@@ -98,6 +98,196 @@ class TestScript(unittest.TestCase):
     def checkCombatScriptError(self, script_text, exception):
         self.assertRaises(exception, self.app.call, "combats-admin.parse-script", script_text)
 
+    def test_evaluation(self):
+        # Documentation: conversions from numbers to strings
+        self.assertEqual(self.evaluate(['+', '1', '2']), '12')
+        self.assertEqual(self.evaluate(['+', '1', 2]), 3)
+        self.assertEqual(self.evaluate(['-', '1', '2']), -1)
+        self.assertEqual(self.evaluate(['*', '1', '2']), 2)
+        self.assertEqual(self.evaluate(['/', '1', '2']), 0.5)
+        self.assertEqual(self.evaluate(['/', None, '2']), 0)
+        self.assertEqual(self.evaluate(['-', '15', 'test']), 15)
+
+        # Documentation: comparsions
+        self.assertEqual(self.evaluate(['==', 1, 2]), 0)
+        self.assertEqual(self.evaluate(['==', 1, 1]), 1)
+        self.assertEqual(self.evaluate(['!=', 1, 2]), 1)
+        self.assertEqual(self.evaluate(['!=', 1, 1]), 0)
+        self.assertEqual(self.evaluate(['==', 'a', 'b']), 0)
+        self.assertEqual(self.evaluate(['!=', 'a', 'b']), 1)
+        self.assertEqual(self.evaluate(['>', 'a', 'b']), 0)
+        self.assertEqual(self.evaluate(['<', 'a', 'b']), 0)
+
+        # Addition
+        self.assertEqual(self.evaluate(['+', None, None]), None)
+        self.assertEqual(self.evaluate(['+', None, 1]), 1)
+        self.assertEqual(str(self.evaluate(['+', None, Vec3(4, 5, 6)])), str(Vec3(4, 5, 6)))
+        self.assertEqual(self.evaluate(['+', None, 'hello']), 'hello')
+        self.assertEqual(self.evaluate(['+', 1, None]), 1)
+        self.assertEqual(self.evaluate(['+', 1, 3]), 4)
+        self.assertEqual(self.evaluate(['+', 1, Vec3(4, 5, 6)]), None)
+        self.assertEqual(self.evaluate(['+', 1, 'hello']), 1)
+        self.assertEqual(str(self.evaluate(['+', Vec3(10, 11, 12), None])), str(Vec3(10, 11, 12)))
+        self.assertEqual(self.evaluate(['+', Vec3(10, 11, 12), 3]), None)
+        self.assertEqual(str(self.evaluate(['+', Vec3(10, 11, 12), Vec3(4, 5, 6)])), str(Vec3(14, 16, 18)))
+        self.assertEqual(self.evaluate(['+', Vec3(10, 11, 12), 'hello']), None)
+        self.assertEqual(self.evaluate(['+', '1.5', None]), '1.5')
+        self.assertEqual(self.evaluate(['+', '1.5', 1]), 2.5)
+        self.assertEqual(self.evaluate(['+', '1.5', Vec3(1, 2, 3)]), None)
+        self.assertEqual(self.evaluate(['+', 'foo', 'bar']), 'foobar')
+
+        # Substraction
+        self.assertEqual(self.evaluate(['-', None, None]), None)
+        self.assertEqual(self.evaluate(['-', None, 1]), -1)
+        self.assertEqual(str(self.evaluate(['-', None, Vec3(4, 5, 6)])), str(Vec3(-4, -5, -6)))
+        self.assertEqual(self.evaluate(['-', None, 'hello']), 0)
+        self.assertEqual(self.evaluate(['-', 1, None]), 1)
+        self.assertEqual(self.evaluate(['-', 1, 3]), -2)
+        self.assertEqual(self.evaluate(['-', 1, Vec3(4, 5, 6)]), None)
+        self.assertEqual(self.evaluate(['-', 1, '8']), -7)
+        self.assertEqual(str(self.evaluate(['-', Vec3(10, 11, 12), None])), str(Vec3(10, 11, 12)))
+        self.assertEqual(self.evaluate(['-', Vec3(10, 11, 12), 3]), None)
+        self.assertEqual(str(self.evaluate(['-', Vec3(10, 11, 12), Vec3(4, 5, 6)])), str(Vec3(6, 6, 6)))
+        self.assertEqual(self.evaluate(['-', Vec3(10, 11, 12), 'hello']), None)
+        self.assertEqual(self.evaluate(['-', '5', None]), '5')
+        self.assertEqual(self.evaluate(['-', '5.5', 1]), 4.5)
+        self.assertEqual(self.evaluate(['-', 'foo', Vec3(1, 2, 3)]), None)
+        self.assertEqual(self.evaluate(['-', '8.5', '1.5']), 7)
+
+        # Multiplication
+        self.assertEqual(self.evaluate(['*', None, None]), 0)
+        self.assertEqual(self.evaluate(['*', None, 1]), 0)
+        self.assertEqual(str(self.evaluate(['*', None, Vec3(4, 5, 6)])), str(Vec3(0, 0, 0)))
+        self.assertEqual(self.evaluate(['*', None, 'hello']), 0)
+        self.assertEqual(self.evaluate(['*', 1, None]), 0)
+        self.assertEqual(self.evaluate(['*', 2, 3]), 6)
+        self.assertEqual(str(self.evaluate(['*', 2, Vec3(4, 5, 6)])), str(Vec3(8, 10, 12)))
+        self.assertEqual(self.evaluate(['*', 2, '8']), 16)
+        self.assertEqual(str(self.evaluate(['*', Vec3(10, 11, 12), None])), str(Vec3(0, 0, 0)))
+        self.assertEqual(str(self.evaluate(['*', Vec3(10, 11, 12), 3])), str(Vec3(30, 33, 36)))
+        self.assertEqual(str(self.evaluate(['*', Vec3(10, 11, 12), Vec3(4, 5, 6)])), str(Vec3(0, 0, 0)))
+        self.assertEqual(str(self.evaluate(['*', Vec3(10, 11, 12), '2'])), str(Vec3(20, 22, 24)))
+        self.assertEqual(self.evaluate(['*', '5', None]), 0)
+        self.assertEqual(self.evaluate(['*', '5.5', 2]), 11)
+        self.assertEqual(str(self.evaluate(['*', '2.0', Vec3(1, 2, 3)])), str(Vec3(2, 4, 6)))
+        self.assertEqual(self.evaluate(['*', '8.5', '1.5']), 12.75)
+
+        # Division
+        self.assertEqual(self.evaluate(['/', None, None]), None)
+        self.assertEqual(self.evaluate(['/', None, 1]), 0)
+        self.assertEqual(self.evaluate(['/', None, Vec3(4, 5, 6)]), None)
+        self.assertEqual(self.evaluate(['/', None, '1.5']), 0)
+        self.assertEqual(self.evaluate(['/', 1, None]), None)
+        self.assertEqual(self.evaluate(['/', 3, 2]), 1.5)
+        self.assertEqual(self.evaluate(['/', 2, Vec3(4, 5, 6)]), None)
+        self.assertEqual(self.evaluate(['/', 2, '4']), 0.5)
+        self.assertEqual(self.evaluate(['/', Vec3(10, 11, 12), None]), None)
+        self.assertEqual(str(self.evaluate(['/', Vec3(10, 11, 12), 2])), str(Vec3(5, 5.5, 6)))
+        self.assertEqual(self.evaluate(['/', Vec3(10, 11, 12), Vec3(4, 5, 6)]), None)
+        self.assertEqual(str(self.evaluate(['/', Vec3(10, 11, 12), '2'])), str(Vec3(5, 5.5, 6)))
+        self.assertEqual(self.evaluate(['/', '5', None]), None)
+        self.assertEqual(self.evaluate(['/', '4.5', 1.5]), 3)
+        self.assertEqual(self.evaluate(['/', '2.0', Vec3(1, 2, 3)]), None)
+        self.assertEqual(self.evaluate(['/', '7.5', '1.5']), 5)
+
+        # Division by zero
+        self.assertEqual(self.evaluate(['/', None, None]), None)
+        self.assertEqual(self.evaluate(['/', None, 0]), None)
+        self.assertEqual(self.evaluate(['/', None, '0']), None)
+        self.assertEqual(self.evaluate(['/', 0, None]), None)
+        self.assertEqual(self.evaluate(['/', 0, 0]), None)
+        self.assertEqual(self.evaluate(['/', 0, '0']), None)
+        self.assertEqual(self.evaluate(['/', Vec3(1, 2, 3), None]), None)
+        self.assertEqual(self.evaluate(['/', Vec3(1, 2, 3), 0]), None)
+        self.assertEqual(self.evaluate(['/', Vec3(1, 2, 3), '0']), None)
+        self.assertEqual(self.evaluate(['/', '5', None]), None)
+        self.assertEqual(self.evaluate(['/', '5', 0]), None)
+        self.assertEqual(self.evaluate(['/', '5', '0']), None)
+
+        # Negation
+        self.assertEqual(self.evaluate(['-', None]), None)
+        self.assertEqual(self.evaluate(['-', 1]), -1)
+        self.assertEqual(str(self.evaluate(['-', Vec3(1, 2, 3)])), str(Vec3(-1, -2, -3)))
+        self.assertEqual(self.evaluate(['-', '1.5']), -1.5)
+
+        # Comparsion
+        self.assertEqual(self.evaluate(['==', None, None]), 1)
+        self.assertEqual(self.evaluate(['<', None, None]), 0)
+        self.assertEqual(self.evaluate(['>', None, None]), 0)
+        self.assertEqual(self.evaluate(['!=', None, None]), 0)
+        self.assertEqual(self.evaluate(['==', None, 0]), 0)
+        self.assertEqual(self.evaluate(['!=', None, 0]), 1)
+        self.assertEqual(self.evaluate(['>=', None, 0]), 1)
+        self.assertEqual(self.evaluate(['<=', None, 0]), 1)
+        self.assertEqual(self.evaluate(['<', None, 0]), 0)
+        self.assertEqual(self.evaluate(['>', None, 0]), 0)
+        self.assertEqual(self.evaluate(['<', 0, None]), 0)
+        self.assertEqual(self.evaluate(['>', 0, None]), 0)
+        self.assertEqual(self.evaluate(['<', None, 1]), 1)
+        self.assertEqual(self.evaluate(['!=', None, 1]), 1)
+        self.assertEqual(self.evaluate(['>', None, -1]), 1)
+        self.assertEqual(self.evaluate(['!=', None, -1]), 1)
+        self.assertEqual(self.evaluate(['<', None, '1']), 1)
+        self.assertEqual(self.evaluate(['!=', None, '1']), 1)
+        self.assertEqual(self.evaluate(['>', None, '-1']), 1)
+        self.assertEqual(self.evaluate(['!=', None, '-1']), 1)
+        self.assertEqual(self.evaluate(['!=', None, Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['==', 1, 1]), 1)
+        self.assertEqual(self.evaluate(['<', 1, 2]), 1)
+        self.assertEqual(self.evaluate(['>', 2, 1]), 1)
+        self.assertEqual(self.evaluate(['>', 1, None]), 1)
+        self.assertEqual(self.evaluate(['<', -1, None]), 1)
+        self.assertEqual(self.evaluate(['==', 1, '1']), 1)
+        self.assertEqual(self.evaluate(['!=', 1, '1']), 0)
+        self.assertEqual(self.evaluate(['>=', 1, '1']), 1)
+        self.assertEqual(self.evaluate(['<=', 1, '1']), 1)
+        self.assertEqual(self.evaluate(['<', 1, '2']), 1)
+        self.assertEqual(self.evaluate(['>', 1, '-2']), 1)
+        self.assertEqual(self.evaluate(['!=', 0, Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['>=', 0, Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['<=', 0, Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['>', 1, Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['<', -1, Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['==', '1', 1]), 1)
+        self.assertEqual(self.evaluate(['<', '1', 2]), 1)
+        self.assertEqual(self.evaluate(['>', '1', None]), 1)
+        self.assertEqual(self.evaluate(['<', '-1', None]), 1)
+        self.assertEqual(self.evaluate(['==', '1.0', '1.0']), 1)
+        self.assertEqual(self.evaluate(['==', '1.0', '1.00']), 0)
+        self.assertEqual(self.evaluate(['<', '1.0', '2.0']), 1)
+        self.assertEqual(self.evaluate(['>', '1.0', '2.0']), 0)
+        self.assertEqual(self.evaluate(['>', 'foo', 'bar']), 0)
+        self.assertEqual(self.evaluate(['<', 'foo', 'bar']), 0)
+        self.assertEqual(self.evaluate(['!=', '0', Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['>=', '0', Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['<=', '0', Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['>', '1', Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['<', '-1', Vec3(0, 0, 0)]), 1)
+        self.assertEqual(self.evaluate(['!=', Vec3(1.2, 1.3, 1.4), None]), 1)
+        self.assertEqual(self.evaluate(['<=', Vec3(1.2, 1.3, 1.4), None]), 1)
+        self.assertEqual(self.evaluate(['>=', Vec3(1.2, 1.3, 1.4), None]), 1)
+        self.assertEqual(self.evaluate(['!=', Vec3(1.2, 1.3, 1.4), 0]), 1)
+        self.assertEqual(self.evaluate(['<=', Vec3(1.2, 1.3, 1.4), 0]), 1)
+        self.assertEqual(self.evaluate(['>=', Vec3(1.2, 1.3, 1.4), 0]), 1)
+        self.assertEqual(self.evaluate(['<', Vec3(1.2, 1.3, 1.4), 1]), 1)
+        self.assertEqual(self.evaluate(['>', Vec3(1.2, 1.3, 1.4), -1]), 1)
+        self.assertEqual(self.evaluate(['!=', Vec3(1.2, 1.3, 1.4), '0']), 1)
+        self.assertEqual(self.evaluate(['<=', Vec3(1.2, 1.3, 1.4), '0']), 1)
+        self.assertEqual(self.evaluate(['>=', Vec3(1.2, 1.3, 1.4), '0']), 1)
+        self.assertEqual(self.evaluate(['<', Vec3(1.2, 1.3, 1.4), '1']), 1)
+        self.assertEqual(self.evaluate(['>', Vec3(1.2, 1.3, 1.4), '-1']), 1)
+        self.assertEqual(self.evaluate(['==', Vec3(1.2, 1.3, 1.4), Vec3(1.2, 1.3, 1.4)]), 1)
+        self.assertEqual(self.evaluate(['>', Vec3(1.2, 1.3, 1.5), Vec3(1.2, 1.3, 1.4)]), 1)
+        self.assertEqual(self.evaluate(['<', Vec3(1.2, 1.3, 1.3), Vec3(1.2, 1.3, 1.4)]), 1)
+        self.assertEqual(self.evaluate(['>', Vec3(1.2, 1.4, 1.4), Vec3(1.2, 1.3, 1.5)]), 1)
+
+        # Modules
+        self.assertEqual(self.evaluate(['%', 7, 4]), 3)
+        self.assertEqual(self.evaluate(['%', 7, 0]), None)
+
+        # Vectors
+        self.assertEqual(str(self.evaluate(['vec3', 1, 2, 3])), str(Vec3(1, 2, 3)))
+
     def test_expr_max(self):
         self.checkExpression('max(1, 2, 3)', ['call', 'max', 1, 2, 3], 3)
 
@@ -143,6 +333,9 @@ class TestScript(unittest.TestCase):
         self.checkCombatScript('set test.p_field = select mult(member.p_val) from members', [
             ['select', ['glob', 'test'], 'p_field', 'mult', ['.', ['glob', 'member'], 'p_val'], 'members', 1]
         ], lambda combat, testobj: self.assertEqual(testobj.param("p_field"), 245))
+
+    def evaluate(self, expr):
+        return self.app.call("script.evaluate-expression", expr)
 
 def main():
     try:

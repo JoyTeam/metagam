@@ -15,6 +15,16 @@ MMOScriptHTMLFormatter.prototype.clsEnd = function () {
     return '</span>';
 };
 
+Vec3 = function (x, y, z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+};
+
+Vec3.prototype.toString = function () {
+    return '(' + this.x + ', ' + this.y + ', ' + this.z + ')';
+};
+
 var MMOScript = {
     unaryOps: {
         'not': true,
@@ -25,6 +35,7 @@ var MMOScript = {
         '-': true,
         '*': true,
         '/': true,
+        '%': true,
         '==': true,
         '!=': true,
         'in': true,
@@ -56,68 +67,199 @@ var MMOScript = {
  */
 MMOScript.evaluate = function (val, env) {
     var self = this;
-    if (typeof(val) != 'object') {
+    if (typeof(val) !== 'object') {
+        return val;
+    }
+    if (val instanceof Vec3) {
         return val;
     }
     var cmd = val[0];
-    if (cmd == '+' || cmd == '-' || cmd == '*' || cmd == '/') {
+    if (cmd === '+') {
         var arg1 = self.evaluate(val[1], env);
         var arg2 = self.evaluate(val[2], env);
-        // concanenation
-        if (cmd == '+' && self.isString(arg1) && self.isString(arg2)) {
+        // Strings are concatenated
+        if (self.isString(arg1) && self.isString(arg2)) {
             return arg1 + arg2;
         }
-        // operation with numbers
+        // Adding undefined does not affect the value
+        if (arg1 === undefined || arg1 === null) {
+            return arg2;
+        }
+        if (arg2 === undefined || arg2 === null) {
+            return arg1;
+        }
+        // Vectors can be added only to vectors
+        if (arg1 instanceof Vec3) {
+            if (arg2 instanceof Vec3) {
+                return new Vec3(arg1.x + arg2.x, arg1.y + arg2.y, arg1.z + arg2.z);
+            } else {
+                return undefined;
+            }
+        }
+        if (arg2 instanceof Vec3) {
+            return undefined;
+        }
+        // Perform numeric addition
         arg1 = self.toNumber(arg1);
         arg2 = self.toNumber(arg2);
-        if (cmd == '+') {
-            return arg1 + arg2;
-        }
-        if (cmd == '-') {
-            return arg1 - arg2;
-        }
-        if (cmd == '*') {
-            return arg1 * arg2;
-        }
-        if (cmd == '/') {
-            return arg1 / arg2;
-        }
+        return arg1 + arg2;
     }
-    if (cmd == '==' || cmd == '!=') {
+    if (cmd === '-') {
+        var arg1, arg2;
+        if (val.length == 2) {
+            // Unary minus
+            arg1 = undefined;
+            arg2 = self.evaluate(val[1], env);
+        } else {
+            // Binary minus
+            arg1 = self.evaluate(val[1], env);
+            arg2 = self.evaluate(val[2], env);
+        }
+        // Substracting undefined does not affect the value
+        if (arg2 === undefined || arg2 === null) {
+            return arg1;
+        }
+        // Vectors are substracted only from vectors
+        if (arg1 instanceof Vec3) {
+            if (arg2 instanceof Vec3) {
+                return new Vec3(arg1.x - arg2.x, arg1.y - arg2.y, arg1.z - arg2.z);
+            } else {
+                return undefined;
+            }
+        }
+        if (arg2 instanceof Vec3) {
+            if (arg1 === undefined || arg1 === null) {
+                return new Vec3(-arg2.x, -arg2.y, -arg2.z);
+            } else {
+                return undefined;
+            }
+        }
+        // Perform numeric substraction
+        arg1 = self.toNumber(arg1);
+        arg2 = self.toNumber(arg2);
+        return arg1 - arg2;
+    }
+    if (cmd === '*') {
         var arg1 = self.evaluate(val[1], env);
         var arg2 = self.evaluate(val[2], env);
-        var s1 = self.isString(arg1);
-        var s2 = self.isString(arg2);
-        if (s1 && !s2) {
-            arg1 = self.toNumber(arg1);
-        } else if (s2 && !s1) {
+        // Vectors may be multiplied by numbers only
+        if (arg1 instanceof Vec3) {
             arg2 = self.toNumber(arg2);
+            return new Vec3(arg1.x * arg2, arg1.y * arg2, arg1.z * arg2);
+        }
+        if (arg2 instanceof Vec3) {
+            arg1 = self.toNumber(arg1);
+            return new Vec3(arg2.x * arg1, arg2.y * arg1, arg2.z * arg1);
+        }
+        // Perform numeric multiplication
+        arg1 = self.toNumber(arg1);
+        arg2 = self.toNumber(arg2);
+        return arg1 * arg2;
+    }
+    if (cmd === '/') {
+        var arg1 = self.evaluate(val[1], env);
+        var arg2 = self.evaluate(val[2], env);
+        // Vectors may be divided by numbers only
+        if (arg1 instanceof Vec3) {
+            arg2 = self.toNumber(arg2);
+            if (arg2 == 0) {
+                return undefined;
+            }
+            return new Vec3(arg1.x / arg2, arg1.y / arg2, arg1.z / arg2);
+        }
+        // Perform numeric division
+        arg1 = self.toNumber(arg1);
+        arg2 = self.toNumber(arg2);
+        if (arg2 == 0) {
+            return undefined;
+        }
+        return arg1 / arg2;
+    }
+    if (cmd === '%') {
+        var arg1 = Math.floor(self.toNumber(self.evaluate(val[1], env)));
+        var arg2 = Math.floor(self.toNumber(self.evaluate(val[2], env)));
+        if (arg2 == 0) {
+            return undefined;
+        }
+        return arg1 % arg2;
+    }
+    if (cmd === '==' || cmd === '!=') {
+        var arg1 = self.evaluate(val[1], env);
+        var arg2 = self.evaluate(val[2], env);
+        var equals;
+        if (arg1 instanceof Vec3) {
+            if (arg2 instanceof Vec3) {
+                equals = (arg1.x == arg2.x) && (arg1.y == arg2.y) && (arg1.z == arg2.z);
+            } else {
+                equals = false;
+            }
+        } else if (arg2 instanceof Vec3) {
+            equals = false;
+        } else {
+            var s1 = self.isString(arg1);
+            var s2 = self.isString(arg2);
+            if (s1 && !s2) {
+                arg1 = self.toNumber(arg1);
+            } else if (s2 && !s1) {
+                arg2 = self.toNumber(arg2);
+            }
+            equals = (arg1 == arg2);
         }
         if (cmd == '==') {
-            return (arg1 == arg2) ? 1 : 0;
+            return equals ? 1 : 0;
         } else {
-            return (arg1 != arg2) ? 1 : 0;
+            return equals ? 0 : 1;
         }
     }
-    if (cmd == 'in') {
+    if (cmd === 'in') {
         var arg1 = self.toString(self.evaluate(val[1], env));
         var arg2 = self.toString(self.evaluate(val[2], env));
         return (arg2.indexOf(arg1) >= 0) ? 1 : 0;
     }
-    if (cmd == '<' || cmd == '>' || cmd == '<=' || cmd == '>=') {
-        var arg1 = self.toNumber(self.evaluate(val[1], env));
-        var arg2 = self.toNumber(self.evaluate(val[2], env));
-        if (cmd == '<') {
-            return (arg1 < arg2) ? 1 : 0;
+    if (cmd === '<' || cmd === '>' || cmd === '<=' || cmd === '>=') {
+        var arg1 = self.evaluate(val[1], env);
+        var arg2 = self.evaluate(val[2], env);
+        var cmp;
+        if ((arg1 instanceof Vec3) && (arg2 instanceof Vec3)) {
+            // Compare vectors
+            if (arg1.x < arg2.x) {
+                cmp = -1;
+            } else if (arg1.x > arg2.x) {
+                cmp = 1;
+            } else if (arg1.y < arg2.y) {
+                cmp = -1;
+            } else if (arg1.y > arg2.y) {
+                cmp = 1;
+            } else if (arg1.z < arg2.z) {
+                cmp = -1;
+            } else if (arg1.z > arg2.z) {
+                cmp = 1;
+            } else {
+                cmp = 0;
+            }
+        } else {
+            // All other combinations are compared as numbers
+            arg1 = self.toNumber(arg1);
+            arg2 = self.toNumber(arg2);
+            if (arg1 < arg2) {
+                cmp = -1;
+            } else if (arg1 > arg2) {
+                cmp = 1;
+            } else {
+                cmp = 0;
+            }
         }
-        if (cmd == '>') {
-            return (arg1 > arg2) ? 1 : 0;
+        if (cmd === '<') {
+            return (cmp == -1) ? 1 : 0;
         }
-        if (cmd == '<=') {
-            return (arg1 <= arg2) ? 1 : 0;
+        if (cmd === '>') {
+            return (cmp == 1) ? 1 : 0;
         }
-        if (cmd == '>=') {
-            return (arg1 >= arg2) ? 1 : 0;
+        if (cmd === '<=') {
+            return (cmp <= 0) ? 1 : 0;
+        }
+        if (cmd === '>=') {
+            return (cmp >= 0) ? 1 : 0;
         }
     }
     if (cmd == '~') {
@@ -213,12 +355,18 @@ MMOScript.evaluate = function (val, env) {
         }
         return undefined;
     }
+    if (cmd == 'vec3') {
+        var x = self.toNumber(self.evaluate(val[1], env));
+        var y = self.toNumber(self.evaluate(val[2], env));
+        var z = self.toNumber(self.evaluate(val[3], env));
+        return new Vec3(x, y, z);
+    }
     if (cmd == 'random') {
         return Math.random();
     }
     if (cmd == 'glob') {
         var name = val[1];
-        if (!env.globs) {
+        if (!env || !env.globs) {
             return undefined;
         }
         return env.globs[name];
@@ -284,7 +432,7 @@ MMOScript.evaluate = function (val, env) {
  * output in desired string format.
  */
 MMOScript.formatter = function (env) {
-    return env.formatter || MMOScript.defaultFormatter;
+    return (env && env.formatter) || MMOScript.defaultFormatter;
 };
 
 /*
@@ -439,6 +587,9 @@ MMOScript.toNumber = function (val) {
     if (typeof(val) != 'number') {
         try {
             val = parseFloat(val);
+            if (isNaN(val)) {
+                val = 0;
+            }
         } catch (e) {
             val = 0;
         }
@@ -521,4 +672,15 @@ DynamicValue.prototype.evaluateAndForget = function (t) {
     return self.evaluate(t);
 };
 
-loaded('mmoscript');
+try {
+    loaded('mmoscript');
+} catch (e) {
+}
+try {
+    module.exports = {
+        MMOScript: MMOScript,
+        DynamicValue: DynamicValue,
+        Vec3: Vec3
+    };
+} catch (e) {
+}

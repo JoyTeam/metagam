@@ -69,6 +69,15 @@ class ScriptUnusedError(ScriptError):
 class ScriptReadOnlyError(ScriptRuntimeError):
     pass
 
+class Vec3(object):
+    def __init__(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __str__(self):
+        return "(%s, %s, %s)" % (nn(self.x), nn(self.y), nn(self.z))
+
 #===============================================================================
 # Tokens/precedences.  See Parsing documentation to learn about the
 # significance of left-associative precedence.

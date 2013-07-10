@@ -193,3 +193,6 @@ assert.strictEqual(MMOScript.evaluate(['>', new Vec3(1.2, 1.4, 1.4), new Vec3(1.
 /* Modules */
 assert.strictEqual(MMOScript.evaluate(['%', 7, 4]), 3);
 assert.strictEqual(MMOScript.evaluate(['%', 7, 0]), undefined);
+
+/* Vectors */
+assert.strictEqual(MMOScript.evaluate(['vec3', 1, 2, 3]).toString(), '(1, 2, 3)');
