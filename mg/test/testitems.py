@@ -19,7 +19,6 @@ class TestItems(unittest.TestCase, ConstructorModule):
         ConstructorModule.__init__(self, self.app_obj, "mg.test.testitems.TestItems")
         mc = Memcached(prefix="mgtest-")
         mc.delete("Cassandra-CF-mgtest-Data")
-        self.cleanup()
 
     def test(self):
         # creating parameters metadata

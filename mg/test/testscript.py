@@ -43,7 +43,7 @@ class TestScript(unittest.TestCase):
     def setUp(self):
         self.inst = mg.Instance("script-test", "metagam")
         self.inst._dbpool = CassandraPool((("localhost", 9160),))
-        self.inst._mcpool = MemcachedPool(("localhost", 11211))
+        self.inst._mcpool = MemcachedPool()
         self.app = mg.Application(self.inst, "mgtest")
         self.app.modules.load([
             "mg.core.l10n.L10n",
