@@ -55,6 +55,7 @@ js: $(foreach module,$(js_modules),$($(module)_js_files))
 
 test:
 	for i in mg/test/*.py ; do echo $$i ; python2.6 $$i ; done
+	for i in mg/test/*.js ; do echo $$i ; node $$i ; done
 
 debug:
 	@echo "POT Files: $(foreach module,$(modules),mg/locale/mg_$(module).pot)"
