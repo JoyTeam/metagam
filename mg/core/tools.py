@@ -246,6 +246,8 @@ def nn(num):
         return num
     if type(num) == float:
         num = '%f' % num
+    if type(num) == unicode:
+        num = utf2str(num)
     num = str(num)
     if re_frac_part.search(num) or re_exp_format.match(num):
         return float(num)
