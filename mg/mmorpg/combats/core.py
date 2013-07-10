@@ -866,7 +866,7 @@ class CombatMember(CombatObject, CombatParamsContainer):
                 "targets": [t.id for t in act.targets],
             })
         act.enqueued()
-        if self.combat.actions[act.code].get("immediate"):
+        if act.code in self.combat.actions and self.combat.actions[act.code].get("immediate"):
             self.combat.execute_action(act)
             if self.may_turn:
                 self.deliver_turn_got()
