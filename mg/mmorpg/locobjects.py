@@ -49,6 +49,13 @@ class LocationObjectsAdmin(ConstructorModule):
                     obj_id = int(m.group(1))
                     obj = {}
                     objects[obj_id] = obj
+                    # identifier
+                    ident = req.param("id-%d" % obj_id).strip()
+                    if ident != "":
+                        if not re_valid_identifier.match(ident):
+                            errors["id-%d" % obj_id] = self._("Object identifier must start with 'u_' and contain latin letters, digits and underscores only")
+                        else:
+                            obj["id"] = ident
                     # coordinates
                     x = req.param("x-%d" % obj_id)
                     if not valid_int(x):
@@ -150,6 +157,7 @@ class LocationObjectsAdmin(ConstructorModule):
         for obj in static_objects:
             robj = {
                 "image": jsencode(obj.get("image")),
+                "id": obj.get("id", ""),
                 "x": obj.get("x"),
                 "y": obj.get("y"),
                 "width": obj.get("width"),
@@ -226,7 +234,7 @@ class LocationObjects(ConstructorModule):
                     if obj.get("url"):
                         rclick["url"] = obj["url"]
                     robj = {
-                        "id": ident,
+                        "id": obj.get("id") or ("auto_%s" % ident),
                         "width": obj["width"],
                         "height": obj["height"],
                         "position": [obj["x"], order, obj["y"]],

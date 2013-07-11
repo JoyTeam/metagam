@@ -28,6 +28,7 @@ wait(['locobjects-editor'], function() {
         [%end%]
         [%foreach obj in objects%]
         var obj = LocObjectsEditor.new_object();
+        obj.ident = '[%obj.id%]';
         obj.x = [%obj.x%];
         obj.y = [%obj.y%];
         obj.width = [%obj.width%];

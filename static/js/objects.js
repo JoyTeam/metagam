@@ -15,13 +15,14 @@ var ObjectsManager = Ext.extend(Object, {
         var self = this;
         self.markNeedUpdate();
         self.objects = [];
+        self.objectsById = {};
     },
 
     /*
      * Get current time in milliseconds
      */
     getTime: function () {
-        return (new Date()).getTime();
+        return TimeSync.getTime();
     },
 
     /*
@@ -31,6 +32,7 @@ var ObjectsManager = Ext.extend(Object, {
         var self = this;
         self.markNeedUpdate();
         self.objects.push(obj);
+        self.objectsById[obj.id] = obj;
     },
 
     /*
@@ -39,6 +41,7 @@ var ObjectsManager = Ext.extend(Object, {
     destroyObject: function (objId) {
         var self = this;
         self.markNeedUpdate();
+        delete self.objectsById[obj.id];
         for (var i = 0; i < self.objects.length; i++) {
             var obj = self.objects[i];
             if (obj.id == objId) {
@@ -47,6 +50,14 @@ var ObjectsManager = Ext.extend(Object, {
                 break;
             }
         }
+    },
+
+    /*
+     * Get object by its identifier
+     */
+    getObject: function (id) {
+        var self = this;
+        return self.objectsById[id];
     },
 
     /*
@@ -113,6 +124,7 @@ var GenericObject = Ext.extend(Object, {
         self.manager = manager;
         self.id = id;
         self.params = [];
+        self.paramsById = {};
         self.needUpdate = true;
     },
 
@@ -122,6 +134,15 @@ var GenericObject = Ext.extend(Object, {
     addParam: function (param) {
         var self = this;
         self.params.push(param);
+        self.paramsById[param.id] = param
+    },
+
+    /*
+     * Get a parameter by its id
+     */
+    getParam: function (id) {
+        var self = this;
+        return self.paramsById[id];
     },
 
     /*
@@ -194,12 +215,65 @@ var GenericObjectParam = Ext.extend(Object, {
     },
 
     /*
+     * Set value (DynamicValue is possible)
+     */
+    setValue: function (val) {
+        var self = this;
+        self.value = val;
+        self.markNeedUpdate();
+    },
+
+    /*
     * Apply parameter value
     */
     applyValue: function (val) {
+    },
+
+    /*
+     * If something changed in the parameter, and it needs update
+     */
+    markNeedUpdate: function () {
+        var self = this;
+        self.needUpdate = true;
+        self.obj.markNeedUpdate();
+    },
+
+    /*
+     * Smoothly slide from current value to target one
+     * in specified number of seconds.
+     */
+    slideTo: function (toValue, time) {
+        var self = this;
+        if (!time || time <= 0) {
+            return self.setValue(toValue);
+        }
+        var now = self.obj.manager.getTime();
+        var fromValue;
+        if (self.value instanceof DynamicValue) {
+            fromValue = self.value.evaluate(now);
+        } else {
+            fromValue = self.value;
+        }
+        var val = new DynamicValue([
+            '+',
+            fromValue,
+            [
+                '*',
+                [
+                    '/',
+                    [
+                        '-',
+                        ['glob', 't'],
+                        now
+                    ],
+                    time
+                ],
+                MMOScript.evaluate(['-', toValue, fromValue], {})
+            ]
+        ]);
+        val.setTill(now + time);
+        self.setValue(val);
     }
 });
 
-wait(['mmoscript'], function () {
-    loaded('objects');
-});
+loaded('objects');

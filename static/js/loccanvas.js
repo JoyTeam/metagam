@@ -67,7 +67,7 @@ wait(['location', 'objects', 'hints'], function () {
             self.canvasEl = Ext.get(self.canvas);
             try { G_vmlCanvasManager.initElement(canvas); } catch (e) {}
             self.ctx = self.canvas.getContext('2d');
-            self.paintDelay = 10;
+            self.paintDelay = 0;
             self.tipOffsetX = 10;
             self.tipOffsetY = 15;
             self.canvasEl.addListener('mousedown', function (ev) {
@@ -93,11 +93,34 @@ wait(['location', 'objects', 'hints'], function () {
         onMouseEvent: function (handlerName, ev) {
             var self = this;
             ev.stopEvent();
+            if (self.requestSort) {
+                self.sortObjects();
+            }
             var coo = ev.getXY();
             var elCoo = self.canvasEl.getXY();
             self[handlerName].call(self, ev,
                     (coo[0] - elCoo[0]) / LocCanvas.scale,
                     (coo[1] - elCoo[1]) / LocCanvas.scale);
+        },
+
+        /*
+         * Sort objects based on their Y coordinate (actually z-index)
+         */
+        sortObjects: function () {
+            var self = this;
+            self.requestSort = false;
+            self.objects.sort(function (a, b) {
+                if (!a.position || !b.position) {
+                    return 0;
+                }
+                if (a.position.y < b.position.y) {
+                    return -1;
+                }
+                if (a.position.y > b.position.y) {
+                    return 1;
+                }
+                return 0;
+            });
         },
 
         /*
@@ -160,6 +183,9 @@ wait(['location', 'objects', 'hints'], function () {
             self.paintPlanned = false;
             if (self.clip_x1 === undefined && !force) {
                 return;
+            }
+            if (self.requestSort) {
+                self.sortObjects();
             }
             self.ctx.save();
             /* Setup clipping */
@@ -323,7 +349,7 @@ wait(['location', 'objects', 'hints'], function () {
             var self = this;
             LocObject.superclass.constructor.call(self, manager, info.id);
             /* Object position */
-            self.addParam(new LocObjectPosition(self, 1, info.position));
+            self.addParam(new LocObjectPosition(self, 1, new Vec3(info.position[0], info.position[1], info.position[2])));
             /* Hint */
             if (info.hint) {
                 self.hint = info.hint;
@@ -359,16 +385,16 @@ wait(['location', 'objects', 'hints'], function () {
 
         touch: function () {
             var self = this;
-            if (!self.image || !self.position || self.position[0] === undefined ||
-                    self.position[1] === undefined || self.position[2] === undefined) {
+            if (!self.image || !self.position || self.position.x === undefined ||
+                    self.position.y === undefined || self.position.z === undefined) {
                 return;
             }
             self.manager.touchPoint(
-                    (self.position[0] - self.imageWidth / 2) * LocCanvas.scale,
-                    (self.position[2] - self.imageHeight / 2) * LocCanvas.scale);
+                    (self.position.x - self.imageWidth / 2) * LocCanvas.scale,
+                    (self.position.z - self.imageHeight / 2) * LocCanvas.scale);
             self.manager.touchPoint(
-                    (self.position[0] + self.imageWidth / 2) * LocCanvas.scale,
-                    (self.position[2] + self.imageHeight / 2) * LocCanvas.scale);
+                    (self.position.x + self.imageWidth / 2) * LocCanvas.scale,
+                    (self.position.z + self.imageHeight / 2) * LocCanvas.scale);
         },
 
         /*
@@ -378,8 +404,8 @@ wait(['location', 'objects', 'hints'], function () {
             var self = this;
             if (self.image) {
                 ctx.drawImage(self.image,
-                        (self.position[0] - self.imageWidth / 2) * LocCanvas.scale,
-                        (self.position[2] - self.imageHeight / 2) * LocCanvas.scale,
+                        (self.position.x - self.imageWidth / 2) * LocCanvas.scale,
+                        (self.position.z - self.imageHeight / 2) * LocCanvas.scale,
                         self.imageWidth * LocCanvas.scale,
                         self.imageHeight * LocCanvas.scale);
             }
@@ -393,8 +419,8 @@ wait(['location', 'objects', 'hints'], function () {
             if (!self.position) {
                 return false;
             }
-            x -= self.position[0];
-            y -= self.position[2];
+            x -= self.position.x;
+            y -= self.position.z;
             var poly = self.polygon;
             for (var c = false, i = -1, l = poly.length, j = l - 1; ++i < l; j = i) {
                 ((poly[i].y <= y && y < poly[j].y) || (poly[j].y <= y && y < poly[i].y))
@@ -411,9 +437,14 @@ wait(['location', 'objects', 'hints'], function () {
     LocObjectPosition = Ext.extend(GenericObjectParam, {
         applyValue: function (val) {
             var self = this;
+            var oldPos = self.obj.position;
             self.obj.touch();
             self.obj.position = val;
             self.obj.touch();
+            if (val && (!oldPos || val.y != oldPos.y)) {
+                self.obj.manager.requestSort = true;
+            }
+            self.obj.manager.eventualPaint();
         }
     });
     LocObjects = new LocObjectsManager();

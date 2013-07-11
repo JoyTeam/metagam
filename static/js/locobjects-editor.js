@@ -44,6 +44,20 @@ VisualObject.prototype.render = function(form) {
                     value: this.height
                 },
                 {
+                    id: 'elem_id-' + this.id,
+                    items: { 
+                        id: 'form-field-id-' + this.id,
+                        fieldLabel: gt.gettext('Object identifier'),
+                        name: 'id-' + this.id,
+                        value: this.ident,
+                        xtype: 'textfield',
+                        allowBlank: true,
+                        msgTarget: 'side',
+                        anchor: '-30',
+                        autoHeight: true
+                    }
+                },
+                {
                     id: 'elem_x-' + this.id,
                     items: { 
                         id: 'form-field-x-' + this.id,
@@ -411,7 +425,7 @@ LocObjectsEditor.init = function(submit_url, width, height) {
             }
         ],
         errorHandler: function (form, error) {
-            var fields = ['x', 'y', 'polygon', 'visible', 'action', 'location', 'url'];
+            var fields = ['x', 'y', 'polygon', 'visible', 'action', 'location', 'url', 'id'];
             for (var i = 0; i < LocObjectsEditor.objects.length; i++) {
                 var obj = LocObjectsEditor.objects[i];
                 var id = obj.id;
