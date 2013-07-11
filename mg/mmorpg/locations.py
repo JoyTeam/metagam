@@ -108,7 +108,6 @@ class LocationsAdmin(ConstructorModule):
         lst = [
             "mg.mmorpg.locations.LocationsStaticImages", "mg.mmorpg.locations.LocationsStaticImagesAdmin",
             "mg.mmorpg.locations.LocationsMultiStaticImages", "mg.mmorpg.locations.LocationsMultiStaticImagesAdmin",
-            "mg.mmorpg.locations.LocationsCanvas", "mg.mmorpg.locations.LocationsCanvasAdmin",
             "mg.mmorpg.locparams.LocationParams", "mg.mmorpg.locfunctions.LocationFunctions"]
         return lst
 
@@ -228,7 +227,7 @@ class LocationsAdmin(ConstructorModule):
                     flags["image_type_valid"] = True
                 self.call("admin-locations.editor-form-validate", db_loc, flags, errors)
                 if not flags.get("image_type_valid"):
-                    errors["v_image_type"] = self._("Select valid image type")
+                    errors["v_image_type"] = self._("Select valid visualization type")
                 # errors
                 if len(errors):
                     self.call("web.response_json_html", {"success": False, "errors": errors})
@@ -271,7 +270,7 @@ class LocationsAdmin(ConstructorModule):
             # image type
             image_types = []
             image_types.append(("none", self._("No image")))
-            image_type = {"name": "image_type", "type": "combo", "value": db_loc.get("image_type", "none"), "label": self._("Image type"), "values": image_types}
+            image_type = {"name": "image_type", "type": "combo", "value": db_loc.get("image_type", "none"), "label": self._("Visualization type"), "values": image_types}
             fields.append(image_type)
             self.call("admin-locations.editor-form-render", db_loc, fields)
             if not db_loc.get("image_type") and image_type["values"] and not image_type["value"]:
