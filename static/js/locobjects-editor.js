@@ -88,6 +88,37 @@ VisualObject.prototype.render = function(form) {
                     }
                 },
                 {
+                    id: 'elem_position-expr-' + this.id,
+                    items: { 
+                        id: 'form-field-position-expr-' + this.id,
+                        fieldLabel: gt.gettext('Scripted object position'),
+                        boxLabel: gt.gettext('Enable scripted position'),
+                        name: 'position-expr-' + this.id,
+                        checked: this.position ? true : false,
+                        xtype: 'checkbox',
+                        msgTarget: 'under',
+                        anchor: '-30',
+                        autoHeight: true,
+                        listeners: {
+                            check: enforce_conditions
+                        }
+                    }
+                },
+                {
+                    id: 'elem_position-' + this.id,
+                    items: { 
+                        id: 'form-field-position-' + this.id,
+                        fieldLabel: gt.gettext('Object position expression') + ' <img class="inline-icon" src="/st/icons/script.gif" alt="" />',
+                        name: 'position-' + this.id,
+                        value: this.position,
+                        xtype: 'textfield',
+                        allowBlank: true,
+                        msgTarget: 'side',
+                        anchor: '-30',
+                        autoHeight: true
+                    }
+                },
+                {
                     id: 'elem_polygon-' + this.id,
                     items: { 
                         id: 'form-field-polygon-' + this.id,
@@ -250,6 +281,10 @@ VisualObject.prototype.render = function(form) {
         }
     });
     this.form.conditions.push({
+        id: 'elem_position-' + this.id,
+        condition: "form_value('position-expr-" + this.id + "')"
+    });
+    this.form.conditions.push({
         id: 'elem_location-' + this.id,
         condition: "form_value('action-" + this.id + "')=='move'"
     });
@@ -290,6 +325,7 @@ VisualObject.prototype.cleanup = function() {
     for (var ci = this.form.conditions.length - 1; ci >= 0; ci--) {
         var id = this.form.conditions[ci].id;
         if (id == 'elem_location-' + this.id ||
+            id == 'elem_position-' + this.id ||
             id == 'elem_event-' + this.id ||
             id == 'elem_url-' + this.id ||
             id == 'elem_globfunc-' + this.id ||
@@ -425,7 +461,8 @@ LocObjectsEditor.init = function(submit_url, width, height) {
             }
         ],
         errorHandler: function (form, error) {
-            var fields = ['x', 'y', 'polygon', 'visible', 'action', 'location', 'url', 'id'];
+            var fields = ['x', 'y', 'polygon', 'visible', 'action', 'location', 'url', 'id',
+                    'position-expr', 'position'];
             for (var i = 0; i < LocObjectsEditor.objects.length; i++) {
                 var obj = LocObjectsEditor.objects[i];
                 var id = obj.id;

@@ -353,13 +353,13 @@ MMOScript.evaluate = function (val, env) {
             var v2 = self.toNumber(self.evaluate(val[3], env));
             return Math.pow(v1, v2);
         }
+        if (fname == 'vec3') {
+            var x = self.toNumber(self.evaluate(val[2], env));
+            var y = self.toNumber(self.evaluate(val[3], env));
+            var z = self.toNumber(self.evaluate(val[4], env));
+            return new Vec3(x, y, z);
+        }
         return undefined;
-    }
-    if (cmd == 'vec3') {
-        var x = self.toNumber(self.evaluate(val[1], env));
-        var y = self.toNumber(self.evaluate(val[2], env));
-        var z = self.toNumber(self.evaluate(val[3], env));
-        return new Vec3(x, y, z);
     }
     if (cmd == 'random') {
         return Math.random();

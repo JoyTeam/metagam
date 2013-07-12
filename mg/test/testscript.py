@@ -286,7 +286,7 @@ class TestScript(unittest.TestCase):
         self.assertEqual(self.evaluate(['%', 7, 0]), None)
 
         # Vectors
-        self.assertEqual(str(self.evaluate(['vec3', 1, 2, 3])), str(Vec3(1, 2, 3)))
+        self.assertEqual(str(self.evaluate(['call', 'vec3', 1, 2, 3])), str(Vec3(1, 2, 3)))
 
     def test_expr_max(self):
         self.checkExpression('max(1, 2, 3)', ['call', 'max', 1, 2, 3], 3)
@@ -336,6 +336,181 @@ class TestScript(unittest.TestCase):
 
     def evaluate(self, expr):
         return self.app.call("script.evaluate-expression", expr)
+
+    def test_unparse(self):
+        self.checkExpression('2 * 3 * 4', ['*', ['*', 2, 3], 4], 24)
+        self.assertEqual('2 * 3 * 4', self.app.call("script.unparse-expression", ['*', 2, ['*', 3, 4]]))
+        self.checkExpression('2 / 4 / 8', ['/', ['/', 2, 4], 8], 1.0/16)
+        self.checkExpression('2 / (4 / 8)', ['/', 2, ['/', 4, 8]], 4)
+        self.checkExpression('(2 * 4) % 8', ['%', ['*', 2, 4], 8], 0)
+        self.checkExpression('2 * (4 % 8)', ['*', 2, ['%', 4, 8]], 8)
+
+    def partialEval(self, inval, outval):
+        expr = self.app.call("script.parse-expression", inval)
+        evalres = self.app.call("script.evaluate-expression", expr, globs={"g1": 1, "g2": 2}, keep_globs={"t": True})
+        unparsed = self.app.call("script.unparse-expression", evalres)
+        self.assertEqual(unparsed, outval)
+
+    def partialTextEval(self, inval, outval):
+        expr = self.app.call("script.parse-text", inval)
+        evalres = self.app.call("script.evaluate-text", expr, globs={"g1": 1, "g2": 2}, keep_globs={"t": True})
+        unparsed = self.app.call("script.unparse-text", evalres)
+        self.assertEqual(unparsed, outval)
+
+    def test_partial_eval(self):
+        self.partialEval("1", "1")
+        self.partialEval("1 + 5", "6")
+        self.partialEval("g1", "1")
+        self.partialEval("g1 + g2", "3")
+        self.partialEval("t", "t")
+        # +
+        self.partialEval("1 + t", "1 + t")
+        self.partialEval("t + 1", "t + 1")
+        self.partialEval("1 + 2 + t", "3 + t")
+        self.partialEval("g1 + g2 + t", "3 + t")
+        # -
+        self.partialEval("1 - 2", "-1")
+        self.partialEval("t - 1", "t - 1")
+        self.partialEval("1 - t", "1 - t")
+        # *
+        self.partialEval("3 * 2", "6")
+        self.partialEval("t * 1", "t * 1")
+        self.partialEval("1 * t", "1 * t")
+        # /
+        self.partialEval("1 / 2", "0.5")
+        self.partialEval("t / 1", "t / 1")
+        self.partialEval("1 / t", "1 / t")
+        self.partialEval("t / 0", "none")
+        # Unary -
+        self.partialEval("-1", "-1")
+        self.partialEval("-g2", "-2")
+        self.partialEval("-t", "-t")
+        self.partialEval("-(t + 1)", "-(t + 1)")
+        # %
+        self.partialEval("3 % 2", "1")
+        self.partialEval("t % 2", "t % 2")
+        self.partialEval("2 % t", "2 % t")
+        self.partialEval("t % 0", "none")
+        # ==
+        self.partialEval("2 == 2", "1")
+        self.partialEval("2 == 3", "0")
+        self.partialEval("t == 2", "t == 2")
+        self.partialEval("2 == t", "2 == t")
+        # !=
+        self.partialEval("2 != 2", "0")
+        self.partialEval("2 != 3", "1")
+        self.partialEval("t != 2", "t != 2")
+        self.partialEval("2 != t", "2 != t")
+        # in
+        self.partialEval("'abc' in 'abcd'", "1")
+        self.partialEval("'abc' in 'abed'", "0")
+        self.partialEval('"abc" in t', '"abc" in t')
+        self.partialEval('t in "abc"', 't in "abc"')
+        # <
+        self.partialEval("1 < 2", "1")
+        self.partialEval("2 < 1", "0")
+        self.partialEval("t < 1", "t < 1")
+        self.partialEval("1 < t", "1 < t")
+        # >
+        self.partialEval("1 > 2", "0")
+        self.partialEval("2 > 1", "1")
+        self.partialEval("t > 1", "t > 1")
+        self.partialEval("1 > t", "1 > t")
+        # <=
+        self.partialEval("1 <= 2", "1")
+        self.partialEval("2 <= 1", "0")
+        self.partialEval("t <= 1", "t <= 1")
+        self.partialEval("1 <= t", "1 <= t")
+        # >=
+        self.partialEval("1 >= 2", "0")
+        self.partialEval("2 >= 1", "1")
+        self.partialEval("t >= 1", "t >= 1")
+        self.partialEval("1 >= t", "1 >= t")
+        # ~
+        self.partialEval("~~3", "3")
+        self.partialEval("~t", "~t")
+        self.partialEval("~(t + 1)", "~(t + 1)")
+        # &
+        self.partialEval("6 & 12", "4")
+        self.partialEval("t & 3", "t & 3")
+        self.partialEval("3 & t", "3 & t")
+        # |
+        self.partialEval("6 | 12", "14")
+        self.partialEval("t | 3", "t | 3")
+        self.partialEval("3 | t", "3 | t")
+        # not
+        self.partialEval("not 0", "1")
+        self.partialEval("not 5", "0")
+        self.partialEval("not t", "not t")
+        # and
+        self.partialEval("0 and 1", "0")
+        self.partialEval("1 and 0", "0")
+        self.partialEval("2 and 3", "3")
+        self.partialEval("0 and t", "0")
+        self.partialEval("t and 0", "t and 0")
+        self.partialEval("1 and t", "1 and t")
+        # or
+        self.partialEval("0 or 2", "2")
+        self.partialEval("3 or 0", "3")
+        self.partialEval("2 or 3", "2")
+        self.partialEval("1 or t", "1")
+        self.partialEval("0 or t", "0 or t")
+        self.partialEval("t or 1", "t or 1")
+        # ?
+        self.partialEval("1 ? 2 : 3", "2")
+        self.partialEval("0 ? 2 : 3", "3")
+        self.partialEval("t ? 2 : 3", "t ? 2 : 3")
+        # min
+        self.partialEval("min(1, 2, 3)", "1")
+        self.partialEval("min(7, 5, t)", "min(t, 5)")
+        self.partialEval("min(4, t, t)", "min(t, t, 4)")
+        # max
+        self.partialEval("max(1, 2, 3)", "3")
+        self.partialEval("max(7, 5, t)", "max(t, 7)")
+        self.partialEval("max(4, t, t)", "max(t, t, 4)")
+        # lc
+        self.partialEval('lc("Abc")', '"abc"')
+        self.partialEval("lc(t)", "lc(t)")
+        # uc
+        self.partialEval('uc("Abc")', '"ABC"')
+        self.partialEval("uc(t)", "uc(t)")
+        # selrand
+        self.partialEval("selrand(1, 2, 3 + 5)", "selrand(1, 2, 8)")
+        self.partialEval("selrand(t, 2, 3 + 5)", "selrand(t, 2, 8)")
+        # 1-dimensional math functions
+        self.partialEval("floor(5.4)", "5.0")
+        self.partialEval("floor(t)", "floor(t)")
+        # pow
+        self.partialEval("pow(2, 4)", "16.0")
+        self.partialEval("pow(2, t)", "pow(2, t)")
+        self.partialEval("pow(t, 2)", "pow(t, 2)")
+        # vec3
+        self.partialEval("vec3(1, 2, 3)", "vec3(1, 2, 3)")
+        self.partialEval("vec3(1, t, 3)", "vec3(1, t, 3)")
+        self.partialEval("vec3(1, 2, 3) + vec3(4, 5, 6)", "vec3(5, 7, 9)")
+        self.partialEval("vec3(1, 2, 3) + vec3(4, 5, t)", "vec3(1, 2, 3) + vec3(4, 5, t)")
+        # random
+        self.partialEval("random", "random")
+        # glob
+        self.partialEval("e", "none")
+        self.partialEval("t", "t")
+        # dot
+        self.partialEval("t.attr + 5", "t.attr + 5")
+
+    def test_partial_text_eval(self):
+        self.partialTextEval('string', 'string')
+        self.partialTextEval('string {3 + 3}', 'string 6')
+        self.partialTextEval('string {t + 3}', 'string {t + 3}')
+        # index
+        self.partialTextEval('string [0:abc,def]', 'string abc')
+        self.partialTextEval('string [1:abc,def]', 'string def')
+        self.partialTextEval('string [t:abc,def]', 'string [t:abc,def]')
+        # numdecl
+        self.assertEqual(self.app.call("l10n.literal_value", 1, ["object", "objects"]), "object")
+        self.assertEqual(self.app.call("l10n.literal_value", 2, ["object", "objects"]), "objects")
+        self.partialTextEval('string [#1:abc,abces]', 'string abc')
+        self.partialTextEval('string [#2:abc,abces]', 'string abces')
+        self.partialTextEval('string [#t:abc,abces]', 'string [#t:abc,abces]')
 
 def main():
     try:

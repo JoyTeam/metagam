@@ -195,4 +195,4 @@ assert.strictEqual(MMOScript.evaluate(['%', 7, 4]), 3);
 assert.strictEqual(MMOScript.evaluate(['%', 7, 0]), undefined);
 
 /* Vectors */
-assert.strictEqual(MMOScript.evaluate(['vec3', 1, 2, 3]).toString(), '(1, 2, 3)');
+assert.strictEqual(MMOScript.evaluate(['call', 'vec3', 1, 2, 3]).toString(), '(1, 2, 3)');

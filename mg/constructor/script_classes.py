@@ -145,9 +145,14 @@ class TokenStar(Parsing.Token):
     "%token star [pMulOp]"
 class TokenSlash(Parsing.Token):
     "%token slash [pMulOp]"
+class TokenPercent(Parsing.Token):
+    "%token percent [pMulOp]"
+
+class PUnaryMinusOp(Parsing.Precedence):
+    "%right pUnaryMinusOp >pMulOp"
 
 class PDotOp(Parsing.Precedence):
-    "%left pDotOp >pMulOp"
+    "%left pDotOp >pUnaryMinusOp"
 class TokenDot(Parsing.Token):
     "%token dot [pDotOp]"
 
@@ -220,6 +225,10 @@ class MulOp(Parsing.Nonterm):
     def reduceSlash(self, slash):
 	"%reduce slash"
 	self.variant = "slash"
+
+    def reducePercent(self, slash):
+	"%reduce percent"
+	self.variant = "percent"
 
 class List(Parsing.Nonterm):
     "%nonterm"
@@ -333,15 +342,22 @@ class Expr(Parsing.Nonterm):
 	elif AddOp.variant == "minus":
             self.val = ["-", exprA.val, exprB.val]
 
+    def reduceUnaryMinus(self, op, expr):
+        "%reduce minus Expr [pUnaryMinusOp]"
+        self.val = ["-", expr.val]
+
     def reduceMul(self, exprA, MulOp, exprB):
 	"%reduce Expr MulOp Expr [pMulOp]"
 	if MulOp.variant == "star":
             self.val = ["*", exprA.val, exprB.val]
 	elif MulOp.variant == "slash":
             self.val = ["/", exprA.val, exprB.val]
+	elif MulOp.variant == "percent":
+            self.val = ["%", exprA.val, exprB.val]
 
     exprFuncs = set(["min", "max", "uc", "lc", "selrand", "floor",
-        "round", "ceil", "abs", "sqrt", "sqr", "pow", "log", "exp", "sin", "cos", "tan", "asin", "acos", "atan"])
+        "round", "ceil", "abs", "sqrt", "sqr", "pow", "log", "exp",
+        "sin", "cos", "tan", "asin", "acos", "atan", "vec3"])
 
     def reduceFunc(self, func, ParLeft, lst, ParRight):
         "%reduce func parleft List parright"
@@ -365,12 +381,13 @@ class Result(Parsing.Nonterm):
         raise ScriptParserResult(e.val)
 
 class ScriptParser(Parsing.Glr, Module):
-    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|!=|>=|<=|=|>|<|\+|-|\*|\&|\||~|/|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
+    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|!=|>=|<=|=|>|<|\+|-|\*|\&|\||~|/|%|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
     syms = {
         "+": TokenPlus,
         "-": TokenMinus,
         "*": TokenStar,
         "/": TokenSlash,
+        "%": TokenPercent,
         "(": TokenParLeft,
         ")": TokenParRight,
         "{": TokenCurlyLeft,
@@ -400,7 +417,8 @@ class ScriptParser(Parsing.Glr, Module):
         "|": TokenBitOr,
     }
     funcs = set(["min", "max", "uc", "lc", "selrand", "floor",
-        "round", "ceil", "abs", "sqrt", "sqr", "pow", "log", "exp", "sin", "cos", "tan", "asin", "acos", "atan"])
+        "round", "ceil", "abs", "sqrt", "sqr", "pow", "log",
+        "exp", "sin", "cos", "tan", "asin", "acos", "atan", "vec3"])
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptParser")

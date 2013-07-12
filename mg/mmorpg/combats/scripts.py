@@ -8,6 +8,8 @@ import json
 re_comma = re.compile(r'\s*,\s*')
 re_colon = re.compile(r'\s*:\s*')
 
+parser_debug = False
+
 class CombatScriptError(CombatError):
     def __init__(self, val, env):
         CombatError.__init__(self, val)
@@ -44,7 +46,13 @@ class CombatScriptsAdmin(ConstructorModule):
         try:
             return inst._combat_parser_spec
         except AttributeError:
-            inst._combat_parser_spec = Parsing.Spec(sys.modules["mg.mmorpg.combats.combat_parser"], skinny=False)
+            kwargs = {
+                "skinny": False
+            }
+            if parser_debug:
+                kwargs["verbose"] = True
+                kwargs["logFile"] = "CombatParser.log"
+            inst._combat_parser_spec = Parsing.Spec(sys.modules["mg.mmorpg.combats.combat_parser"], **kwargs)
             return inst._combat_parser_spec
 
     def parse_script(self, text):

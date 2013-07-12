@@ -72,6 +72,12 @@ class TokenMusic(Parsing.Token):
 class TokenStop(Parsing.Token):
     "%token stop"
 
+class TokenType(Parsing.Token):
+    "%token type"
+
+class TokenValue(Parsing.Token):
+    "%token value"
+
 class CombatAttrKey(Parsing.Nonterm):
     "%nonterm"
     def reduceAttrKey(self, attrkey):
@@ -132,8 +138,8 @@ def validate_attrs(any_obj, obj_name, attrs, valid_attrs):
 
 class CombatStatement(Parsing.Nonterm):
     "%nonterm"
-    def reduceDamage(self, cmd, obj, dot, attr, val, attrs):
-        "%reduce damage Expr dot AttrKey Expr ExprAttrs"
+    def reduceDamage(self, cmd, obj, dot, attr, valKw, val, attrs):
+        "%reduce damage Expr dot AttrKey value Expr ExprAttrs"
         if not re_param.match(attr.val):
             raise Parsing.SyntaxError(dot.script_parser._("Damage parameter must start with 'p_'"))
         maxval = get_attr(cmd, "damage", attrs, "maxval")
@@ -143,8 +149,8 @@ class CombatStatement(Parsing.Nonterm):
             attrs["maxval"] = maxval
         self.val = ["damage", obj.val, attr.val, val.val, attrs]
 
-    def reduceHeal(self, cmd, obj, dot, attr, val, attrs):
-        "%reduce heal Expr dot AttrKey Expr ExprAttrs"
+    def reduceHeal(self, cmd, obj, dot, attr, valKw, val, attrs):
+        "%reduce heal Expr dot AttrKey value Expr ExprAttrs"
         if not re_param.match(attr.val):
             raise Parsing.SyntaxError(dot.script_parser._("Heal parameter must start with 'p_'"))
         maxval = get_attr(cmd, "heal", attrs, "maxval")
@@ -203,8 +209,8 @@ class CombatStatement(Parsing.Nonterm):
             args["cls"] = cls
         self.val = ["chat", text, args]
 
-    def reduceAction(self, cmd, source, tp, attrs):
-        "%reduce action Expr Expr ExprAttrs"
+    def reduceAction(self, cmd, source, typeKw, tp, attrs):
+        "%reduce action Expr type Expr ExprAttrs"
         for k, v in attrs.val.iteritems():
             if not re_valid_attribute_code.match(k):
                 raise Parsing.SyntaxError(cmd.script_parser._("'{obj}' has no attribute '{attr}'").format(obj="action", attr=k))
@@ -330,7 +336,7 @@ class ExprAttrs(Parsing.Nonterm):
         self.val[key.val] = expr.val
 
 class CombatAttrKey(Parsing.Nonterm):
-    "%nonterm"
+    "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
         "%reduce AttrKey"
         self.val = attrkey.val
@@ -364,6 +370,8 @@ class CombatScriptParser(ScriptParser):
     syms["sound"] = TokenSound
     syms["music"] = TokenMusic
     syms["stop"] = TokenStop
+    syms["value"] = TokenValue
+    syms["type"] = TokenType
 
     funcs = ScriptParser.funcs.copy()
     funcs.add("count")

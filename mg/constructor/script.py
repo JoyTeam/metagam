@@ -103,13 +103,20 @@ class ScriptEngine(ConstructorModule):
         return prio
 
     def wrap(self, val, parent, assoc=True):
-        # If priority of parent operation is higher than ours
-        # wrap in parenthesis
+        """
+        If priority of parent operation is higher than val's,
+        wrap 'val' in parenthesis.
+        Anyway return unparsed value.
+        """
         val_priority = self.priority(val)
         parent_priority = self.priority(parent)
+        # Do not apply associativity assumptions to different operations.
+        # Considering (A OP1 B) OP2 C != A OP1 (B OP2 C)
+        if assoc and type(val) == list and val[0] != parent[0]:
+            assoc = False
         if val_priority > parent_priority:
             return self.unparse_expression(val)
-        elif val_priority == parent_priority and assoc:
+        elif (val_priority == parent_priority) and assoc:
             return self.unparse_expression(val)
         else:
             return '(%s)' % self.unparse_expression(val)
@@ -122,6 +129,8 @@ class ScriptEngine(ConstructorModule):
                 return 'not %s' % self.wrap(val[1], val)
             elif cmd == "~":
                 return '~%s' % self.wrap(val[1], val)
+            elif cmd == "-" and len(val) == 2:
+                return '-%s' % self.wrap(val[1], val)
             elif cmd == '+' or cmd == '*' or cmd == "and" or cmd == "or" or cmd == "&" or cmd == "|":
                 # (a OP b) OP c == a OP (b OP c)
                 return '%s %s %s' % (self.wrap(val[1], val), cmd, self.wrap(val[2], val))
@@ -147,6 +156,8 @@ class ScriptEngine(ConstructorModule):
                 return "'%s'" % val
             else:
                 return '"%s"' % quotestr(val)
+        elif tp is Vec3:
+            return 'vec3(%s, %s, %s)' % (val.x, val.y, val.z)
         elif val is None:
             return "none"
         elif val is True:
@@ -209,7 +220,7 @@ class ScriptEngine(ConstructorModule):
                 res += u'%s' % arg
         return res
 
-    def evaluate_text(self, tokens, globs=None, used_globs=None, description=None, env=None):
+    def evaluate_text(self, tokens, globs=None, used_globs=None, description=None, env=None, keep_globs=None):
         if type(tokens) != list:
             return unicode(tokens)
         if env is None:
@@ -224,6 +235,11 @@ class ScriptEngine(ConstructorModule):
             env.used_globs = used_globs
         elif not hasattr(env, "used_globs"):
             env.used_globs = None
+        # keep_globs
+        if keep_globs is not None:
+            env.keep_globs = keep_globs
+        elif not hasattr(env, "keep_globs"):
+            env.keep_globs = None
         # description
         if description is not None:
             env.description = description
@@ -235,28 +251,44 @@ class ScriptEngine(ConstructorModule):
         env.val = tokens
         env.text = True
         # evaluating
-        res = u""
+        res = []
+        partial = False
         for token in tokens:
             if type(token) is list:
                 val = self._evaluate(token, env)
                 tv = type(val)
                 if val is None:
                     pass
+                elif keep_globs and (tv is list):
+                    partial = True
+                    res.append(val)
                 elif tv is str or tv is unicode or tv is int or tv is float:
-                    res += u"%s" % val
+                    res.append(u"%s" % val)
                 else:
                     try:
-                        res += unicode(val)
+                        res.append(unicode(val))
                     except Exception as e:
                         raise ScriptTypeError(self._("Couldn't convert '{token}' (type '{type}') to string: {exception}").format(token=self.unparse_expression(token), type=type(val).__name__, exception=e.__class__.__name__), env)
             else:
-                res += u"%s" % token
+                res.append(u"%s" % token)
         # restoring
         env.val = save_val
         env.text = save_text
-        return res
+        if partial:
+            # join sequental strings
+            output = []
+            for val in res:
+                if type(val) == unicode:
+                    if output and type(output[-1]) is unicode:
+                        output[-1] += val
+                        continue
+                output.append(val)
+            return output
+        else:
+            res = u"".join(res)
+            return res
 
-    def evaluate_expression(self, val, globs=None, used_globs=None, description=None, env=None):
+    def evaluate_expression(self, val, globs=None, used_globs=None, description=None, env=None, keep_globs=None):
         if env is None:
             env = ScriptEnvironment()
         # globs
@@ -269,6 +301,11 @@ class ScriptEngine(ConstructorModule):
             env.used_globs = used_globs
         elif not hasattr(env, "used_globs"):
             env.used_globs = None
+        # keep_globs
+        if keep_globs is not None:
+            env.keep_globs = keep_globs
+        elif not hasattr(env, "keep_globs"):
+            env.keep_globs = None
         # description
         if description is not None:
             env.description = description
@@ -312,14 +349,17 @@ class ScriptEngine(ConstructorModule):
         if cmd == '+':
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
-            # Strings are concatenated
-            if self.isString(arg1) and self.isString(arg2):
-                return arg1 + arg2
             # Adding None does not affect the value
             if arg1 is None:
                 return arg2
             if arg2 is None:
                 return arg1
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                return [cmd, arg1, arg2]
+            # Strings are concatenated
+            if self.isString(arg1) and self.isString(arg2):
+                return arg1 + arg2
             # Vectors can be added only to vectors
             if isinstance(arg1, Vec3):
                 if isinstance(arg2, Vec3):
@@ -336,9 +376,15 @@ class ScriptEngine(ConstructorModule):
             if len(val) == 2:
                 arg1 = None
                 arg2 = self._evaluate(val[1], env)
+                # Partial evaluation
+                if env.keep_globs and type(arg2) is list:
+                    return [cmd, arg2]
             else:
                 arg1 = self._evaluate(val[1], env)
                 arg2 = self._evaluate(val[2], env)
+                # Partial evaluation
+                if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                    return [cmd, arg1, arg2]
             # Substracting None does not affect the value
             if arg2 is None:
                 return arg1
@@ -360,6 +406,9 @@ class ScriptEngine(ConstructorModule):
         if cmd == '*':
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                return [cmd, arg1, arg2]
             # Vectors may be multiplied by numbers only
             if isinstance(arg1, Vec3):
                 arg2 = self.toNumber(arg2)
@@ -374,6 +423,12 @@ class ScriptEngine(ConstructorModule):
         if cmd == '/':
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                if arg2 == 0:
+                    return None
+                else:
+                    return [cmd, arg1, arg2]
             # Vectors may be divided by numbers only
             if isinstance(arg1, Vec3):
                 arg2 = self.toNumber(arg2)
@@ -389,8 +444,16 @@ class ScriptEngine(ConstructorModule):
             else:
                 return float(arg1) / arg2
         if cmd == '%':
-            arg1 = int(self.toNumber(self._evaluate(val[1], env)))
-            arg2 = int(self.toNumber(self._evaluate(val[2], env)))
+            arg1 = self._evaluate(val[1], env)
+            arg2 = self._evaluate(val[2], env)
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                if arg2 == 0:
+                    return None
+                else:
+                    return [cmd, arg1, arg2]
+            arg1 = int(self.toNumber(arg1))
+            arg2 = int(self.toNumber(arg2))
             if arg2 == 0:
                 return None
             else:
@@ -398,6 +461,9 @@ class ScriptEngine(ConstructorModule):
         elif cmd == "==" or cmd == "!=":
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                return [cmd, arg1, arg2]
             if isinstance(arg1, Vec3):
                 if isinstance(arg2, Vec3):
                     equals = (arg1.x == arg2.x) and (arg1.y == arg2.y) and (arg1.z == arg2.z)
@@ -421,12 +487,20 @@ class ScriptEngine(ConstructorModule):
             else:
                 return 0 if equals else 1
         elif cmd == "in":
-            arg1 = str2unicode(self._evaluate(val[1], env))
-            arg2 = str2unicode(self._evaluate(val[2], env))
+            arg1 = self._evaluate(val[1], env)
+            arg2 = self._evaluate(val[2], env)
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                return [cmd, arg1, arg2]
+            arg1 = str2unicode(arg1)
+            arg2 = str2unicode(arg2)
             return 1 if arg2.find(arg1) >= 0 else 0
         elif cmd == "<" or cmd == ">" or cmd == "<=" or cmd == ">=":
             arg1 = self._evaluate(val[1], env)
             arg2 = self._evaluate(val[2], env)
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                return [cmd, arg1, arg2]
             if isinstance(arg1, Vec3) and isinstance(arg2, Vec3):
                 if arg1.x < arg2.x:
                     res = -1
@@ -460,18 +534,35 @@ class ScriptEngine(ConstructorModule):
             if cmd == ">=":
                 return 1 if res >= 0 else 0
         elif cmd == "~":
-            arg1 = intz(self._evaluate(val[1], env))
+            arg1 = self._evaluate(val[1], env)
+            # Partial evaluation
+            if env.keep_globs and type(arg1) is list:
+                return [cmd, arg1]
+            arg1 = intz(arg1)
             return ~arg1
         elif cmd == "&":
-            arg1 = intz(self._evaluate(val[1], env))
-            arg2 = intz(self._evaluate(val[2], env))
+            arg1 = self._evaluate(val[1], env)
+            arg2 = self._evaluate(val[2], env)
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                return [cmd, arg1, arg2]
+            arg1 = intz(arg1)
+            arg2 = intz(arg2)
             return arg1 & arg2
         elif cmd == "|":
-            arg1 = intz(self._evaluate(val[1], env))
-            arg2 = intz(self._evaluate(val[2], env))
+            arg1 = self._evaluate(val[1], env)
+            arg2 = self._evaluate(val[2], env)
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                return [cmd, arg1, arg2]
+            arg1 = intz(arg1)
+            arg2 = intz(arg2)
             return arg1 | arg2
         elif cmd == "not":
             arg1 = self._evaluate(val[1], env)
+            # Partial evaluation
+            if env.keep_globs and type(arg1) is list:
+                return [cmd, arg1]
             return 0 if arg1 else 1
         elif cmd == "and":
             arg1 = self._evaluate(val[1], env)
@@ -481,18 +572,31 @@ class ScriptEngine(ConstructorModule):
             arg2 = self._evaluate(val[2], env)
             if not arg1:
                 return arg1
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                return [cmd, arg1, arg2]
             return arg2
         elif cmd == "or":
             arg1 = self._evaluate(val[1], env)
             # Full boolean eval
-            if arg1 and env.used_globs is None:
+            if arg1 and env.used_globs is None and type(arg1) is not list:
                 return arg1
             arg2 = self._evaluate(val[2], env)
+            if arg1 and type(arg1) is not list:
+                return arg1
+            # Partial evaluation
+            if env.keep_globs and (type(arg1) is list or type(arg2) is list):
+                return [cmd, arg1, arg2]
             if arg1:
                 return arg1
             return arg2
         elif cmd == '?':
             arg1 = self._evaluate(val[1], env)
+            # Partial evaluation
+            if env.keep_globs and type(arg1) is list:
+                arg2 = self._evaluate(val[2], env)
+                arg3 = self._evaluate(val[3], env)
+                return [cmd, arg1, arg2, arg3]
             if env.used_globs is None:
                 if arg1:
                     return self._evaluate(val[2], env)
@@ -509,8 +613,13 @@ class ScriptEngine(ConstructorModule):
             fname = val[1]
             if fname == "min" or fname == "max":
                 res = None
+                res_unprocessed = []
                 for i in xrange(2, len(val)):
                     v = self._evaluate(val[i], env)
+                    # Partial evaluation
+                    if env.keep_globs and type(v) is list:
+                        res_unprocessed.append(v)
+                        continue
                     if type(v) is str or type(v) is unicode:
                         v = floatz(v)
                     elif type(v) is not int and type(v) is not float:
@@ -521,23 +630,38 @@ class ScriptEngine(ConstructorModule):
                     elif fname == "max":
                         if res is None or v > res:
                             res = v
+                if res_unprocessed:
+                    if res is not None:
+                        res_unprocessed.append(res)
+                    return [cmd, fname] + res_unprocessed
                 return res
             elif fname == "lc" or fname == "uc":
                 if len(val) != 3:
                     raise ScriptRuntimeError(self._("Function {fname} must be called with single argument").format(fname=fname), env)
-                v = str2unicode(self._evaluate(val[2], env))
+                v = self._evaluate(val[2], env)
+                # Partial evaluation
+                if env.keep_globs and type(v) is list:
+                    return [cmd, fname, v]
+                v = str2unicode(v)
                 if fname == "lc":
                     return v.lower()
                 elif fname == "uc":
                     return v.upper()
             elif fname == "selrand":
                 if len(val) >= 3:
-                    return self._evaluate(random.choice(val[2:]), env)
+                    args = val[2:]
+                    # Partial evaluation
+                    if env.keep_globs:
+                        return [cmd, fname] + [self._evaluate(v, env) for v in args]
+                    return self._evaluate(random.choice(args), env)
                 return None
             elif fname == "floor" or fname == "round" or fname == "ceil" or fname == "abs" or fname == "sqrt" or fname == "sqr" or fname == "log" or fname == "exp" or fname == "sin" or fname == "cos" or fname == "tan" or fname == "asin" or fname == "acos" or fname == "atan":
                 if len(val) != 3:
                     raise ScriptRuntimeError(self._("Function {fname} must be called with single argument").format(fname=fname), env)
                 v = self._evaluate(val[2], env)
+                # Partial evaluation
+                if env.keep_globs and type(v) is list:
+                    return [cmd, fname, v]
                 if type(v) is str or type(v) is unicode:
                     v = floatz(v)
                 elif type(v) is not int and type(v) is not float:
@@ -577,11 +701,14 @@ class ScriptEngine(ConstructorModule):
                 if len(val) != 4:
                     raise ScriptRuntimeError(self._("Function {fname} must be called with two arguments").format(fname=fname), env)
                 v1 = self._evaluate(val[2], env)
+                v2 = self._evaluate(val[3], env)
+                # Partial evaluation
+                if env.keep_globs and (type(v1) is list or type(v2) is list):
+                    return [cmd, fname, v1, v2]
                 if type(v1) is str or type(v1) is unicode:
                     v1 = floatz(v1)
                 elif type(v1) is not int and type(v1) is not float:
                     v1 = 0
-                v2 = self._evaluate(val[3], env)
                 if type(v2) is str or type(v2) is unicode:
                     v2 = floatz(v2)
                 elif type(v2) is not int and type(v2) is not float:
@@ -590,12 +717,31 @@ class ScriptEngine(ConstructorModule):
                     return math.pow(v1, v2)
                 except ValueError:
                     return float('nan')
+            elif fname == "vec3":
+                if len(val) != 5:
+                    raise ScriptRuntimeError(self._("Function {fname} must be called with three arguments").format(fname=fname), env)
+                arg1 = self._evaluate(val[2], env)
+                arg2 = self._evaluate(val[3], env)
+                arg3 = self._evaluate(val[4], env)
+                # Partial evaluation
+                if env.keep_globs and (type(arg1) is list or type(arg2) is list or type(arg3) is list):
+                    return [cmd, fname, arg1, arg2, arg3]
+                arg1 = self.toNumber(arg1)
+                arg2 = self.toNumber(arg2)
+                arg3 = self.toNumber(arg3)
+                return Vec3(arg1, arg2, arg3)
             else:
                 raise ScriptRuntimeError(self._("Function {fname} is not supported in expression context").format(fname=fname), env)
         elif cmd == "random":
+            # Partial evaluation
+            if env.keep_globs:
+                return [cmd]
             return random.random()
         elif cmd == "glob":
             name = val[1]
+            # Partial evaluation
+            if env.keep_globs and env.keep_globs.get(name):
+                return [cmd, name]
             if name not in env.globs:
                 return None
             obj = env.globs.get(name)
@@ -607,6 +753,10 @@ class ScriptEngine(ConstructorModule):
             return obj
         elif cmd == ".":
             obj = self._evaluate(val[1], env)
+            field = val[2]
+            # Partial evaluation
+            if env.keep_globs and type(obj) is list:
+                return [cmd, obj, field]
             if obj is None:
                 raise ScriptTypeError(self._("Empty value '{val}' has no attributes").format(val=self.unparse_expression(val[1])), env)
             if type(obj) is int:
@@ -619,14 +769,18 @@ class ScriptEngine(ConstructorModule):
             if getter is None:
                 raise ScriptTypeError(self._("Object '{val}' has no attributes").format(val=self.unparse_expression(val[1])), env)
             try:
-                attval = getter(val[2], handle_exceptions=False)
+                attval = getter(field, handle_exceptions=False)
             except AttributeError as e:
-                raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(val[1]), att=val[2]), env)
+                raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(val[1]), att=field), env)
             return attval
         elif cmd == "index":
             if len(val) < 3:
                 return None
-            index = intz(self._evaluate(val[1], env)) + 2
+            index = self._evaluate(val[1], env)
+            # Partial evaluation
+            if env.keep_globs and type(index) is list:
+                return [cmd, index] + val[2:]
+            index = intz(index) + 2
             if index < 2:
                 index = 2
             if index >= len(val):
@@ -635,16 +789,19 @@ class ScriptEngine(ConstructorModule):
         elif cmd == "numdecl":
             if len(val) < 3:
                 return None
-            return self.call("l10n.literal_value", intz(self._evaluate(val[1], env)), val[2:])
+            arg = self._evaluate(val[1], env)
+            # Partial evaluation
+            if env.keep_globs and type(arg) is list:
+                return [cmd, arg] + val[2:]
+            return self.call("l10n.literal_value", intz(arg), val[2:])
         elif cmd == "clsbegin":
-            return self.formatter(env).clsbegin(self._evaluate(val[1], env))
+            arg = self._evaluate(val[1], env)
+            # Partial evaluation
+            if env.keep_globs and type(arg) is list:
+                return [cmd, arg]
+            return self.formatter(env).clsbegin(arg)
         elif cmd == "clsend":
             return self.formatter(env).clsend()
-        elif cmd == "vec3":
-            arg1 = self.toNumber(self._evaluate(val[1], env))
-            arg2 = self.toNumber(self._evaluate(val[2], env))
-            arg3 = self.toNumber(self._evaluate(val[3], env))
-            return Vec3(arg1, arg2, arg3)
         else:
             raise ScriptRuntimeError(self._("Unknown script engine operation: {op}").format(op=cmd), env)
 

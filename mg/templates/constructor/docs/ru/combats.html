@@ -261,11 +261,11 @@ set <strong>объект</strong>.<strong>параметр</strong> = select &lt
 
 <h2>Нанесение урона</h2>
 <pre class="doc-code-sample">
-damage <strong>участник</strong>.<strong>параметр</strong> <strong>урон</strong> [maxval=<strong>макс</strong>]
+damage <strong>участник</strong>.<strong>параметр</strong> value <strong>урон</strong> [maxval=<strong>макс</strong>]
 </pre>
 <p>Эта команда уменьшает значение указанного параметра участника на значение выражения "урон". Но так, чтобы результирующее выражение не стало меньше нуля. Необязательный атрибут "maxval" указывает системе, какое максимальное значение у этого параметра может быть. Maxval используется только для вывода текста в лог боя. Например:</p>
 <pre class="doc-code-sample">
-damage member.p_hp 15 maxval=20
+damage member.p_hp value 15 maxval=20
 </pre>
 <p>Помимо уменьшения параметра, эта команда установит глобальные переменные:<ul>
     <li>last_damage &mdash; количество фактически нанесённого урона (может быть меньше запрошенного, если значение упёрлось в ноль);</li>
@@ -275,7 +275,7 @@ damage member.p_hp 15 maxval=20
 
 <h2>Лечение</h2>
 <pre class="doc-code-sample">
-heal <strong>участник</strong>.<strong>параметр</strong> <strong>выражение</strong> [maxval=<strong>макс</strong>]
+heal <strong>участник</strong>.<strong>параметр</strong> value <strong>выражение</strong> [maxval=<strong>макс</strong>]
 </pre>
 <p>Команда, аналогичная нанесению урона, за исключением того, что она не уменьшает значение параметра, а увеличивает. Значение не может вырасти больше, чем maxval (если он указан).</p>
 <p>Аналогично команде damage, heal выставляет глобальные переменные:<ul>
