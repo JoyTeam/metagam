@@ -23,6 +23,7 @@ class ScriptEngine(ConstructorModule):
         self.rhook("script.unparse-expression", self.unparse_expression)
         self.rhook("script.validate-expression", self.validate_expression)
         self.rhook("script.evaluate-expression", self.evaluate_expression)
+        self.rhook("script.encode-objects", self.encode_objects)
         self.rhook("script.admin-expression", self.admin_expression)
         # Text expressions (templates)
         self.rhook("script.parse-text", self.parse_text)
@@ -318,10 +319,19 @@ class ScriptEngine(ConstructorModule):
         env.text = False
         # evaluating
         res = self._evaluate(val, env)
+        if keep_globs:
+            res = self.call("script.encode-objects", res)
         # restoring
         env.val = save_val
         env.text = save_text
         return res
+
+    def encode_objects(self, val):
+        if type(val) is Vec3:
+            return ["call", "vec3", val.x, val.y, val.z]
+        if type(val) is list:
+            return [self.encode_objects(v) for v in val]
+        return val
 
     def isString(self, val):
         return type(val) is str or type(val) is unicode

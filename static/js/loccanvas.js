@@ -350,6 +350,7 @@ wait(['location', 'objects', 'hints'], function () {
             LocObject.superclass.constructor.call(self, manager, info.id);
             /* Object position */
             self.addParam(new LocObjectPosition(self, 1, new DynamicValue(info.position)));
+            self.addParam(new LocObjectVisibility(self, 2, new DynamicValue(info.visible)));
             /* Hint */
             if (info.hint) {
                 self.hint = info.hint;
@@ -402,12 +403,19 @@ wait(['location', 'objects', 'hints'], function () {
          */
         paint: function (ctx) {
             var self = this;
-            if (self.image) {
+            if (self.image && self.visible && self.visible > 0) {
+                if (self.visible < 1) {
+                    var alpha = ctx.globalAlpha;
+                    ctx.globalAlpha = self.visible;
+                }
                 ctx.drawImage(self.image,
                         (self.position.x - self.imageWidth / 2) * LocCanvas.scale,
                         (self.position.z - self.imageHeight / 2) * LocCanvas.scale,
                         self.imageWidth * LocCanvas.scale,
                         self.imageHeight * LocCanvas.scale);
+                if (self.visible < 1) {
+                    ctx.globalAlpha = alpha;
+                }
             }
         },
 
@@ -447,6 +455,19 @@ wait(['location', 'objects', 'hints'], function () {
             self.obj.manager.eventualPaint();
         }
     });
+
+    /*
+     * Parameter altering visibility of the object
+     */
+    LocObjectVisibility = Ext.extend(GenericObjectParam, {
+        applyValue: function (val) {
+            var self = this;
+            self.obj.visible = val;
+            self.obj.touch();
+            self.obj.manager.eventualPaint();
+        }
+    });
+
     LocObjects = new LocObjectsManager();
     loaded('loccanvas');
 });

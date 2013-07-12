@@ -226,8 +226,6 @@ class LocationObjects(ConstructorModule):
                 ident = 0
                 order = 0
                 for obj in db_loc.get("static_objects"):
-                    if not self.call("script.evaluate-expression", obj.get("visible", 1), globs={"char": character, "loc": location}, description=lambda: self._("Evaluation of location object visibility")):
-                        continue
                     ident += 1
                     order += 1
                     rclick = {}
@@ -247,11 +245,17 @@ class LocationObjects(ConstructorModule):
                         "id": obj.get("id") or ("auto_%s" % ident),
                         "width": obj["width"],
                         "height": obj["height"],
-                        "position": obj.get("position") or ["call", "vec3", obj["x"], order, obj["y"]],
                         "image": obj.get("image"),
                         "polygon": obj["polygon"],
                         "hint": obj["hint"],
                         "click": rclick
                     }
+                    globs = {"char": character, "loc": location}
+                    keep_globs = {"t": True}
+                    robj["visible"] = self.call("script.evaluate-expression", obj["visible"], globs=globs, keep_globs=keep_globs)
+                    if "position" in obj:
+                        robj["position"] = self.call("script.evaluate-expression", obj["position"], globs=globs, keep_globs=keep_globs)
+                    else:
+                        robj["position"] = ["call", "vec3", obj["x"], order, obj["y"]]
                     loc_init.append("LocObjects.addStaticObject(%s);" % json.dumps(robj))
             loc_init.append("LocObjects.run();");

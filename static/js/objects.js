@@ -181,6 +181,38 @@ var GenericObject = Ext.extend(Object, {
     }
 });
 
+function deepEquals(a, b)
+{
+    if (typeof(a) != typeof(b)) {
+        return false;
+    }
+
+    if (typeof(a) == 'object') {
+        if (a === b) {
+            return true;
+        }
+        if (a.constructor !== b.constructor) {
+            return false;
+        }
+        for (var p in a) {
+            if (!b.hasOwnProperty(p)) {
+                return false;
+            }
+            if (!deepEquals(a[p], b[p])) {
+                return false;
+            }
+        }
+        for (var p in b) {
+            if (!a.hasOwnProperty(p)) {
+                return false;
+            }
+        }
+        return true;
+    } else {
+        return (a === b) ? true : false;
+    }
+}
+
 /*
  * Generic Object Parameter
  */
@@ -194,8 +226,8 @@ var GenericObjectParam = Ext.extend(Object, {
     },
 
     /*
-    * Update object parameter
-    */
+     * Update object parameter
+     */
     update: function (now) {
         var self = this;
         if (!self.needUpdate) {
@@ -211,7 +243,10 @@ var GenericObjectParam = Ext.extend(Object, {
         } else {
             val = self.value;
         }
-        self.applyValue(val);
+        if (!deepEquals(val, self.oldVal)) {
+            self.oldVal = val;
+            self.applyValue(val);
+        }
     },
 
     /*
