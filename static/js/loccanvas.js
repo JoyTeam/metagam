@@ -349,7 +349,7 @@ wait(['location', 'objects', 'hints'], function () {
             var self = this;
             LocObject.superclass.constructor.call(self, manager, info.id);
             /* Object position */
-            self.addParam(new LocObjectPosition(self, 1, new Vec3(info.position[0], info.position[1], info.position[2])));
+            self.addParam(new LocObjectPosition(self, 1, new DynamicValue(info.position)));
             /* Hint */
             if (info.hint) {
                 self.hint = info.hint;

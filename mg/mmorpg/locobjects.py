@@ -1,6 +1,7 @@
 from mg.constructor import *
 from mg.mmorpg.locations_classes import *
 import re
+import time
 
 re_valid_identifier = re.compile(r'^u_[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_objects_arg = re.compile(r'^([0-9a-f]+)(?:|/(.+))$')
@@ -78,6 +79,11 @@ class LocationObjectsAdmin(ConstructorModule):
                         errors["error"] = self._("Invalid image height")
                     else:
                         obj["height"] = intz(height)
+                    # position
+                    if req.param("position-expr-%d" % obj_id):
+                        position = req.param("position-%d" % obj_id)
+                        char = self.character(req.user())
+                        obj["position"] = self.call("script.admin-expression", "position-%d" % obj_id, errors, globs={"char": char, "loc": char.location, "t": time.time()})
                     # visible
                     visible = req.param("visible-%d" % obj_id)
                     if visible:
@@ -168,6 +174,7 @@ class LocationObjectsAdmin(ConstructorModule):
                 "url": jsencode(obj.get("url")),
                 "hint": jsencode(obj.get("hint")),
                 "visible": jsencode(self.call("script.unparse-expression", obj.get("visible", 1))),
+                "position": jsencode(self.call("script.unparse-expression", obj.get("position"))) if "position" in obj else "",
             }
             self.call("admin-locations.map-zone-%s-render" % robj["action"], obj, robj)
             objects.append(robj)
@@ -240,7 +247,7 @@ class LocationObjects(ConstructorModule):
                         "id": obj.get("id") or ("auto_%s" % ident),
                         "width": obj["width"],
                         "height": obj["height"],
-                        "position": [obj["x"], order, obj["y"]],
+                        "position": obj.get("position") or ["call", "vec3", obj["x"], order, obj["y"]],
                         "image": obj.get("image"),
                         "polygon": obj["polygon"],
                         "hint": obj["hint"],

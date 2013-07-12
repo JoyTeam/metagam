@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-07-11 10:48+0300\n"
+"PO-Revision-Date: 2013-07-12 22:32+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3329,6 +3329,9 @@ msgstr "Функция {fname} не поддерживается в контек
 
 msgid "Function {fname} must be called with single argument"
 msgstr "Функция {fname} должна вызываться с одним аргументом"
+
+msgid "Function {fname} must be called with three arguments"
+msgstr "Функция {fname} должна вызываться с тремя аргументами"
 
 msgid "Function {fname} must be called with two arguments"
 msgstr "Функция {fname} должна вызываться с двумя аргументами"

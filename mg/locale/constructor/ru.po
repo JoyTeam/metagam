@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2013-07-09 17:25+0300\n"
+"PO-Revision-Date: 2013-07-12 22:32+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -80,6 +80,9 @@ msgstr "Эффекты"
 
 msgid "Enable grid"
 msgstr "Включить сетку"
+
+msgid "Enable scripted position"
+msgstr "Включить скриптовое положение"
 
 msgid "Error"
 msgstr "Ошибка"
@@ -157,6 +160,9 @@ msgstr "Объект"
 msgid "Object identifier"
 msgstr "Идентификатор объекта"
 
+msgid "Object position expression"
+msgstr "Выражение для положения объекта"
+
 msgid "Or provide image URL"
 msgstr "Или укажите его URL"
 
@@ -186,6 +192,9 @@ msgstr "Относительный URL (начинается с \"/\")"
 
 msgid "Save"
 msgstr "Сохранить"
+
+msgid "Scripted object position"
+msgstr "Скриптовое положение объекта"
 
 msgid "Select"
 msgstr "Выбрать"
