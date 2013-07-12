@@ -368,6 +368,7 @@ Form = Ext.extend(AdminResponsePanel, {
         this.enforce_conditions(true);
         this.form_cmp = form;
         this.form_id = form_id;
+        this.submit = data.submit;
         this.showHandler = (function() {
             this.form_cmp.showHandler(this.form_cmp);
         }).createDelegate(this);
@@ -398,6 +399,10 @@ Form = Ext.extend(AdminResponsePanel, {
         var saved = Ext.query('.admin-saved', admincontent.dom);
         for (var i = 0; i < saved.length; i++) {
             saved[i].style.display = 'none';
+        }
+        if (this.submit) {
+            this.submit();
+            return;
         }
         var form = Ext.getCmp('admin-form-' + this.form_id);
         form.getForm().submit({

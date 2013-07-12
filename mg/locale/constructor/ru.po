@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2013-07-12 22:32+0300\n"
+"PO-Revision-Date: 2013-07-13 00:51+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -30,14 +30,20 @@ msgstr "Вершины активной зоны (относительно оп�
 msgid "Add arbitrary image"
 msgstr "Добавить произвольное изображение"
 
+msgid "Add image from the storage"
+msgstr "Добавить изображение из хранилища"
+
 msgid "Add new clickable area"
 msgstr "Добавить новую кликабельную область"
 
 msgid "Add new visual object"
 msgstr "Добавить новый визуальный объект"
 
-msgid "Add new visual object to the location"
-msgstr "Добавить новый визуальный объект на локацию"
+msgid "Add new visual object from the storage"
+msgstr "Добавить новый визуальный объект из хранилища"
+
+msgid "Add object"
+msgstr "Добавить объект"
 
 msgid "Apply"
 msgstr "Применить"
@@ -90,6 +96,10 @@ msgstr "Ошибка"
 msgid "Error connecting to the server"
 msgstr "Ошибка связи с сервером"
 
+#, python-format
+msgid "Error loading %s"
+msgstr "Ошибка при загрузке %s"
+
 msgid "Error parsing server response"
 msgstr "Ошибка при разборе ответа сервера"
 
@@ -124,6 +134,9 @@ msgstr "Файл с изображением"
 msgid "Insert Image"
 msgstr "Вставка изображения"
 
+msgid "Invalid URI"
+msgstr "Неверный URI"
+
 msgid "Invalid non-integer coordinate encountered"
 msgstr "Найдена неверная координата, не являющаяся целым числом"
 
@@ -151,11 +164,17 @@ msgstr "Далее >"
 msgid "Not selected: %s"
 msgstr "Не выбрано: %s"
 
+msgid "Number of coordinates must not be odd"
+msgstr "Количество координат не может быть нечётным"
+
 msgid "Number of corrdinates must not be odd"
 msgstr "Количество координат не может быть нечётным"
 
 msgid "Object"
 msgstr "Объект"
+
+msgid "Object URI (only URIs from the storage are allowed)"
+msgstr "URI объекта (разрешены только URI из хранилища)"
 
 msgid "Object identifier"
 msgstr "Идентификатор объекта"
@@ -251,6 +270,9 @@ msgstr "Загрузить файл"
 msgid "Upload image"
 msgstr "Загрузите изображение"
 
+msgid "Upload visual object image"
+msgstr "Загрузить изображение визуального объекта"
+
 msgid "Uploading data..."
 msgstr "Отправка данных..."
 
@@ -285,8 +307,6 @@ msgstr "Зона"
 #~ msgstr "Адрес e-mail"
 #~ msgid "Subsciption to the project news"
 #~ msgstr "Подписка на новости проекта"
-#~ msgid "Error loading %s: %s"
-#~ msgstr "Ошибка при загрузке %s: %s"
 #~ msgid "Category title"
 #~ msgstr "Название раздела"
 #~ msgid "Category description"

@@ -16,6 +16,10 @@ class LocationObjectsAdmin(ConstructorModule):
         self.rhook("headmenu-admin-locations.objects", self.headmenu_objects)
         self.rhook("admin-locations.links", self.links)
         self.rhook("admin-locations.valid-transitions", self.valid_transitions)
+        self.rhook("admin-storage.group-names", self.group_names)
+
+    def group_names(self, group_names):
+        group_names["location-objects"] = self._("Location objects")
 
     def links(self, location, links):
         req = self.req()
@@ -92,6 +96,8 @@ class LocationObjectsAdmin(ConstructorModule):
                     # image
                     image = req.param("image-%d" % obj_id)
                     if image:
+                        if not image.startswith("//"):
+                            errors["errormsg"] = self._("Image URIs must belong to the storage")
                         obj["image"] = image
                     # polygon data
                     obj["polygon"] = req.param("polygon-%d" % obj_id)

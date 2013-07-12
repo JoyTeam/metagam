@@ -348,17 +348,17 @@ VisualObject.prototype.getPolygonStr = function() {
 VisualObject.prototype.setPolygonStr = function(str) {
     var tokens = str.split(',');
     if (tokens.length % 2) {
-        Game.error(gt.gettext('Number of corrdinates must not be odd'))
+        Ext.Msg.alert(gt.gettext('Error'), gt.gettext('Number of coordinates must not be odd'))
         return;
     }
     if (tokens.length < 6) {
-        Game.error(gt.gettext('Minimal number of vertices - 3'))
+        Ext.Msg.alert(gt.gettext('Error'), gt.gettext('Minimal number of vertices - 3'))
         return;
     }
     for (var i = 0; i < tokens.length; i++) {
         var token = tokens[i];
         if (!token.match(/^-?[0-9]+$/)) {
-            Game.error(gt.gettext('Invalid non-integer coordinate encountered'));
+            Ext.Msg.alert(gt.gettext('Error'), gt.gettext('Invalid non-integer coordinate encountered'));
             return;
         }
     }
@@ -440,12 +440,22 @@ LocObjectsEditor.init = function(submit_url, width, height) {
                 text: gt.gettext('Save')
             },
             {
-                text: gt.gettext('Add new visual object to the location'),
+                text: gt.gettext('Upload visual object image'),
                 xtype: 'button',
                 icon: '/st-mg/icons/image.gif',
                 listeners: {
                     click: function() {
                         LocObjectsEditor.add_object();
+                    }
+                }
+            },
+            {
+                text: gt.gettext('Add image from the storage'),
+                xtype: 'button',
+                icon: '/st-mg/icons/image.gif',
+                listeners: {
+                    click: function() {
+                        LocObjectsEditor.select_object();
                     }
                 }
             },
@@ -496,7 +506,7 @@ LocObjectsEditor.add_object = function () {
                 url: '/admin-storage/static/new',
                 fields: [
                     {type: 'hidden', name: 'image', 'value': '1'},
-                    {type: 'hidden', name: 'group', 'value': 'equip-layout'},
+                    {type: 'hidden', name: 'group', 'value': 'location-objects'},
                     {type: 'fileuploadfield', name: 'ob', 'label': gt.gettext('Image file')}
                 ],
                 buttons: [
@@ -530,6 +540,79 @@ LocObjectsEditor.add_object = function () {
                     th.paint();
                     obj.update_form();
                     obj.loadImage();
+                }
+            })
+        ]
+    });
+    win.show();
+};
+
+LocObjectsEditor.select_object = function () {
+    var th = this;
+    th.cancel();
+    var win = new Ext.Window({
+        id: 'upload-window',
+        modal: true,
+        title: gt.gettext('Add new visual object from the storage'),
+        width: 500,
+        autoHeight: true,
+        padding: '20px 0 20px 20px',
+        items: [
+            new Form({
+                fields: [
+                    {
+                        type: 'textfield',
+                        name: 'uri',
+                        'label': gt.gettext('Object URI (only URIs from the storage are allowed)')
+                    }
+                ],
+                buttons: [
+                    {
+                        text: gt.gettext('Add object'),
+                    }
+                ],
+                submit: function () {
+                    var uri = Ext.get('form-field-uri').getValue();
+                    if (!uri) {
+                        Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Invalid URI')));
+                        return;
+                    }
+
+                    /* Load the image */
+                    var img = new Image();
+                    img.onload = function () {
+                        var obj = th.new_object();
+                        th.active_object = obj;
+                        obj.x = Math.floor(th.width / 2 + 0.5);
+                        obj.y = Math.floor(th.height / 2 + 0.5);
+                        obj.image = uri;
+                        obj.img = img;
+                        obj.width = img.width;
+                        obj.height = img.height;
+                        obj.visible = '1';
+                        obj.action = 'none';
+                        obj.render(th.form);
+                        th.form.enforce_conditions(true);
+                        th.form.doLayout();
+                        obj.activate();
+                        obj.poly.push({x: Math.floor(-obj.width / 2), y: Math.floor(-obj.height / 2)});
+                        obj.poly.push({x: Math.floor(+obj.width / 2), y: Math.floor(-obj.height / 2)});
+                        obj.poly.push({x: Math.floor(+obj.width / 2), y: Math.floor(+obj.height / 2)});
+                        obj.poly.push({x: Math.floor(-obj.width / 2), y: Math.floor(+obj.height / 2)});
+                        obj.poly.push(obj.poly[0]);
+                        th.mode = undefined;
+                        th.touch_active_object();
+                        th.paint();
+                        obj.update_form();
+                    };
+                    img.onerror = function () {
+                        Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Error loading %s'), uri));
+                    };
+                    img.onabort = function () {
+                        Ext.Msg.alert(gt.gettext('Error'), sprintf(gt.gettext('Error loading %s'), uri));
+                    };
+                    img.src = uri;
+                    win.destroy();
                 }
             })
         ]

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-07-12 22:32+0300\n"
+"PO-Revision-Date: 2013-07-13 00:56+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2983,9 +2983,6 @@ msgstr "Вычисление пациента (участника, являющ�
 msgid "Evaluation of heal value"
 msgstr "Вычисление величины лечения"
 
-msgid "Evaluation of location object visibility"
-msgstr "Вычисление видимости объекта на локации"
-
 msgid "Evaluation of log text"
 msgstr "Вычисление текста для логгирования"
 
@@ -3889,6 +3886,9 @@ msgstr "Игнорировать предварительно выбранные
 msgid "Image"
 msgstr "Картинка"
 
+msgid "Image URIs must belong to the storage"
+msgstr "URI изображения должен принадлежать хранилищу"
+
 #, python-format
 msgid "Image URL %s is incorrect"
 msgstr "URL изображения %s неверный"
@@ -4682,6 +4682,9 @@ msgstr "Название локации в родительном падеже"
 
 msgid "Location not specified"
 msgstr "Локация не указана"
+
+msgid "Location objects"
+msgstr "Объекты на локациях"
 
 msgid "Location page layout"
 msgstr "Разметка страницы локации"
@@ -10884,6 +10887,8 @@ msgstr "{targetchar.name} в другой локации"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid "Evaluation of location object visibility"
+#~ msgstr "Вычисление видимости объекта на локации"
 #~ msgid "Image type"
 #~ msgstr "Тип изображения"
 #~ msgid "Division by zero: '{val}' == 0"
