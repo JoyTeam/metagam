@@ -146,13 +146,11 @@ class QueueRunner(Module):
         self.queue_task_running = False
 
     def queue_task_runner(self):
-        self.debug("Queue task runner")
         inst = self.app().inst
         instid = inst.instid
         cls = inst.cls
         try:
             try:
-                self.debug("Updating queue_tasks")
                 # Free my tasks
                 self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-1 where cls=? and locked=?", cls, instid)
                 # Free tasks locked too long
@@ -160,23 +158,17 @@ class QueueRunner(Module):
                 while True:
                     lock = self.lock(["queue"])
                     if not lock.trylock():
-                        self.debug("Queue lock not acquired")
                         return
-                    self.debug("Queue lock acquired")
                     try:
                         # Find task to run
                         tasks = self.sql_write.selectall_dict("select * from queue_tasks where cls=? and locked='' and at<=? order by priority desc limit 1", cls, self.now())
                         if not tasks:
-                            self.debug("No tasks in the queue")
                             return
                         task = tasks[0]
-                        self.debug("Taking task %s", str(task))
                         self.sql_write.do("update queue_tasks set locked=?, locked_till=? where id=?", instid, self.now(86400), task["id"])
                         ctl = self.sql_write.selectall_dict("select * from queue_tasks where id=?", task["id"])
                     finally:
-                        self.debug("Taking tasks finished")
                         lock.unlock()
-                        self.debug("Queue lock released")
                     # Execute task
                     app_tag = str(task["app"])
                     hook = str(task["hook"])
@@ -202,7 +194,6 @@ class QueueRunner(Module):
                         except Exception as e:
                             self.exception(e)
                             success = False
-                        self.debug("Queue task executed with result: %s", success)
                         if success:
                             # Reschedule finished task to later time
                             if schedule:
@@ -218,15 +209,12 @@ class QueueRunner(Module):
                         else:
                             self.error("Failed task %s (%s in application %s)", task["id"], task["hook"], task["app"])
                             self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-10, at=? where id=? and locked=?", self.now(5), task["id"], instid)
-                        self.debug("Queue task processing finished")
             except Exception as e:
                 self.exception(e)
         finally:
             self.queue_task_running = False
-            self.debug("Quitting queue runner")
 
     def fastidle(self):
-        self.debug("Fastidle. queue_task_running=%s", self.queue_task_running)
         if not self.queue_task_running:
             self.queue_task_running = True
             Tasklet.new(self.queue_task_runner)()
