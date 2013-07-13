@@ -202,6 +202,10 @@ class QuestAttrKey(Parsing.Nonterm):
         "%reduce text"
         self.val = "text"
 
+    def reduceFunc(self, fnc):
+        "%reduce func"
+        self.val = fnc.fname
+
 class PQuestActionOp(Parsing.Precedence):
     "%left pQuestActionOp >pAttrKey"
 
@@ -517,8 +521,9 @@ class QuestAction(Parsing.Nonterm):
         fr = get_attr(cmd, "slide", attrs, "from")
         to = get_attr(cmd, "slide", attrs, "to", require=True)
         tm = get_attr(cmd, "slide", attrs, "time", require=True)
-        validate_attrs(cmd, "slide", attrs, ["from", "to", "time"])
-        self.val = ["slide", lvalue.val[1], lvalue.val[2], fr, to, tm]
+        rnd = get_attr(cmd, "slide", attrs, "round")
+        validate_attrs(cmd, "slide", attrs, ["from", "to", "time", "round"])
+        self.val = ["slide", lvalue.val[1], lvalue.val[2], fr, to, tm, rnd]
 
     def reduceFinish(self, cmd):
         "%reduce finish"

@@ -333,7 +333,6 @@ Ext.onReady(function() {
         wait([[%foreach module in js_modules%]'[%module.name%]'[%unless module.lst%],[%end%][%end%]], function() {
             try { debug_log('js: all modules loaded'); } catch(e) {}
             [%+ foreach ent in js_init%]
-                try { debug_log('js: [%ent.js_cmd%]'); } catch(e) {}
                 try { [%+ ent.cmd +%] } catch (e) { try { debug_log('js: exception in [%ent.js_cmd%]: ' + e); } catch(e) {} Game.error(gt.gettext('Exception'), e) }
             [%+ end%]
             try { debug_log('js: init complete'); } catch(e) {}

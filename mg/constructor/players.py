@@ -683,9 +683,10 @@ class CharactersMod(ConstructorModule):
     def location_changed(self, character, old_location, new_location):
         character.name_invalidate(update_chat=False)
 
-    def characters_param_changed(self, uuid, param, old_value, new_value):
+    def characters_param_changed(self, uuid, param, value):
         character = self.character(uuid)
         character.name_invalidate()
+        character.send_param(param, value)
 
     def name_changed(self, user, old_name, new_name):
         character = self.character(user.uuid)

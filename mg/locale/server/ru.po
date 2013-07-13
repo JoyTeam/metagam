@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-07-13 14:59+0300\n"
+"PO-Revision-Date: 2013-07-13 22:48+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1314,8 +1314,15 @@ msgstr "Страница персонажа (внутренняя)"
 msgid "Character parameter"
 msgstr "Параметр персонажа"
 
+#, python-format
+msgid "Character parameter '%s' does not exist"
+msgstr "Параметр персонажа \"%s\" не существует"
+
 msgid "Character parameter holding its experience"
 msgstr "Параметр персонажа, хранящий его опыт"
+
+msgid "Character parameter progress bar"
+msgstr "Прогресс-бар параметра персонажа"
 
 msgid "Character parameters"
 msgstr "Параметры персонажа"
@@ -3415,6 +3422,9 @@ msgstr "Игровой интерфейс для покупки и продаж�
 msgid "Game interface menu"
 msgstr "Меню игрового интерфейса"
 
+msgid "Game interface scripts"
+msgstr "Скрипты игрового интерфейса"
+
 msgid "Game interface structure"
 msgstr "Структура игрового интерфейса"
 
@@ -4455,6 +4465,12 @@ msgstr "Параметры предметов"
 
 msgid "Ivan Ivanov"
 msgstr "Иван Иванов"
+
+msgid "JavaScript after the initialization"
+msgstr "JavaScript после инициализации"
+
+msgid "JavaScript before the initialization"
+msgstr "JavaScript перед инициализацией"
 
 msgid "JavaScript code"
 msgstr "JavaScript-код"
@@ -6257,8 +6273,8 @@ msgstr "Профиль"
 msgid "Progress bar"
 msgstr "Прогресс-бар"
 
-msgid "Progress bars in this block (delimited by commas). Valid values are:"
-msgstr "Прогресс-бары в этом блоке (разделяются запятыми). Допустимые значения:"
+msgid "Progress bars in this block (one per line). Valid values are:"
+msgstr "Прогресс-бары в этом блоке (по одному в каждой строке). Допустимые значения:"
 
 msgid "Project"
 msgstr "Проект"
@@ -6945,6 +6961,9 @@ msgstr "Ошибка при валидации скрипта. Ожидался 
 
 msgid "Scripting language reference"
 msgstr "Описание скриптового языка"
+
+msgid "Scripts"
+msgstr "Скрипты"
 
 msgid "Scripts documentation"
 msgstr "Документация на скрипты"

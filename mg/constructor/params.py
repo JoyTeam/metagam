@@ -422,6 +422,7 @@ class Params(ConstructorModule):
         self.rhook("%s.params-owner-important" % self.kind, self.params_owner_important)
         self.rhook("%s.params-owner-all" % self.kind, self.params_owner_all)
         self.rhook("%s.library-icon" % self.kind, self.library_icon)
+        self.rhook("%s.visibility-condition" % self.kind, self.visibility_condition)
 
     def params(self):
         return self.conf("%s.params" % self.kind, [])

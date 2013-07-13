@@ -17,6 +17,7 @@ re_block_edit = re.compile('^(\S+)\/(\S+)$')
 re_del = re.compile('^del\/(\S+)$')
 re_valid_class = re.compile('^[a-z][a-z0-9\-]*[a-z0-9]$')
 re_remove_www = re.compile(r'^www\.', re.IGNORECASE)
+re_not_empty = re.compile(r'\S')
 
 default_icons = set([])
 
@@ -117,7 +118,8 @@ class Interface(ConstructorModule):
         self.rhook("ext-admin-gameinterface.buttons", self.admin_gameinterface_buttons, priv="design")
         self.rhook("ext-interface.settings", self.settings, priv="logged")
         self.rhook("ext-project.status", self.project_status, priv="logged")
-        self.rhook("gameinterface.render", self.game_interface_render, priority=1000000000)
+        self.rhook("gameinterface.render", self.game_interface_render, priority=1000)
+        self.rhook("gameinterface.render", self.game_interface_render_after, priority=-1000)
         self.rhook("gameinterface.gamejs", self.game_js)
         self.rhook("gameinterface.blocks", self.blocks)
         self.rhook("gamecabinet.render", self.game_cabinet_render)
@@ -131,6 +133,8 @@ class Interface(ConstructorModule):
         self.rhook("advice-admin-gameinterface.index", self.advice_gameinterface)
         self.rhook("admin-indexpage.design-files", self.indexpage_design_files)
         self.rhook("admin-gameinterface.design-files", self.gameinterface_design_files)
+        self.rhook("headmenu-admin-gameinterface.scripts", self.headmenu_scripts)
+        self.rhook("ext-admin-gameinterface.scripts", self.admin_gameinterface_scripts, priv="design")
 
     def indexpage_design_files(self, files):
         files.append({"filename": "index.html", "description": self._("Game index page"), "doc": "/doc/design/indexpage"})
@@ -338,6 +342,11 @@ class Interface(ConstructorModule):
         vars["domain"] = req.host()
         vars["base_domain"] = re_remove_www.sub('', req.host())
 
+    def game_interface_render_after(self, character, vars, design):
+        code = self.conf("gameinterface.js-after")
+        if code:
+            vars["js_init"].append(code)
+
     def game_interface_render(self, character, vars, design):
         req = self.req()
         session = req.session()
@@ -370,7 +379,11 @@ class Interface(ConstructorModule):
         vars["base_domain"] = re_remove_www.sub('', req.host())
         vars["app"] = self.app().tag
         vars["js_modules"] = set(["game-interface"])
-        vars["js_init"] = ["Game.setup_game_layout();"]
+        vars["js_init"] = []
+        code = self.conf("gameinterface.js-before")
+        if code:
+            vars["js_init"].append(code)
+        vars["js_init"].append("Game.setup_game_layout();")
         vars["send"] = self._("send")
         if project.get("published") or project.get("moderation"):
             vars["main_init"] = self.call("game-interface.default-location") or "/location"
@@ -384,6 +397,7 @@ class Interface(ConstructorModule):
         # Rendering panels
         globs = {"char": character}
         panels = []
+        progress_bars = set()
         for panel in self.panels():
             rblocks = []
             for block in panel["blocks"]:
@@ -422,6 +436,8 @@ class Interface(ConstructorModule):
                     if progress_types:
                         progress_types[-1]["lst"] = True
                     rblock["progress_types"] = progress_types
+                    for pt in progress_types:
+                        progress_bars.add(pt["id"])
                 rblocks.append(rblock)
             if rblocks:
                 rblocks[-1]["lst"] = True
@@ -456,6 +472,8 @@ class Interface(ConstructorModule):
         if popups:
             popups[-1]["lst"] = True
             vars["popups"] = popups
+        # Initialize progress bars
+        self.call("gameinterface.init-progress-bars", character, vars, progress_bars);
 
     def render_button(self, btn, layout, design, generated, cls, globs):
         try:
@@ -539,6 +557,7 @@ class Interface(ConstructorModule):
         if req.has_access("design"):
             menu.append({"id": "gameinterface/layout", "text": self._("Layout scheme"), "leaf": True, "order": 4})
             menu.append({"id": "gameinterface/panels", "text": self._("Interface panels"), "leaf": True, "order": 7})
+            menu.append({"id": "gameinterface/scripts", "text": self._("Scripts"), "leaf": True, "order": 8})
             menu.append({"id": "gameinterface/popups", "text": self._("Popup menus"), "leaf": True, "order": 10})
             menu.append({"id": "gameinterface/buttons", "text": self._("Buttons editor"), "leaf": True, "order": 12})
 
@@ -829,6 +848,23 @@ class Interface(ConstructorModule):
         config.store()
         return blocks
 
+    def admin_gameinterface_scripts(self):
+        req = self.req()
+        if req.ok():
+            config = self.app().config_updater()
+            config.set("gameinterface.js-before", req.param("before"))
+            config.set("gameinterface.js-after", req.param("after"))
+            config.store()
+            self.call("admin.response", self._("Configuration stored"), {})
+        fields = [
+            {"name": "before", "type": "textarea", "label": self._("JavaScript before the initialization"), "value": self.conf("gameinterface.js-before"), "height": 300},
+            {"name": "after", "type": "textarea", "label": self._("JavaScript after the initialization"), "value": self.conf("gameinterface.js-after"), "height": 300},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def headmenu_scripts(self, args):
+        return self._("Game interface scripts")
+
     def gameinterface_panels(self):
         vars = {
             "NewPanel": self._("New panel"),
@@ -979,7 +1015,12 @@ class Interface(ConstructorModule):
             if block["type"] == "html" or block["type"] == "header":
                 block["html"] = req.param("html")
             if block["type"] == "progress":
-                block["progress_types"] = [s.strip() for s in req.param("progress_types").strip().split(",")]
+                bars = [s.strip() for s in req.param("progress_types").split("\n") if re_not_empty.search(s)]
+                error = self.call("admin-interface.validate-progress-bars", bars)
+                if error:
+                    errors["progress_types"] = error
+                else:
+                    block["progress_types"] = bars
             block["order"] = intz(req.param("order"))
             block["title"] = req.param("title")
             cls = req.param("class")
@@ -1017,7 +1058,7 @@ class Interface(ConstructorModule):
                 cls = block.get("class")
                 progress_types = block.get("progress_types")
                 if progress_types is not None:
-                    progress_types = ','.join(progress_types)
+                    progress_types = '\n'.join(progress_types)
             else:
                 tp = "buttons"
                 html = ""
@@ -1039,7 +1080,7 @@ class Interface(ConstructorModule):
             {"name": "width_static", "label": self._("Height in pixels") if panel.get("vert") else self._("Width in pixels"), "value": width_static, "condition": "[type]!='buttons' && [width_type]=='static'", "inline": True},
             {"name": "width_flex", "label": self._("Relative height") if panel.get("vert") else self._("Relative width"), "value": width_flex, "condition": "[type]!='buttons' && [width_type]=='flex'", "inline": True},
             {"type": "textarea", "name": "html", "label": self._("HTML content"), "value": html, "condition": "[type]=='html' || [type]=='header'", "height": 300},
-            {"name": "progress_types", "label": '%s<ul>%s</ul>' % (self._("Progress bars in this block (delimited by commas). Valid values are:"), progress_values), "value": progress_types, "condition": "[type]=='progress'", "remove_label_separator": True},
+            {"name": "progress_types", "type": "textarea", "label": '%s<ul>%s</ul>' % (self._("Progress bars in this block (one per line). Valid values are:"), progress_values), "value": progress_types, "condition": "[type]=='progress'", "remove_label_separator": True},
             {"name": "order", "label": self._("Sort order"), "value": order},
         ]
         self.call("admin.form", fields=fields)

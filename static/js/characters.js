@@ -1,7 +1,10 @@
 var Characters = {
     params: {},
     names: {},
-    context_menu: []
+    context_menu: [],
+    progress_bars: {},
+    progress_bar_deps: {},
+    myparams: {}
 };
 
 Characters.set_params = function (id, params) {
@@ -75,6 +78,112 @@ Characters.menu = function (el) {
     }
 };
 
-wait(['mmoscript'], function () {
+Characters.progress_bar = function (id, param, param_max) {
+    this.progress_bars[id] = {
+        param: param,
+        param_max: param_max
+    };
+    this.progress_bar_dep(param, id);
+    this.progress_bar_dep(param_max, id);
+};
+
+Characters.progress_bar_dep = function (param, pbar) {
+    if (!this.progress_bar_deps[param]) {
+        this.progress_bar_deps[param] = [];
+    }
+    this.progress_bar_deps[param].push(pbar);
+};
+
+Characters.myparam = function (pkt) {
+    var val;
+    if (pkt.value && pkt.value.length == 2) {
+        val = new DynamicValue(pkt.value[1]);
+        if (pkt.value[0]) {
+            val.setTill(pkt.value[0]);
+        }
+    } else {
+        val = new DynamicValue(pkt.value);
+    }
+    val.dirty = true;
+    this.myparams[pkt.param] = val;
+    this.updateParams();
+};
+
+Characters.myParam = function (key) {
+    var param = this.myparams[key];
+    if (!param) {
+        return undefined;
+    }
+    return param.actualValue;
+};
+
+Characters.updateParams = function () {
+    var self = this;
+    if (self.paramUpdaterTimer) {
+        return;
+    }
+    var updateProgressBars = {};
+    var dirty = false;
+    var time = TimeSync.getTime();
+    if (!time) {
+        dirty = true;
+    } else {
+        var changes;
+        for (var key in self.myparams) {
+            if (self.myparams.hasOwnProperty(key)) {
+                var val = self.myparams[key];
+                if (val.dirty) {
+                    var newVal = val.evaluateAndForget(time);
+                    if (newVal !== val.actualValue) {
+                        var lst = self.progress_bar_deps[key];
+                        if (lst) {
+                            for (var i = 0; i < lst.length; i++) {
+                                updateProgressBars[lst[i]] = true;
+                            }
+                        }
+                        val.actualValue = newVal;
+                        if (!changes) {
+                            changes = {};
+                        }
+                        changes[key] = val.actualValue;
+                    }
+                    if (val.dynamic) {
+                        dirty = true;
+                    } else {
+                        val.dirty = false;
+                    }
+                }
+            }
+        }
+        for (var id in updateProgressBars) {
+            if (updateProgressBars.hasOwnProperty(id)) {
+                var pb = self.progress_bars[id];
+                var val = self.myparams[pb.param];
+                var val_max = self.myparams[pb.param_max];
+                if (val !== undefined && val_max !== undefined) {
+                    val = val.evaluate(time);
+                    val_max = val_max.evaluate(time);
+                    Game.progress_show(id, val_max ? (val / val_max) : 0);
+                }
+            }
+        }
+        if (self.onParamChange && changes) {
+            try {
+                self.onParamChange(changes);
+            } catch (e) {
+                Game.error(gt.gettext('Exception'), 'Characters.onParamChange: ' + e);
+            }
+        }
+    }
+    if (dirty) {
+        self.paramUpdaterTimer = setTimeout(function () {
+            self.paramUpdaterTimer = undefined;
+            self.updateParams();
+        }, 10);
+    }
+};
+
+wait(['realplexor-stream', 'mmoscript', 'timesync'], function () {
+    Stream.stream_handler('characters', Characters);
     loaded('characters');
 });

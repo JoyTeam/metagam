@@ -851,6 +851,8 @@ class QuestsAdmin(ConstructorModule):
                     result += " from=%s" % self.call("script.unparse-expression", val[3])
                 result += " to=%s" % self.call("script.unparse-expression", val[4])
                 result += " time=%s" % self.call("script.unparse-expression", val[5])
+                if val[6] is not None:
+                    result += " round=%s" % self.call("script.unparse-expression", val[6])
                 result += "\n"
                 return result
             elif val[0] == "destroy":
@@ -1638,7 +1640,7 @@ class Quests(ConstructorModule):
                                             now = self.time()
                                             if time > 0:
                                                 cmd_code = "setdynamic"
-                                                val = [now + time, [
+                                                val = [
                                                     "+",
                                                     fr,
                                                     [
@@ -1658,7 +1660,25 @@ class Quests(ConstructorModule):
                                                             time
                                                         ]
                                                     ]
-                                                ]]
+                                                ]
+                                                # rounding
+                                                if cmd[6] is not None:
+                                                    rnd = self.call("script.evaluate-expression", cmd[6], globs=kwargs, description=eval_description)
+                                                    if (type(rnd) is int or type(rnd) is float) and rnd > 0:
+                                                        val = [
+                                                            "*",
+                                                            [
+                                                                "call",
+                                                                "round",
+                                                                [
+                                                                    "/",
+                                                                    val,
+                                                                    rnd
+                                                                ]
+                                                            ],
+                                                            rnd
+                                                        ]
+                                                val = [now + time, val]
                                                 val[1] = self.call("script.evaluate-expression", val[1], keep_globs={"t": True})
                                             else:
                                                 cmd_code = "set"

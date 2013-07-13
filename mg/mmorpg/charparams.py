@@ -11,6 +11,7 @@ re_valid_parameter = re.compile('^[a-z][a-z0-9_]*$', re.IGNORECASE)
 re_edit = re.compile('^edit/(.+)$')
 re_show = re.compile('^show/(.+)$')
 re_del = re.compile('^del/(.+)$')
+re_charparam_progress = re.compile(r'^charparam-([a-zA-Z_][a-zA-Z0-9_]*)-([a-zA-Z_][a-zA-Z0-9_]*)$')
 
 max_delivered_params = 10
 
@@ -39,6 +40,21 @@ class CharacterParamsAdmin(ParamsAdmin):
         self.rhook("ext-admin-characters.context-menu", self.admin_context_menu, priv="characters.params")
         self.rhook("advice-admin-characters.params-delivery", self.advice_params_delivery)
         self.rhook("advice-admin-characters.context-menu", self.advice_context_menu)
+        self.rhook("admin-interface.progress-bars", self.progress_bars)
+        self.rhook("admin-interface.validate-progress-bars", self.validate_progress_bars)
+
+    def progress_bars(self, bars):
+        bars.append({"code": "charparam-&lt;name&gt;-&lt;max_name&gt;", "description": self._("Character parameter progress bar")})
+
+    def validate_progress_bars(self, progress_bars):
+        for pt in progress_bars:
+            m = re_charparam_progress.match(pt)
+            if m:
+                param, param_max = m.group(1, 2)
+                if not self.call("characters.param", param):
+                    raise Hooks.Return(self._("Character parameter '%s' does not exist") % param)
+                if not self.call("characters.param", param_max):
+                    raise Hooks.Return(self._("Character parameter '%s' does not exist") % param_max)
 
     def advice_params_delivery(self, args, advice):
         advice.append({"title": self._("Character parameters delivery documentation"), "content": self._('You can find detailed information on the character parameters delivery in the <a href="//www.%s/doc/character-menu" target="_blank">character menu page</a> in the reference manual.') % self.main_host})
@@ -414,11 +430,23 @@ class CharacterParams(Params):
         self.rhook("characters.param-library", self.param_library)
         self.rhook("characters.deliverable-params", self.deliverable_params)
         self.rhook("characters.context-menu", self.context_menu)
-        self.rhook("gameinterface.render", self.gameinterface_render)
+        self.rhook("gameinterface.render", self.gameinterface_render, priority=-20)
+        self.rhook("gameinterface.init-progress-bars", self.init_progress_bars)
+
+    def init_progress_bars(self, character, vars, progress_bars):
+        for pt in progress_bars:
+            m = re_charparam_progress.match(pt)
+            if m:
+                param, param_max = m.group(1, 2)
+                vars["js_init"].append("Characters.progress_bar('%s', '%s', '%s');" % (jsencode(pt), param, param_max))
 
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("characters")
         vars["js_init"].append("Characters.context_menu = %s;" % json.dumps(self.call("characters.context-menu")))
+        for param in self.call("characters.params"):
+            if param.get("owner_visible") and self.call("characters.visibility-condition", param, character):
+                value = self.call("characters.param-value-rec", character, param)
+                vars["js_init"].append("Characters.myparam({param: '%s', value: %s});" % (param["code"], json.dumps(value)))
 
     def context_menu(self):
         menu = self.conf("characters.context-menu")
