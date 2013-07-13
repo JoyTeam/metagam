@@ -103,8 +103,8 @@ class Game(Module):
                 if lang != "en":
                     if not title_en:
                         errors["title_en"] = self._("Enter game title in English")
-                    elif len(title_en) > 17:
-                        errors["title_en"] = self._("Maximal length - 17 characters")
+                    elif len(title_en) > 50:
+                        errors["title_en"] = self._("Maximal length - 50 characters")
                     else:
                         m = re_bad_english_symbols.search(title_en)
                         if m:
