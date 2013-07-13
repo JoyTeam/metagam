@@ -54,7 +54,7 @@ class CharacterParamsAdmin(ParamsAdmin):
         return {"char": self.character(req.user())}
 
     def params_url(self, uuid):
-        return "auth/user-dashboard/%s" % uuid
+        return "auth/user-dashboard/%s?active_tab=params" % uuid
 
     def params_redirect(self, uuid):
         self.call("admin.redirect", "auth/user-dashboard/%s" % uuid, parameters={"active_tab": "params"})

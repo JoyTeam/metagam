@@ -4,6 +4,7 @@ from mg.constructor.script_classes import *
 import re
 import traceback
 import math
+import time
 
 class HTMLFormatter(object):
     @staticmethod
@@ -25,6 +26,7 @@ class ScriptEngine(ConstructorModule):
         self.rhook("script.evaluate-expression", self.evaluate_expression)
         self.rhook("script.encode-objects", self.encode_objects)
         self.rhook("script.admin-expression", self.admin_expression)
+        self.rhook("script.evaluate-dynamic", self.evaluate_dynamic)
         # Text expressions (templates)
         self.rhook("script.parse-text", self.parse_text)
         self.rhook("script.unparse-text", self.unparse_text)
@@ -33,14 +35,33 @@ class ScriptEngine(ConstructorModule):
         self.rhook("script.admin-text", self.admin_text)
         self.rhook("gameinterface.render", self.gameinterface_render)
 
+    def evaluate_dynamic(self, val):
+        if type(val) != list or len(val) != 2:
+            return val
+        t = self.time()
+        # limit time
+        if val[0] and t > val[0]:
+            t = val[0]
+        # evaluate
+        return self.call("script.evaluate-expression", val[1], globs={"t": t, "T": t})
+
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("mmoscript")
         vars["js_init"].append("MMOScript.lang = '%s';" % self.call("l10n.lang"))
 
     def help_icon_expressions(self, tag=None):
         icon = "%s-script.gif" % tag if tag else "script.gif"
-        doc = tag or "script"
-        return ' <a href="//www.%s/doc/%s" target="_blank"><img class="inline-icon" src="/st/icons/%s" alt="" title="%s" /></a>' % (self.main_host, doc, icon, self._("Scripting language reference"))
+        if tag == "dyn":
+            doc = "script"
+        elif tag:
+            doc = tag
+        else:
+            doc = "script"
+        if tag == "dyn":
+            comment = self._("Parameter changing with time")
+        else:
+            comment = self._("Scripting language reference")
+        return ' <a href="//www.%s/doc/%s" target="_blank"><img class="inline-icon" src="/st/icons/%s" alt="" title="%s" /></a>' % (self.main_host, doc, icon, comment)
 
     @property
     def parser_spec(self):
@@ -743,9 +764,6 @@ class ScriptEngine(ConstructorModule):
             else:
                 raise ScriptRuntimeError(self._("Function {fname} is not supported in expression context").format(fname=fname), env)
         elif cmd == "random":
-            # Partial evaluation
-            if env.keep_globs:
-                return [cmd]
             return random.random()
         elif cmd == "glob":
             name = val[1]
@@ -753,7 +771,14 @@ class ScriptEngine(ConstructorModule):
             if env.keep_globs and env.keep_globs.get(name):
                 return [cmd, name]
             if name not in env.globs:
-                return None
+                if name == "t" or name == "T":
+                    now = self.time()
+                    if "t" not in env.globs:
+                        env.globs["t"] = now
+                    if "T" not in env.globs:
+                        env.globs["T"] = now
+                else:
+                    return None
             obj = env.globs.get(name)
             if env.used_globs is not None:
                 env.used_globs.add(name)
@@ -849,7 +874,7 @@ class ScriptEngine(ConstructorModule):
         kwargs["text"] = True
         return self.admin_field(*args, **kwargs)
 
-    def admin_field(self, name, errors, globs={}, require_glob=None, text=False, skip_tokens=None, expression=None, mandatory=True):
+    def admin_field(self, name, errors, globs={}, require_glob=None, text=False, skip_tokens=None, expression=None, mandatory=True, keep_globs=None):
         req = self.req()
         if expression is None:
             expression = req.param(name).strip()

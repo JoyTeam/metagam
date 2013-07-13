@@ -167,7 +167,7 @@ class Sessions(Module):
                 if session.get("updated") < self.now(-3600):
                     with self.lock(["session.%s" % session.uuid]):
                         session.load()
-                        session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
+                        session.set("valid_till", "%020d" % (self.time() + 90 * 86400))
                         session.set("updated", self.now())
                         if session.get("ip") != req.remote_addr():
                             session.set("ip", req.remote_addr())
@@ -194,7 +194,7 @@ class Sessions(Module):
             req.set_cookie(cookie_name, sid, **args)
             # newly created session is stored for 24 hour only
             # this interval is increased after the next successful 'get'
-            session.set("valid_till", "%020d" % (time.time() + 86400))
+            session.set("valid_till", "%020d" % (self.time() + 86400))
             session.set("ip", req.remote_addr())
             # Time in the past. This guarantees that get_session will properly update valid_till on the next get
             session.set("updated", self.now(-3601))
@@ -288,11 +288,11 @@ class Interface(Module):
         sched.add("auth.cleanup", "5 1 * * *", priority=10)
 
     def cleanup(self):
-        sessions = self.objlist(SessionList, query_index="valid_till", query_finish="%020d" % time.time())
+        sessions = self.objlist(SessionList, query_index="valid_till", query_finish="%020d" % self.time())
         sessions.remove()
-        captchas = self.objlist(CaptchaList, query_index="valid_till", query_finish="%020d" % time.time())
+        captchas = self.objlist(CaptchaList, query_index="valid_till", query_finish="%020d" % self.time())
         captchas.remove()
-        autologins = self.objlist(AutoLoginList, query_index="valid_till", query_finish="%020d" % time.time())
+        autologins = self.objlist(AutoLoginList, query_index="valid_till", query_finish="%020d" % self.time())
         autologins.remove()
         authlog = self.objlist(AuthLogList, query_index="performed", query_finish=self.now(-365 * 86400))
         authlog.remove()
@@ -300,7 +300,7 @@ class Interface(Module):
         banips.remove()
 
     def cleanup_inactive_users(self):
-        users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (time.time() - 86400 * 3))
+        users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (self.time() - 86400 * 3))
         users.remove()
 
     def objclasses_list(self, objclasses):
@@ -370,7 +370,7 @@ class Interface(Module):
             if not form.errors:
                 email = email.lower()
                 user = self.obj(User)
-                now = "%020d" % time.time()
+                now = "%020d" % self.time()
                 user.set("created", now)
                 user.set("last_login", now)
                 user.set("sex", sex)
@@ -696,7 +696,7 @@ class Interface(Module):
         del draw
         captcha = self.obj(Captcha, session.uuid, silent=True)
         captcha.set("number", number)
-        captcha.set("valid_till", "%020d" % (time.time() + 86400))
+        captcha.set("valid_till", "%020d" % (self.time() + 86400))
         captcha.store()
         data = cStringIO.StringIO()
         image = image.filter(ImageFilter.MinFilter(3))
@@ -1244,7 +1244,7 @@ class Interface(Module):
     def autologin(self, user_uuid, interval=60):
         autologin = self.obj(AutoLogin, data={})
         autologin.set("user", user_uuid)
-        autologin.set("valid_till", "%020d" % (time.time() + interval))
+        autologin.set("valid_till", "%020d" % (self.time() + interval))
         autologin.store()
         return autologin.uuid
 

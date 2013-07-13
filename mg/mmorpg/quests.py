@@ -839,6 +839,20 @@ class QuestsAdmin(ConstructorModule):
                 return result
             elif val[0] == "set":
                 return "  " * indent + ("set %s.%s = %s\n" % (self.call("script.unparse-expression", val[1]), val[2], self.call("script.unparse-expression", val[3])))
+            elif val[0] == "setdynamic":
+                add = ""
+                if val[4] is not None:
+                    add += " till=%s" % self.call("script.unparse-expression", val[4])
+                return "  " * indent + ("set dynamic %s.%s = %s%s\n" % (self.call("script.unparse-expression", val[1]), val[2], self.call("script.unparse-expression", val[3]), add))
+            elif val[0] == "slide":
+                result = "  " * indent + "slide"
+                result += " %s.%s" % (self.call("script.unparse-expression", val[1]), val[2])
+                if val[3] is not None:
+                    result += " from=%s" % self.call("script.unparse-expression", val[3])
+                result += " to=%s" % self.call("script.unparse-expression", val[4])
+                result += " time=%s" % self.call("script.unparse-expression", val[5])
+                result += "\n"
+                return result
             elif val[0] == "destroy":
                 return "  " * indent + "%s\n" % ("finish" if val[1] else "fail")
             elif val[0] == "lock":
@@ -1601,10 +1615,65 @@ class Quests(ConstructorModule):
                                         else:
                                             if len(cmd) >= 4:
                                                 execute_actions(cmd[3], indent+1)
-                                    elif cmd_code == "set":
+                                    elif cmd_code == "set" or cmd_code == "setdynamic" or cmd_code == "slide":
                                         obj = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                         attr = cmd[2]
-                                        val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
+                                        if cmd_code == "slide":
+                                            # from
+                                            fr = cmd[3]
+                                            if fr is None:
+                                                getter = getattr(obj, "script_attr", None)
+                                                if getter is None:
+                                                    raise ScriptTypeError(self._("Object '{val}' has no attributes").format(val=self.unparse_expression(cmd[1])), env)
+                                                try:
+                                                    fr = getter(attr, handle_exceptions=False)
+                                                except AttributeError as e:
+                                                    raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(cmd[1]), att=attr), env)
+                                            else:
+                                                fr = self.call("script.evaluate-expression", fr, globs=kwargs, description=eval_description)
+                                            # to
+                                            to = self.call("script.evaluate-expression", cmd[4], globs=kwargs, description=eval_description)
+                                            # time
+                                            time = floatz(self.call("script.evaluate-expression", cmd[5], globs=kwargs, description=eval_description))
+                                            now = self.time()
+                                            if time > 0:
+                                                cmd_code = "setdynamic"
+                                                val = [now + time, [
+                                                    "+",
+                                                    fr,
+                                                    [
+                                                        "*",
+                                                        [
+                                                            "-",
+                                                            ["glob", "t"],
+                                                            now
+                                                        ],
+                                                        [
+                                                            "/",
+                                                            [
+                                                                "-",
+                                                                to,
+                                                                fr
+                                                            ],
+                                                            time
+                                                        ]
+                                                    ]
+                                                ]]
+                                                val[1] = self.call("script.evaluate-expression", val[1], keep_globs={"t": True})
+                                            else:
+                                                cmd_code = "set"
+                                                val = to
+                                            val = self.call("script.encode-objects", val)
+                                        elif cmd_code == "setdynamic":
+                                            till = cmd[4]
+                                            if till is not None:
+                                                till = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                                if type(till) != int and type(till) != float:
+                                                    till = None
+                                            val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description, keep_globs={"t": True})
+                                            val = [till, val]
+                                        else:
+                                            val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
                                         set_attr = getattr(obj, "script_set_attr", None)
                                         if not set_attr:
                                             if getattr(obj, "script_attr", None):
@@ -1612,10 +1681,16 @@ class Quests(ConstructorModule):
                                             else:
                                                 raise ScriptRuntimeError(self._("'%s' is not an object") % self.call("script.unparse-expression", cmd[1]), env)
                                         tval = type(val)
-                                        if tval != str and tval != type(None) and tval != unicode and tval != long and tval != float and tval != bool and tval != int:
+                                        if tval != str and tval != type(None) and tval != unicode and tval != long and tval != float and tval != bool and tval != int and tval != list:
                                             raise ScriptRuntimeError(self._("Can't assign compound values ({val}) to the attributes").format(val=tval.__name__ if tval else None), env)
                                         if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(val)), cls="quest-action", indent=indent+2)
+                                            if cmd_code == "setdynamic":
+                                                if val[0] is None:
+                                                    self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val[1]))), cls="quest-action", indent=indent+2)
+                                                else:
+                                                    self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val} till {till} ({till_human})").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val[1])), till=val[0], till_human=self.call("l10n.time_local", from_unixtime(val[0]))), cls="quest-action", indent=indent+2)
+                                            else:
+                                                self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val))), cls="quest-action", indent=indent+2)
                                         try:
                                             set_attr(attr, val, env)
                                             modified_objects.add(obj)

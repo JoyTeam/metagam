@@ -261,7 +261,7 @@ class ProjectSetupWizard(Wizard):
         email = self.config.get("admin_email")
         sex = self.config.get("admin_sex")
         # creating admin player
-        now_ts = "%020d" % time.time()
+        now_ts = "%020d" % self.time()
         now = self.now()
         player = self.obj(DBPlayer)
         player.set("created", now)

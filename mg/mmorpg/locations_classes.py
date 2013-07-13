@@ -1,8 +1,10 @@
 from mg import *
+from mg.constructor.paramobj import ParametrizedObject
 import re
 
 default_location_delay = 20
 re_param_attr = re.compile(r'^p_(.+)')
+re_dyn_attr = re.compile(r'^dyn_(.+)')
 
 class DBLocation(CassandraObject):
     clsname = "Location"
@@ -30,9 +32,10 @@ class DBLocParams(CassandraObject):
 class DBLocParamsList(CassandraObjectList):
     objcls = DBLocParams
 
-class Location(Module):
+class Location(Module, ParametrizedObject):
     def __init__(self, app, uuid, fqn="mg.mmorpg.locations.Location"):
         Module.__init__(self, app, fqn)
+        ParametrizedObject.__init__(self, "locations")
         self.uuid = uuid
 
     @property
@@ -145,8 +148,11 @@ class Location(Module):
             if m:
                 param = m.group(1)
                 return self.param(param, handle_exceptions)
-            else:
-                raise AttributeError(attr)
+            m = re_dyn_attr.match(attr)
+            if m:
+                param = m.group(1)
+                return self.param_dyn(param, handle_exceptions)
+            raise AttributeError(attr)
 
     def script_set_attr(self, attr, val, env):
         # parameters
@@ -167,21 +173,6 @@ class Location(Module):
         except AttributeError:
             self._db_params = self.obj(DBLocParams, self.uuid, silent=True)
             return self._db_params
-
-    def param(self, key, handle_exceptions=True):
-        try:
-            cache = self._param_cache
-        except AttributeError:
-            cache = {}
-            self._param_cache = cache
-        try:
-            return cache[key]
-        except KeyError:
-            # 'param-value' handles cache storing automatically
-            return self.call("locations.param-value", self, key, handle_exceptions)
-
-    def set_param(self, key, val):
-        return self.call("locations.set-param", self, key, val)
 
     def script_params(self):
         return {"loc": self}

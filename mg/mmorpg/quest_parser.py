@@ -133,6 +133,12 @@ class TokenRemove(Parsing.Token):
 class TokenSet(Parsing.Token):
     "%token set"
 
+class TokenDynamic(Parsing.Token):
+    "%token dynamic"
+
+class TokenSlide(Parsing.Token):
+    "%token slide"
+
 class TokenInput(Parsing.Token):
     "%token input"
 
@@ -495,6 +501,24 @@ class QuestAction(Parsing.Nonterm):
         if type(lvalue.val) != list or lvalue.val[0] != ".":
             raise Parsing.SyntaxError(assign.script_parser._("Invalid usage of assignment operator"))
         self.val = ["set", lvalue.val[1], lvalue.val[2], rvalue.val]
+
+    def reduceSetDynamic(self, cmd, dyn, lvalue, assign, rvalue, attrs):
+        "%reduce set dynamic Expr assign Expr ExprAttrs"
+        if type(lvalue.val) != list or lvalue.val[0] != ".":
+            raise Parsing.SyntaxError(cmd.script_parser._("Invalid usage of assignment operator"))
+        till = get_attr(cmd, "set dynamic", attrs, "till")
+        validate_attrs(cmd, "set dynamic", attrs, ["till"])
+        self.val = ["setdynamic", lvalue.val[1], lvalue.val[2], rvalue.val, till]
+
+    def reduceSlide(self, cmd, lvalue, attrs):
+        "%reduce slide Expr ExprAttrs"
+        if type(lvalue.val) != list or lvalue.val[0] != ".":
+            raise Parsing.SyntaxError(cmd.script_parser._("Invalid usage of 'slide' operator"))
+        fr = get_attr(cmd, "slide", attrs, "from")
+        to = get_attr(cmd, "slide", attrs, "to", require=True)
+        tm = get_attr(cmd, "slide", attrs, "time", require=True)
+        validate_attrs(cmd, "slide", attrs, ["from", "to", "time"])
+        self.val = ["slide", lvalue.val[1], lvalue.val[2], fr, to, tm]
 
     def reduceFinish(self, cmd):
         "%reduce finish"
@@ -917,6 +941,8 @@ class QuestScriptParser(ScriptParser):
     syms["modifier"] = TokenModifier
     syms["remove"] = TokenRemove
     syms["set"] = TokenSet
+    syms["slide"] = TokenSlide
+    syms["dynamic"] = TokenDynamic
     syms["input"] = TokenInput
     syms["default"] = TokenDefault
     syms["paidservice"] = TokenPaidService

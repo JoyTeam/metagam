@@ -252,7 +252,7 @@ wait(['location', 'objects', 'hints'], function () {
             var self = this;
             for (var i = self.objects.length - 1; i >= 0; i--) {
                 var obj = self.objects[i];
-                if (obj.hasPoint(x, y)) {
+                if (obj.visible && obj.visible > 0 && obj.hasPoint(x, y)) {
                     return obj;
                 }
             }

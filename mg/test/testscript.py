@@ -489,8 +489,6 @@ class TestScript(unittest.TestCase):
         self.partialEval("vec3(1, t, 3)", "vec3(1, t, 3)")
         self.partialEval("vec3(1, 2, 3) + vec3(4, 5, 6)", "vec3(5, 7, 9)")
         self.partialEval("vec3(1, 2, 3) + vec3(4, 5, t)", "vec3(1, 2, 3) + vec3(4, 5, t)")
-        # random
-        self.partialEval("random", "random")
         # glob
         self.partialEval("e", "none")
         self.partialEval("t", "t")

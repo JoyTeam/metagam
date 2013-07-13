@@ -1,4 +1,5 @@
 from mg import *
+from mg.constructor.paramobj import ParametrizedObject
 import re
 import hashlib
 
@@ -76,9 +77,10 @@ def dna_parse(dna):
     else:
         return m.group(1, 2)
 
-class ItemType(Module):
+class ItemType(Module, ParametrizedObject):
     def __init__(self, app, uuid, dna_suffix=None, mods=None, db_item_type=None, db_params=None, fqn="mg.mmorpg.inventory.ItemType"):
         Module.__init__(self, app, fqn)
+        ParametrizedObject.__init__(self, "item-types")
         self.uuid = uuid
         self._dna_suffix = dna_suffix
         self.mods = mods
@@ -253,18 +255,6 @@ class ItemType(Module):
         cache[self.uuid] = obj
         self._db_params = obj
         return obj
-
-    def param(self, key, handle_exceptions=True):
-        try:
-            cache = self._param_cache
-        except AttributeError:
-            cache = {}
-            self._param_cache = cache
-        try:
-            return cache[key]
-        except KeyError:
-            # 'param-value' handles cache storing automatically
-            return self.call("item-types.param-value", self, key, handle_exceptions)
 
     def script_params(self):
         return {"item": self}

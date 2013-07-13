@@ -78,7 +78,7 @@ class Game(Module):
                         sym = m.group(1)
                         errors["title_full"] = self._("Bad symbols in the title: %s") % htmlescape(sym)
                     elif title_full.endswith("."):
-                        errors["title_full"] = self._("Title must not be ended with a dot")
+                        errors["title_full"] = self._("Title must not end with a dot")
                     elif re_invalid_colon.search(title_full):
                         errors["title_full"] = self._("You must not have a space before a colon (:) and must have a space after a colon (:)")
                 if not title_short:
@@ -91,7 +91,7 @@ class Game(Module):
                         sym = m.group(1)
                         errors["title_short"] = self._("Bad symbols in the title: %s") % htmlescape(sym)
                     elif title_short.endswith("."):
-                        errors["title_short"] = self._("Title must not be ended with a dot")
+                        errors["title_short"] = self._("Title must not end with a dot")
                     elif re_invalid_colon.search(title_short):
                         errors["title_short"] = self._("You must not have a space before a colon (:) and must have a space after a colon (:)")
                 if not title_code:
@@ -111,7 +111,7 @@ class Game(Module):
                             sym = m.group(1)
                             errors["title_en"] = self._("Bad symbols in the title: %s") % htmlescape(sym)
                         elif title_en.endswith("."):
-                            errors["title_en"] = self._("Title must not be ended with a dot")
+                            errors["title_en"] = self._("Title must not end with a dot")
                         elif re_invalid_colon.search(title_en):
                             errors["title_en"] = self._("You must not have a space before a colon (:) and must have a space after a colon (:)")
             if not description:

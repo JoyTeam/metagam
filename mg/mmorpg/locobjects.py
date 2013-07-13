@@ -87,7 +87,7 @@ class LocationObjectsAdmin(ConstructorModule):
                     if req.param("position-expr-%d" % obj_id):
                         position = req.param("position-%d" % obj_id)
                         char = self.character(req.user())
-                        obj["position"] = self.call("script.admin-expression", "position-%d" % obj_id, errors, globs={"char": char, "loc": char.location, "t": time.time()})
+                        obj["position"] = self.call("script.admin-expression", "position-%d" % obj_id, errors, globs={"char": char, "loc": char.location, "t": self.time()})
                     # visible
                     visible = req.param("visible-%d" % obj_id)
                     if visible:

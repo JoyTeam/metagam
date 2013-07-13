@@ -7,7 +7,6 @@ from mg.constructor.players import DBCharacter, DBCharacterList, DBPlayer, DBPla
 import hashlib
 import copy
 import random
-import time
 
 class AppSession(CassandraObject):
     clsname = "AppSession"
@@ -614,7 +613,7 @@ class Auth(ConstructorModule):
             self.call("web.response_json", {"success": False, "errors": errors})
         # Registering player and character
         now = self.now()
-        now_ts = "%020d" % time.time()
+        now_ts = "%020d" % self.time()
         # Creating player
         player = self.obj(DBPlayer)
         player.set("created", now)
@@ -750,7 +749,7 @@ class Auth(ConstructorModule):
             require_activation = False
             activate_days = self.conf("auth.activate_email_days", 7)
             if activate_days:
-                days_since_reg = (time.time() - int(user.get("created"))) / 86400
+                days_since_reg = (self.time() - int(user.get("created"))) / 86400
                 if days_since_reg >= activate_days:
                     require_activation = True
             if require_activation:
@@ -1060,7 +1059,7 @@ class Auth(ConstructorModule):
         session = req.session()
         # initializing stream
         stream_marker = uuid4().hex
-        vars["js_init"].append("Stream.run_realplexor('%s', %d);" % (stream_marker, time.time() - 3))
+        vars["js_init"].append("Stream.run_realplexor('%s', %d);" % (stream_marker, self.time() - 3))
         self.call("stream.send", "id_%s" % session.uuid, {"marker": stream_marker})
         vars["js_modules"].add("realplexor-stream")
         self.call("session.character-init", session.uuid, character)
@@ -1160,7 +1159,7 @@ class Auth(ConstructorModule):
                         form.error("payer", self._("Select a valid payer"))
             if not form.errors:
                 now = self.now()
-                now_ts = "%020d" % time.time()
+                now_ts = "%020d" % self.time()
                 # Creating new character
                 character = self.obj(DBCharacter)
                 character.set("created", now)

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-07-13 00:56+0300\n"
+"PO-Revision-Date: 2013-07-13 14:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2551,6 +2551,9 @@ msgstr "Время действия"
 msgid "Duration of the action (in time units). Applicable to turn orders supporting time units only"
 msgstr "Продолжительность действия (в тайм-юнитах). Применимо, только если очерёдность ходов поддерживает тайм-юниты"
 
+msgid "Dynamic value expression"
+msgstr "Выражение для динамического значения"
+
 msgid "E-mail"
 msgstr "E-mail"
 
@@ -3997,6 +4000,9 @@ msgstr "Пакет с оформлением титульной страницы
 msgid "Index page design package must not contain more than one HTML file"
 msgstr "Пакет с оформлением титульной страницы не может содержать более 1 HTML-файла"
 
+msgid "Infinite duration"
+msgstr "Бесконечная длительность"
+
 msgid "Info"
 msgstr "Инфо"
 
@@ -4274,8 +4280,11 @@ msgstr "Неверный формат времени"
 msgid "Invalid time mode"
 msgstr "Неверный режим времени"
 
+msgid "Invalid usage of 'slide' operator"
+msgstr "Неверное использование оператора \"slide\""
+
 msgid "Invalid usage of assignment operator"
-msgstr "Неверное использование оператора присвоения"
+msgstr "Неверное использование оператора присваивания"
 
 msgid "Invalid value"
 msgstr "Неверное значение"
@@ -5957,6 +5966,9 @@ msgstr "Параметр %s"
 msgid "Parameter %s is not stored in the database"
 msgstr "Параметр %s не сохраняется в базе данных"
 
+msgid "Parameter changing with time"
+msgstr "Параметр, изменяющийся со временем"
+
 msgid "Parameter code"
 msgstr "Код параметра"
 
@@ -6533,19 +6545,19 @@ msgid "Reason is mandatory"
 msgstr "Укажите причину"
 
 msgid "Reason why do you change this parameter. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
-msgstr "Причина, по которой вы изменяете параметр. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
+msgstr "Причина, по которой вы изменяете параметр. Обязательно укажите реальную причину. Она будет инспектироваться службой безопасности MMO Constructor"
 
 msgid "Reason why do you give items to the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
-msgstr "Причина, по которой вы выдаёте предметы пользователю. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
+msgstr "Причина, по которой вы выдаёте предметы пользователю. Обязательно укажите реальную причину. Она будет инспектироваться службой безопасности MMO Constructor"
 
 msgid "Reason why do you give money to the user. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
-msgstr "Причина, по которой вы выдаёте деньги пользователю. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
+msgstr "Причина, по которой вы выдаёте деньги пользователю. Обязательно укажите реальную причину. Она будет инспектироваться службой безопасности MMO Constructor"
 
 msgid "Reason why do you transfer items between users. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
-msgstr "Причина, по которой вы передаёте предметы между пользователями. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
+msgstr "Причина, по которой вы передаёте предметы между пользователями. Обязательно укажите реальную причину. Она будет инспектироваться службой безопасности MMO Constructor"
 
 msgid "Reason why do you withdraw items. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
-msgstr "Причина, по которой вы изымаете предметы. Обязательно укажите реальную причину. Она будет инспектироваться отделом безопасности MMO Constructor"
+msgstr "Причина, по которой вы изымаете предметы. Обязательно укажите реальную причину. Она будет инспектироваться службой безопасности MMO Constructor"
 
 msgid "Received"
 msgstr "Получено"
@@ -7715,6 +7727,9 @@ msgstr "Статические объекты на локациях"
 msgid "Static storage"
 msgstr "Статическое хранилище"
 
+msgid "Static value"
+msgstr "Статическое значение"
+
 msgid "Statistics on the userbase"
 msgstr "Статистика по пользовательской базе"
 
@@ -7731,6 +7746,9 @@ msgstr "Пошаговый учебник по подготовке игры к 
 
 msgid "Stones #1"
 msgstr "Камни №1"
+
+msgid "Stop at this time"
+msgstr "Остановиться в это время"
 
 msgid "Storage"
 msgstr "Хранилище"
@@ -8323,7 +8341,7 @@ msgstr "Код названия"
 msgid "Title in English"
 msgstr "Название на английском языке"
 
-msgid "Title must not be ended with a dot"
+msgid "Title must not end with a dot"
 msgstr "Название не может заканчиваться точкой"
 
 msgid "Title of the game"
@@ -10574,6 +10592,9 @@ msgstr "устанавливаем {obj}.{attr} = {func}({data}) = {val}"
 
 msgid "setting {obj}.{attr} = {val}"
 msgstr "устанавливаем {obj}.{attr} = {val}"
+
+msgid "setting {obj}.{attr} = {val} till {till} ({till_human})"
+msgstr "устанавливаем {obj}.{attr} = {val} до времени {till} ({till_human})"
 
 msgid "sex///Who is your character"
 msgstr "Кто ваш персонаж?"

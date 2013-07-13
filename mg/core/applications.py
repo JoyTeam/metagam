@@ -15,6 +15,7 @@ import datetime
 import gettext
 import sys
 import traceback
+import time
 
 re_hook_path = re.compile(r'^(.+?)\.(.+)$')
 re_module_path = re.compile(r'^(.+)\.(.+)$')
@@ -262,6 +263,18 @@ class Module(Loggable):
 
     def objlist(self, *args, **kwargs):
         return self.app().objlist(*args, **kwargs)
+
+    def time(self):
+        try:
+            req = self.req()
+        except AttributeError:
+            return time.time()
+        try:
+            return req._current_time
+        except AttributeError:
+            t = time.time()
+            req._current_time = t
+            return t
 
     def req(self):
         return Tasklet.current().req

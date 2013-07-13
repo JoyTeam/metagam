@@ -56,7 +56,7 @@ class LocationsAdmin(ConstructorModule):
             if req.args:
                 uri = "%s/%s" % (uri, req.args)
             for l in links:
-                if "admin-%s" % l.get("hook") == uri:
+                if not l.get("always_href") and ("admin-%s" % l.get("hook") == uri):
                     del l["hook"]
             links.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("text"), y.get("text")))
             links[-1]["lst"] = True

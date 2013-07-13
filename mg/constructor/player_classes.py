@@ -1,9 +1,11 @@
 from mg.constructor import *
 from mg.constructor.interface_classes import *
+from mg.constructor.paramobj import ParametrizedObject
 import re
 
 re_param_attr = re.compile(r'^p_(.+)')
 re_html_attr = re.compile(r'^html_(.+)')
+re_dyn_attr = re.compile(r'^dyn_(.+)')
 re_perm_attr = re.compile(r'^perm_(.+)')
 re_quest_attr = re.compile(r'^q_(.+)')
 
@@ -71,9 +73,10 @@ class DBCharacterBusyList(CassandraObjectList):
 
 # Business logic objects
 
-class Character(Module):
+class Character(Module, ParametrizedObject):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Character"):
         Module.__init__(self, app, fqn)
+        ParametrizedObject.__init__(self, "characters")
         self.uuid = uuid
 
     @property
@@ -405,6 +408,10 @@ class Character(Module):
         if m:
             param = m.group(1)
             return self.param_html(param, handle_exceptions)
+        m = re_dyn_attr.match(attr)
+        if m:
+            param = m.group(1)
+            return self.param_dyn(param, handle_exceptions)
         # permissions
         m = re_perm_attr.match(attr)
         if m:
@@ -451,36 +458,8 @@ class Character(Module):
             self._restraints = restraints
             return restraints
 
-    def _invalidate(self):
-        try:
-            delattr(self, "_param_cache")
-        except AttributeError:
-            pass
-
-    def param(self, key, handle_exceptions=True):
-        try:
-            cache = self._param_cache
-        except AttributeError:
-            cache = {}
-            self._param_cache = cache
-        try:
-            return cache[key]
-        except KeyError:
-            # 'param-value' handles cache storing automatically
-            return self.call("characters.param-value", self, key, handle_exceptions)
-
-    def param_html(self, key, handle_exceptions=True):
-        param = self.call("characters.param", key)
-        if not param:
-            return None
-        value = self.param(key, handle_exceptions)
-        return self.call("characters.param-html", param, value)
-
     def script_params(self):
         return {"char": self}
-
-    def set_param(self, key, val):
-        return self.call("characters.set-param", self, key, val)
 
     @property
     def inventory(self):

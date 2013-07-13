@@ -527,7 +527,7 @@ class Socio(Module):
                     break
 
     def fulltext_store(self, group, uuid, words):
-        timestamp = time.time() * 1000
+        timestamp = self.time() * 1000
         app_tag = str(self.app().tag)
         cnt = dict()
         for word in words:
@@ -565,7 +565,7 @@ class Socio(Module):
             self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
 
     def fulltext_remove(self, group, uuid):
-        timestamp = time.time() * 1000
+        timestamp = self.time() * 1000
         app_tag = str(self.app().tag)
         if self.app().db.storage == 0:
             key = "%s_Search_%s" % (group, uuid)
@@ -1439,7 +1439,7 @@ class Forum(Module):
         topic.set("created", created)
         topic.set("updated", created)
         catstat = self.catstat(cat["id"])
-        catstat.set("updated", time.time())
+        catstat.set("updated", self.time())
         catstat.incr("topics")
         last = {
             "topic": topic.uuid,
@@ -1490,7 +1490,7 @@ class Forum(Module):
         tags = self.tags_parse(tags_str)
         mutations = {}
         mutations_tags = []
-        timestamp = time.time() * 1000
+        timestamp = self.time() * 1000
         app_tag = str(self.app().tag)
         for tag in tags:
             tag_short = tag
@@ -1529,7 +1529,7 @@ class Forum(Module):
         else:
             tags = self.tags_parse(tags_str)
         mutations = {}
-        timestamp = time.time() * 1000
+        timestamp = self.time() * 1000
         app_tag = str(self.app().tag)
         short_tags = []
         for tag in tags:
@@ -1592,7 +1592,7 @@ class Forum(Module):
             post.set("topic", topic.uuid)
             post.set("created", now)
             catstat = self.catstat(cat["id"])
-            catstat.set("updated", time.time())
+            catstat.set("updated", self.time())
             catstat.incr("replies")
             last = {
                 "topic": topic.uuid,
@@ -2502,7 +2502,7 @@ class Forum(Module):
         users = []
         cat = self.call("forum.category", topic.get("category"))
         rules = self.load_rules([cat["id"]])
-        now = time.time()
+        now = self.time()
         for sub in subscribers:
             email_notified = sub.get("email_notified")
             if email_notified is None or float(email_notified) < now - 86400 * 3:
@@ -2613,7 +2613,7 @@ class Forum(Module):
             topics = self.app().db.get_slice(key, ColumnParent(cf), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
             if not topics:
                 if timestamp is None:
-                    timestamp = time.time() * 1000
+                    timestamp = self.time() * 1000
                 mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([tag_utf8]), timestamp=timestamp)))
         if len(mutations):
             if self.app().db.storage == 0:
