@@ -1,4 +1,6 @@
 Game.progress = new Array();
+Game.dynamic_blocks = {};
+Game.dynamic_block_deps = {};
 
 Game.now = function() {
     return TimeSync.getTime() * 1000.0;
@@ -524,6 +526,123 @@ Game.qevent = function (ev, params) {
             }
         }
     });
+};
+
+Game.dynamic_block = function (uuid, css, text) {
+    var deps = MMOScript.dependenciesText(text);
+    var block = {
+        css: css,
+        text: text,
+        dirty: true,
+        deps: deps
+    };
+    for (var i = 0; i < deps.length; i++) {
+        var dep = deps[i];
+        var depStr = dep.join('.');
+        if (depStr === 't' || depStr === 'T') {
+            block.time_dependent = true;
+        }
+        if (!this.dynamic_block_deps[depStr]) {
+            this.dynamic_block_deps[depStr] = [];
+        }
+        this.dynamic_block_deps[depStr].push(uuid);
+    }
+    Game.dynamic_blocks[uuid] = block;
+    Game.update_dynamic_blocks();
+};
+
+Game.update_dynamic_blocks = function () {
+    var self = this;
+    if (self.dynamic_blocks_timer) {
+        return;
+    }
+    var dirty = false;
+    var time = TimeSync.getTime();
+    if (!time) {
+        dirty = true;
+    } else {
+        var env;
+        var charParams = {};
+        var charParamsDynamic = {};
+        for (var uuid in self.dynamic_blocks) {
+            if (self.dynamic_blocks.hasOwnProperty(uuid)) {
+                var block = self.dynamic_blocks[uuid];
+                if (block.dirty) {
+                    if (!env) {
+                        var now = TimeSync.getTime();
+                        for (var id in Characters.myparams) {
+                            if (Characters.myparams.hasOwnProperty(id)) {
+                                var dynval = Characters.myparams[id];
+                                charParams['p_' + id] = dynval.evaluateAndForget(now);
+                                if (dynval.dynamic) {
+                                    charParamsDynamic['p_' + id] = true;
+                                }
+                                charParams.uuid = Game.character;
+                                charParams.name = Game.character_name;
+                            }
+                        }
+                        env = {
+                            globs: {
+                                'char': charParams
+                            }
+                        };
+                    };
+                    var newVal = MMOScript.evaluateText(block.text, env);
+                    if (newVal !== block.actualValue) {
+                        block.actualValue = newVal;
+                        var els = Ext.query(block.css);
+                        for (var k = 0; k < els.length; k++) {
+                            els[k].innerHTML = newVal;
+                        }
+                    }
+                    var dynamic = false;
+                    if (block.time_dependent) {
+                        // Expression directly depending on t
+                        dynamic = true;
+                    } else {
+                        // Check indirect dependencies on t
+                        for (var j = 0; j < block.deps.length; j++) {
+                            var dep = block.deps[j];
+                            if (dep[0] === 'char') {
+                                if (charParamsDynamic[dep[1]]) {
+                                    dynamic = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (dynamic) {
+                        dirty = true;
+                    } else {
+                        block.dirty = false;
+                    }
+                }
+            }
+        }
+    }
+    if (dirty) {
+        self.dynamic_blocks_timer = setTimeout(function () {
+            self.dynamic_blocks_timer = undefined;
+            self.update_dynamic_blocks();
+        }, 10);
+    }
+};
+
+Game.on_myparam_update = function (param) {
+    var self = Game;
+    var paramStr = 'char.p_' + param;
+    var deps = Game.dynamic_block_deps[paramStr];
+    if (deps) {
+        var dirty = false;
+        for (var i = 0; i < deps.length; i++) {
+            var block = Game.dynamic_blocks[deps[i]];
+            block.dirty = true;
+            dirty = true;
+        }
+        if (dirty) {
+            Game.update_dynamic_blocks();
+        }
+    }
 };
 
 wait(['timesync'], function () {

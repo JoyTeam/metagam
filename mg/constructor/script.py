@@ -1,10 +1,15 @@
 from mg import *
 from mg.constructor import *
 from mg.constructor.script_classes import *
+from uuid import uuid4
 import re
 import traceback
 import math
 import time
+
+re_shorten = re.compile(r'^(.{100}).{3,}$')
+re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
+re_valid_selector = re.compile(r'^[\.#]')
 
 class HTMLFormatter(object):
     @staticmethod
@@ -35,6 +40,11 @@ class ScriptEngine(ConstructorModule):
         self.rhook("script.admin-text", self.admin_text)
         self.rhook("gameinterface.render", self.gameinterface_render)
 
+    def child_modules(self):
+        return [
+            "mg.constructor.script.ScriptAdmin"
+        ]
+
     def evaluate_dynamic(self, val):
         if type(val) != list or len(val) != 2:
             return val
@@ -48,6 +58,8 @@ class ScriptEngine(ConstructorModule):
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("mmoscript")
         vars["js_init"].append("MMOScript.lang = '%s';" % self.call("l10n.lang"))
+        for ent in self.conf("gameinterface.dynamic-blocks", []):
+            vars["js_init"].append("Game.dynamic_block('%s', '%s', %s);" % (ent["uuid"], jsencode(ent["css"]), json.dumps(ent["text"])))
 
     def help_icon_expressions(self, tag=None):
         icon = "%s-script.gif" % tag if tag else "script.gif"
@@ -970,4 +982,112 @@ class ScriptEngine(ConstructorModule):
             raise
         except Exception as e:
             self.critical("Exception during exception reporting: %s", "".join(traceback.format_exception(e_type, e_value, e_traceback)))
+
+class ScriptAdmin(ConstructorModule):
+    def register(self):
+        self.rhook("menu-admin-gameinterface.index", self.menu_gameinterface_index)
+        self.rhook("headmenu-admin-gameinterface.dynamic", self.headmenu_dynamic)
+        self.rhook("ext-admin-gameinterface.dynamic", self.admin_dynamic, priv="design")
+
+    def menu_gameinterface_index(self, menu):
+        req = self.req()
+        if req.has_access("design"):
+            menu.append({"id": "gameinterface/dynamic", "text": self._("Dynamic blocks"), "leaf": True, "order": 9})
+
+    def headmenu_dynamic(self, args):
+        if args == "new":
+            return [self._("New block"), "gameinterface/dynamic"]
+        elif args:
+            for ent in self.conf("gameinterface.dynamic-blocks", []):
+                if ent["uuid"] == args:
+                    return [htmlescape(ent["css"]), "gameinterface/dynamic"]
+        return self._("Dynamic blocks")
+
+    def admin_dynamic(self):
+        req = self.req()
+        dynamic_blocks = self.conf("gameinterface.dynamic-blocks", [])
+        if req.args:
+            m = re_del.match(req.args)
+            if m:
+                uuid = m.group(1)
+                dynamic_blocks = [block for block in dynamic_blocks if block["uuid"] != uuid]
+                config = self.app().config_updater()
+                config.set("gameinterface.dynamic-blocks", dynamic_blocks)
+                config.store()
+                self.call("admin.redirect", "gameinterface/dynamic")
+            if req.args == "new":
+                ent = {
+                    "uuid": uuid4().hex
+                }
+            else:
+                ent = None
+                for e in dynamic_blocks:
+                    if e["uuid"] == req.args:
+                        ent = e
+                        break
+                if ent is None:
+                    self.call("admin.redirect", "gameinterface/dynamic")
+            if req.ok():
+                new_ent = {
+                    "uuid": ent["uuid"]
+                }
+                errors = {}
+                # css
+                css = req.param("css").strip()
+                if not css:
+                    errors["css"] = self._("This field is mandatory")
+                elif not re_valid_selector.match(css):
+                    errors["css"] = self._("CSS selector must start with '.' or '#'")
+                else:
+                    new_ent["css"] = css
+                # text
+                char = self.character(req.user())
+                new_ent["text"] = self.call("script.admin-text", "text", errors, globs={"char": char})
+                # process errors
+                if errors:
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                # store data
+                dynamic_blocks = [block for block in dynamic_blocks if block["uuid"] != new_ent["uuid"]]
+                dynamic_blocks.append(new_ent)
+                dynamic_blocks.sort(cmp=lambda x, y: cmp(x["css"], y["css"]) or cmp(x["uuid"], y["uuid"]))
+                config = self.app().config_updater()
+                config.set("gameinterface.dynamic-blocks", dynamic_blocks)
+                config.store()
+                self.call("admin.redirect", "gameinterface/dynamic")
+            fields = [
+                {"name": "css", "label": self._("CSS selector (.class, #id, etc)"), "value": ent.get("css")},
+                {"name": "text", "label": self._("Dynamic block contents (evaluated on the client side)") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", ent.get("text"))},
+            ]
+            self.call("admin.form", fields=fields)
+        rows = []
+        for ent in dynamic_blocks:
+            txt = self.call("script.unparse-text", ent["text"])
+            txt = htmlescape(re_shorten.sub(r'\1...', txt))
+            rows.append([
+                htmlescape(ent["css"]),
+                txt,
+                u'<hook:admin.link href="gameinterface/dynamic/%s" title="%s" />' % (ent["uuid"], self._("edit")),
+                u'<hook:admin.link href="gameinterface/dynamic/del/%s" title="%s" confirm="%s" />' % (ent["uuid"], self._("delete"), self._("Are you sure want to delete this block?")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {
+                            "hook": "gameinterface/dynamic/new",
+                            "text": self._("New dynamic block"),
+                            "lst": True
+                        }
+                    ],
+                    "header": [
+                        self._("CSS selector"),
+                        self._("Text"),
+                        self._("Editing"),
+                        self._("Deletion")
+                    ],
+                    "rows": rows
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 

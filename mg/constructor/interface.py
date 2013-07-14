@@ -359,6 +359,7 @@ class Interface(ConstructorModule):
         vars["protocol"] = self.app().protocol
         vars["game_domain"] = self.app().canonical_domain
         vars["character"] = character.uuid
+        vars["character_name"] = character.name
         vars["layout"] = {
             "scheme": self.conf("gameinterface.layout-scheme", 1),
             "marginleft": self.conf("gameinterface.margin-left", 0),

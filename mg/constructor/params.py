@@ -389,10 +389,7 @@ class ParamsAdmin(ConstructorModule):
                     self.call("web.response_json", {"success": False, "errors": errors})
                 if old_value != value:
                     db_obj.set(param["code"], value)
-                    # emit events with actual values
-                    old_value = self.call("script.evaluate-dynamic", old_value)
-                    value = self.call("script.evaluate-dynamic", value)
-                    self.call("%s.param-changed" % self.kind, uuid=uuid, param=param, old_value=old_value, new_value=value)
+                    self.call("%s.param-changed" % self.kind, uuid=uuid, param=param, value=value)
                     self.call("%s.param-admin-changed" % self.kind, uuid=uuid, param=param, old_value=old_value, new_value=value, comment=comment)
                     db_obj.store()
                 self.call("%s.params-redirect" % self.kind, uuid)

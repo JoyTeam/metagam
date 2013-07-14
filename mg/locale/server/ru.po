@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-07-13 22:48+0300\n"
+"PO-Revision-Date: 2013-07-14 11:23+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1060,6 +1060,15 @@ msgstr "Имя CSS-класса"
 
 msgid "CSS class name:<ul><li>horizontal &mdash; standard horizontal menu</li><li>vertical &mdash; standard vertical menu</li><li>any other value &mdash; user specific style</li></ul>"
 msgstr "Название CSS-класса:<ul><li>horizontal &mdash; стандартное горизонтальное меню;</li><li>vertical &mdash; стандартное вертикальное меню;</li><li>любое другое значение - пользовательский стиль</li></ul>"
+
+msgid "CSS selector"
+msgstr "CSS-селектор"
+
+msgid "CSS selector (.class, #id, etc)"
+msgstr "CSS-селектор (.class, #id, и т.д.)"
+
+msgid "CSS selector must start with '.' or '#'"
+msgstr "CSS-селектор должен начинаться с \".\" или \"#\""
 
 msgid "CSS style declaration"
 msgstr "Описание CSS-стиля"
@@ -2557,6 +2566,12 @@ msgstr "Время действия"
 
 msgid "Duration of the action (in time units). Applicable to turn orders supporting time units only"
 msgstr "Продолжительность действия (в тайм-юнитах). Применимо, только если очерёдность ходов поддерживает тайм-юниты"
+
+msgid "Dynamic block contents (evaluated on the client side)"
+msgstr "Содержимое динамического блока (вычисляется на стороне клиента)"
+
+msgid "Dynamic blocks"
+msgstr "Динамические блоки"
 
 msgid "Dynamic value expression"
 msgstr "Выражение для динамического значения"
@@ -5463,6 +5478,9 @@ msgstr "Новая валюта"
 msgid "New design"
 msgstr "Новое оформление"
 
+msgid "New dynamic block"
+msgstr "Новый динамический блок"
+
 msgid "New e-mail"
 msgstr "Новый e-mail"
 
@@ -8000,6 +8018,9 @@ msgstr "Тест"
 
 msgid "Test delivery (to the administrator)"
 msgstr "Тестовая доставка (администратору)"
+
+msgid "Text"
+msgstr "Текст"
 
 msgid "Text color in the 'About' and 'News' blocks"
 msgstr "Цвет текста в блоках \"Об игре\" и \"Новости\""
@@ -11414,8 +11435,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ msgstr ""
 #~ "Каждый персонаж после регистрации должен выбрать образ (запретить игру с "
 #~ "образом по умолчанию)"
-#~ msgid "Select"
-#~ msgstr "Выбрать"
 #~ msgid "first time free"
 #~ msgstr "первый раз бесплатно"
 #~ msgid "Select at least one sex"

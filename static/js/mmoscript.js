@@ -369,7 +369,15 @@ MMOScript.evaluate = function (val, env) {
         if (!env || !env.globs) {
             return undefined;
         }
-        return env.globs[name];
+        var obj = env.globs[name];
+        if (obj === undefined && (name === 't' || name === 'T')) {
+            try {
+                return TimeSync.getTime();
+            } catch (e) {
+                return (new Date()).getTime() / 1000.0;
+            }
+        }
+        return obj;
     }
     if (cmd == '.') {
         var obj = self.evaluate(val[1], env);

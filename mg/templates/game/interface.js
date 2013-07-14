@@ -4,6 +4,7 @@ var Game = {
     domain: '[%domain%]',
     base_domain: '[%base_domain%]',
     character: '[%character%]',
+    character_name: '[%character_name%]',
     design_root: '[%design_root%]',
     panels: {
         [%+ foreach panel in panels%]'[%panel.id%]': {

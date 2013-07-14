@@ -108,7 +108,13 @@ class CharacterParamsAdmin(ParamsAdmin):
     def param_admin_changed(self, uuid, param, old_value, new_value, comment):
         req = self.req()
         self.call("security.suspicion", admin=req.user(), action="param.change", kind="characters", uuid=uuid, param=param["code"], old_value=old_value, new_value=new_value, comment=comment)
-        self.call("dossier.write", user=uuid, admin=req.user(), content=self._("{param_name} ({param_code}) changed from {old_value} to {new_value}:\n{comment}").format(param_name=param["name"], param_code=param["code"], old_value=old_value, new_value=new_value, comment=comment))
+        self.call("dossier.write", user=uuid, admin=req.user(), content=self._("{param_name} ({param_code}) changed from {old_value} to {new_value}:\n{comment}").format(
+            param_name=param["name"],
+            param_code=param["code"],
+            old_value=self.call("script.unparse-expression", old_value[1]) if type(old_value) is list else old_value,
+            new_value=self.call("script.unparse-expression", new_value[1]) if type(new_value) is list else new_value,
+            comment=comment
+        ))
 
     def headmenu_delivery(self, args):
         if args == "new":

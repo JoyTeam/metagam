@@ -107,6 +107,14 @@ Characters.myparam = function (pkt) {
     val.dirty = true;
     this.myparams[pkt.param] = val;
     this.updateParams();
+    var updateGame;
+    try {
+        updateGame = Game.on_myparam_update;
+    } catch (e) {
+    }
+    if (updateGame) {
+        updateGame(pkt.param);
+    }
 };
 
 Characters.myParam = function (key) {
