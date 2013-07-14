@@ -383,6 +383,8 @@ class TestScript(unittest.TestCase):
         self.partialEval("t / 0", "none")
         # Unary -
         self.partialEval("-1", "-1")
+        self.partialEval("-(1)", "-1")
+        self.partialEval("-vec3(1, 2, 3)", "vec3(-1, -2, -3)")
         self.partialEval("-g2", "-2")
         self.partialEval("-t", "-t")
         self.partialEval("-(t + 1)", "-(t + 1)")
@@ -494,6 +496,18 @@ class TestScript(unittest.TestCase):
         self.partialEval("t", "t")
         # dot
         self.partialEval("t.attr + 5", "t.attr + 5")
+        # true/false
+        self.partialEval("not 0", "1")
+        self.partialEval("not 1", "0")
+        self.partialEval("not ''", "1")
+        self.partialEval("not '0'", "0")
+        self.partialEval("not 1/0", "1")
+        # strings
+        self.partialEval("'abc'", '"abc"')
+        self.partialEval('"abc"', '"abc"')
+        self.partialEval('"a\'bc"', '"a\'bc"')
+        self.partialEval("'a\"bc'", "'a\"bc'")
+        self.partialEval("'a\"\\'bc'", '"a\\"\'bc"')
 
     def test_partial_text_eval(self):
         self.partialTextEval('string', 'string')

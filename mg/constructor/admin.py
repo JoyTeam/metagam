@@ -47,6 +47,7 @@ class Constructor(Module):
             "mg.core.auth.Sessions", "mg.core.auth.Interface", "mg.core.cluster.Cluster", "mg.core.hetzner.HetznerAdmin",
             "mg.core.emails.Email", "mg.core.queue.Queue", "mg.core.cass_maintenance.CassandraMaintenance", "mg.admin.wizards.Wizards",
             "mg.core.projects.Projects",
+            "mg.constructor.script.ScriptEngine",
             "mg.constructor.admin.ConstructorUtils", "mg.core.money.Money", "mg.core.money.MoneyAdmin", "mg.constructor.dashboard.ProjectDashboard",
             "mg.constructor.domains.Domains", "mg.constructor.domains.DomainsAdmin",
             "mg.core.money.Xsolla", "mg.core.money.XsollaAdmin",

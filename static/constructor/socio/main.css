@@ -71,6 +71,9 @@ input.form-file { font-size: 13px }
 .doc-screenshot { display: block; margin: 20px 0 30px 0; border: solid 1px #c0c0c0 }
 .status-done { font-weight: bold; color: green }
 .status-todo { font-weight: bold; color: red }
+.doc-operator { font-weight: bold; font-size: 20px; background-color: #0078ac; color: #ffffff; padding: 0 5px 3px 5px; margin: 3px 0 3px 0 }
+ul.doc-operators>li { margin-bottom: 15px }
+.doc-operator-priorities>li { margin-bottom: 10px }
 
 /* REQUEST AUCTION */
 #reqauction-myreq { width: 400px; float: right; margin-left: 20px }

@@ -14,6 +14,7 @@ class Documentation(Module):
         self.rhook("ext-doc.game-template", self.game_template, priv="public")
         self.rhook("ext-doc.socio-template", self.socio_template, priv="public")
         self.rhook("ext-doc.combat-template", self.combat_template, priv="public")
+        self.rhook("ext-doc.expression-parser", self.expression_parser, priv="public")
         self.rhook("ext-doc.handler", self.handler, priv="public")
 
     def index(self):
@@ -113,3 +114,29 @@ class Documentation(Module):
                 self.call("socio.response", u'<div class="doc-content"><h1>%s</h1><pre class="doc-code-sample">%s</pre><p><a href="/doc/design/templates">%s</a></div>' % (req.args, content, self._("Description of the templates engine")), vars)
         except IOError:
             self.call("web.not_found")
+
+    def expression_parser(self):
+        req = self.req()
+        form = self.call("web.form")
+        text = req.param("text").strip()
+        if req.ok():
+            try:
+                expression = self.call("script.parse-expression", text)
+            except ScriptParserError as e:
+                html = e.val.format(**e.kwargs)
+                if e.exc:
+                    html += "\n%s" % e.exc
+                form.error("text", html)
+            else:
+                form.add_message_top(u'<pre>%s</pre>' % htmlescape(json.dumps(expression, indent=4)))
+        form.input(self._("Expression"), "text", text)
+        form.submit(None, None, self._("formbtn///Parse"))
+        vars = {
+            "title": self._("Online script parser"),
+            "menu_left": [
+                {"href": "/doc", "html": self._("List of categories")},
+                {"href": "/doc/script", "html": self._("Scripting engine")},
+                {"html": self._("Online script parser"), "lst": True}
+            ]
+        }
+        self.call("socio.response", form.html(vars), vars)

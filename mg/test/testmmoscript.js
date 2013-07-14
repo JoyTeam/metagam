@@ -196,3 +196,10 @@ assert.strictEqual(MMOScript.evaluate(['%', 7, 0]), undefined);
 
 /* Vectors */
 assert.strictEqual(MMOScript.evaluate(['call', 'vec3', 1, 2, 3]).toString(), '(1, 2, 3)');
+
+/* True/false */
+assert.strictEqual(MMOScript.evaluate(['not', 0]), 1);
+assert.strictEqual(MMOScript.evaluate(['not', 1]), 0);
+assert.strictEqual(MMOScript.evaluate(['not', '']), 1);
+assert.strictEqual(MMOScript.evaluate(['not', '0']), 0);
+assert.strictEqual(MMOScript.evaluate(['not', undefined]), 1);

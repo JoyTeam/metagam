@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-07-14 11:23+0300\n"
+"PO-Revision-Date: 2013-07-15 00:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4629,6 +4629,9 @@ msgstr "Ссылки"
 msgid "List is empty"
 msgstr "Список пуст"
 
+msgid "List of categories"
+msgstr "Список разделов"
+
 msgid "List of character's combats"
 msgstr "Список боёв персонажа"
 
@@ -5845,6 +5848,9 @@ msgstr "Одно из полей \"{field1}\" или \"{field2}\" должно �
 msgid "One of fields '{field1}' or '{field2}' must be filled"
 msgstr "Одно из полей \"{field1}\" или \"{field2}\" должно быть заполнено"
 
+msgid "Online script parser"
+msgstr "Онлайн-парсер скриптов"
+
 msgid "Open"
 msgstr "Открыть"
 
@@ -6976,6 +6982,9 @@ msgstr "Ошибка при восстановлении скрипта. Ожи�
 #, python-format
 msgid "Script validation error. Expected list, received %s"
 msgstr "Ошибка при валидации скрипта. Ожидался список, получено: %s"
+
+msgid "Scripting engine"
+msgstr "Скриптовый движок"
 
 msgid "Scripting language reference"
 msgstr "Описание скриптового языка"
@@ -9932,6 +9941,9 @@ msgstr "навсегда"
 msgid "forgot your password?"
 msgstr "забыли ваш пароль?"
 
+msgid "formbtn///Parse"
+msgstr "Отпарсить"
+
 msgid "forum"
 msgstr "форум"
 
@@ -10948,6 +10960,8 @@ msgstr "{targetchar.name} в другой локации"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid "Parse script expression"
+#~ msgstr "Парсинг скриптового выражения"
 #~ msgid "Evaluation of location object visibility"
 #~ msgstr "Вычисление видимости объекта на локации"
 #~ msgid "Image type"
