@@ -53,11 +53,10 @@ class Combats(mg.constructor.ConstructorModule):
                 options["music_volume"] = rulesinfo.get("music_volume")
             if rulesinfo.get("music_fade"):
                 options["music_fade"] = rulesinfo.get("music_fade")
-        print "set busy", options
         res = character.set_busy("combat", options, dry_run)
         if not dry_run and res:
             character.message(self._("You have entered a combat"))
-            self.call("characters.param-changed", character.uuid, "combat", None, creq.uuid)
+            character.name_invalidate()
         return not res
 
     def unset_busy(self, creq, uuid):
@@ -65,7 +64,7 @@ class Combats(mg.constructor.ConstructorModule):
         busy = character.busy
         if busy and busy["tp"] == "combat" and busy.get("combat") == creq.uuid:
             character.unset_busy()
-            self.call("characters.param-changed", character.uuid, "combat", creq.uuid, None)
+            character.name_invalidate()
 
 class CombatCharacterMember(CombatMember):
     def __init__(self, combat, character, fqn="mg.mmorpg.combats.characters.CombatCharacterMember"):
@@ -85,6 +84,7 @@ class CombatCharacterMember(CombatMember):
         # copy character parameters into member parameters
         for param in self.call("characters.params"):
             val = self.call("characters.param-value", character, param["code"])
+            val = self.call("script.evaluate-dynamic", val)
             self.set_param("p_%s" % param["code"], val)
 
     def started(self):

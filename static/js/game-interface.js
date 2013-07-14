@@ -168,11 +168,11 @@ Game.onLayout = function() {
             var el = Ext.get(els[i]);
             if (el.content_width != undefined) {
                 el.content_width = undefined;
-                el.dom.style.width = '0px';
+                el.dom.style.width = '1px';
             }
             if (el.content_height != undefined) {
                 el.content_height = undefined;
-                el.dom.style.height = '0px';
+                el.dom.style.height = '1px';
             }
         }
         this.progress_show(id, progress.ratio);
