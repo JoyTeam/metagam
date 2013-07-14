@@ -528,8 +528,8 @@ class Locations(ConstructorModule):
             start = unix_timestamp(character.location_delay[0])
             end = unix_timestamp(character.location_delay[1])
             current_ratio = (now - start) * 1.0 / (end - start)
-            time_till_end = (end - now) * 1000
-            commands.append("Game.progress_run('location-movement', %s, 1, %s);" % (current_ratio, time_till_end))
+            time_end = end * 1000.0
+            commands.append("Game.progress_run('location-movement', (Game.now() - {start}) / {ratio}, 1, {end} - Game.now());".format(start=start * 1000.0, ratio=(end - start) * 1000.0, end=time_end))
         # updating location names
         if character.location:
             commands.append(u"Locations.update('{name}', '{name_w}');".format(

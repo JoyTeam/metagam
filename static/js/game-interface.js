@@ -1,7 +1,7 @@
 Game.progress = new Array();
 
 Game.now = function() {
-    return (new Date()).getTime();
+    return TimeSync.getTime() * 1000.0;
 };
 
 Game.reload = function() {
@@ -526,4 +526,6 @@ Game.qevent = function (ev, params) {
     });
 };
 
-loaded('game-interface');
+wait(['timesync'], function () {
+    loaded('game-interface');
+});
