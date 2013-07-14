@@ -195,7 +195,7 @@ function deepEquals(a, b)
             return false;
         }
         for (var p in a) {
-            if (!b.hasOwnProperty(p)) {
+            if (a.hasOwnProperty(p) && !b.hasOwnProperty(p)) {
                 return false;
             }
             if (!deepEquals(a[p], b[p])) {
@@ -203,13 +203,13 @@ function deepEquals(a, b)
             }
         }
         for (var p in b) {
-            if (!a.hasOwnProperty(p)) {
+            if (b.hasOwnProperty(a) && !a.hasOwnProperty(p)) {
                 return false;
             }
         }
         return true;
     } else {
-        return (a === b) ? true : false;
+        return (a == b) ? true : false;
     }
 }
 

@@ -390,6 +390,9 @@ wait(['location', 'objects', 'hints'], function () {
                     self.position.y === undefined || self.position.z === undefined) {
                 return;
             }
+            if (!self.visible || self.visible <= 0) {
+                return;
+            }
             self.manager.touchPoint(
                     (self.position.x - self.imageWidth / 2) * LocCanvas.scale,
                     (self.position.z - self.imageHeight / 2) * LocCanvas.scale);
@@ -462,6 +465,7 @@ wait(['location', 'objects', 'hints'], function () {
     LocObjectVisibility = Ext.extend(GenericObjectParam, {
         applyValue: function (val) {
             var self = this;
+            self.obj.touch();
             self.obj.visible = val;
             self.obj.touch();
             self.obj.manager.eventualPaint();
