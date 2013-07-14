@@ -265,6 +265,11 @@ wait(['location', 'objects', 'hints'], function () {
         onMouseMove: function (ev, x, y) {
             var self = this;
             var obj = self.findObj(x, y);
+            if (obj) {
+                self.canvas.style.cursor = 'pointer';
+            } else {
+                self.canvas.style.cursor = 'default';
+            }
             if (obj && !obj.hint) {
                 obj = undefined;
             }
@@ -274,10 +279,8 @@ wait(['location', 'objects', 'hints'], function () {
                 self.tipElement = undefined;
             }
             if (!obj) {
-                self.canvas.style.cursor = 'default';
                 return;
             }
-            self.canvas.style.cursor = 'pointer';
             var xy = ev.getXY();
             if (obj && obj !== self.tipObject) {
                 self.tipObject = obj;
