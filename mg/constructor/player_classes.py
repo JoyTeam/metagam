@@ -268,7 +268,7 @@ class Character(Module, ParametrizedObject):
         return res
 
     def send_param(self, param, val):
-        if param.get("owner_visible") and self.call("characters.visibility-condition", param, self):
+        if param.get("owner_visible") and param.get("type", 0) == 0 and self.call("characters.visibility-condition", param, self):
             if self.tech_online:
                 self.call("stream.character", self, "characters", "myparam", param=param["code"], value=val)
 
