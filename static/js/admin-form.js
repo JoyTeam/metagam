@@ -369,6 +369,7 @@ Form = Ext.extend(AdminResponsePanel, {
         this.form_cmp = form;
         this.form_id = form_id;
         this.submit = data.submit;
+        this.beforeSubmit = data.beforeSubmit;
         this.showHandler = (function() {
             this.form_cmp.showHandler(this.form_cmp);
         }).createDelegate(this);
@@ -403,6 +404,9 @@ Form = Ext.extend(AdminResponsePanel, {
         if (this.submit) {
             this.submit();
             return;
+        }
+        if (this.beforeSubmit) {
+            this.beforeSubmit();
         }
         var form = Ext.getCmp('admin-form-' + this.form_id);
         form.getForm().submit({

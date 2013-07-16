@@ -61,6 +61,8 @@ class LocationObjectsAdmin(ConstructorModule):
                             errors["id-%d" % obj_id] = self._("Object identifier must start with 'u_' and contain latin letters, digits and underscores only")
                         else:
                             obj["id"] = ident
+                    # order
+                    obj["order"] = intz(req.param("order-%d" % obj_id))
                     # coordinates
                     x = req.param("x-%d" % obj_id)
                     if not valid_int(x):
@@ -144,7 +146,8 @@ class LocationObjectsAdmin(ConstructorModule):
                     obj["hint"] = hint
             if errors:
                 self.call("web.response_json", errors)
-            objlist = [objects[obj_id] for obj_id in sorted(objects.keys())]
+            objlist = objects.values()
+            objlist.sort(cmp=lambda x, y: cmp(x["order"], y["order"]))
             location.db_location.set("static_objects", objlist)
             self.call("admin-locations.update-transitions", location.db_location)
             location.db_location.store()

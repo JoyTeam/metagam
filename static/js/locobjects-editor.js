@@ -26,6 +26,11 @@ VisualObject.prototype.render = function(form) {
             },
             items: [
                 {
+                    id: 'form-order-' + this.id,
+                    xtype: 'hidden',
+                    name: 'order-' + this.id
+                },
+                {
                     id: 'form-field-image-' + this.id,
                     xtype: 'hidden',
                     name: 'image-' + this.id,
@@ -397,7 +402,6 @@ LocObjectsEditor.cleanup = function() {
     this.mouse = new Array();
     this.handler_size = 8;
     this.active_object = undefined;
-    this.mode = undefined;
     this.active_handler = undefined;
     this.highlighted_handler = undefined;
     this.highlighted_segment = undefined;
@@ -470,6 +474,12 @@ LocObjectsEditor.init = function(submit_url, width, height) {
                 }
             }
         ],
+        beforeSubmit: function () {
+            for (var i = 0; i < LocObjectsEditor.objects.length; i++) {
+                var obj = LocObjectsEditor.objects[i];
+                Ext.get('form-order-' + obj.id).dom.value = i;
+            }
+        },
         errorHandler: function (form, error) {
             var fields = ['x', 'y', 'polygon', 'visible', 'action', 'location', 'url', 'id',
                     'position-expr', 'position'];
@@ -535,7 +545,6 @@ LocObjectsEditor.add_object = function () {
                     obj.poly.push({x: Math.floor(+obj.width / 2), y: Math.floor(+obj.height / 2)});
                     obj.poly.push({x: Math.floor(-obj.width / 2), y: Math.floor(+obj.height / 2)});
                     obj.poly.push(obj.poly[0]);
-                    th.mode = undefined;
                     th.touch_active_object();
                     th.paint();
                     obj.update_form();
@@ -600,7 +609,6 @@ LocObjectsEditor.select_object = function () {
                         obj.poly.push({x: Math.floor(+obj.width / 2), y: Math.floor(+obj.height / 2)});
                         obj.poly.push({x: Math.floor(-obj.width / 2), y: Math.floor(+obj.height / 2)});
                         obj.poly.push(obj.poly[0]);
-                        th.mode = undefined;
                         th.touch_active_object();
                         th.paint();
                         obj.update_form();
@@ -644,7 +652,6 @@ LocObjectsEditor.add_area = function () {
     obj.poly.push({x: Math.floor(+obj.width / 2), y: Math.floor(+obj.height / 2)});
     obj.poly.push({x: Math.floor(-obj.width / 2), y: Math.floor(+obj.height / 2)});
     obj.poly.push(obj.poly[0]);
-    th.mode = undefined;
     th.touch_active_object();
     th.paint();
     obj.update_form();
@@ -731,7 +738,7 @@ LocObjectsEditor.update_highlighted = function() {
             var pt = this.active_object.poly[j];
             var pv = {x: pt.x + this.active_object.x - this.mouse.x, y: pt.y + this.active_object.y - this.mouse.y};
             var dist = Math.sqrt(pv.x * pv.x + pv.y * pv.y);
-            if (dist < this.handler_size * 2) {
+            if (dist < this.handler_size) {
                 if (best_dist == undefined || dist < best_dist) {
                     best_dist = dist;
                     this.highlighted_handler = pt;
@@ -760,7 +767,7 @@ LocObjectsEditor.update_highlighted = function() {
                     var n12 = {x: -u12.y, y: u12.x};
                     var vm = {x: this.mouse.x - pt1.x, y: this.mouse.y - pt1.y};
                     var dist = Math.abs(vm.x * n12.x + vm.y * n12.y) + this.handler_size;
-                    if (dist < this.handler_size * 3) {
+                    if (dist < this.handler_size * 1.5) {
                         if (best_dist == undefined || dist < best_dist) {
                             best_dist = dist;
                             this.highlighted_segment = j;
@@ -1124,7 +1131,7 @@ LocObjectsEditor.key_down = function(ev, target) {
         this.form.custom_submit(this.form.form_cmp.url);
     } else if (key == ev.DELETE) {
         ev.stopEvent();
-        if (this.active_handler && !this.mode) {
+        if (this.active_handler) {
             /* removing vertex */
             this.touch_active_object();
             for (var i = 0; i < this.active_object.poly.length; i++) {
@@ -1165,7 +1172,6 @@ LocObjectsEditor.key_down = function(ev, target) {
                     break;
                 }
             }
-            this.mode = undefined;
             this.active_object = undefined;
             this.drag_handler = undefined;
             this.active_handler = undefined;
