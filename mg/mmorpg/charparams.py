@@ -57,7 +57,7 @@ class CharacterParamsAdmin(ParamsAdmin):
                     raise Hooks.Return(self._("Character parameter '%s' does not exist") % param_max)
 
     def advice_params_delivery(self, args, advice):
-        advice.append({"title": self._("Character parameters delivery documentation"), "content": self._('You can find detailed information on the character parameters delivery in the <a href="//www.%s/doc/character-menu" target="_blank">character menu page</a> in the reference manual.') % self.main_host})
+        advice.append({"title": self._("Character parameters delivery documentation"), "content": self._('You can find detailed information on the character parameters delivery in the <a href="//www.%s/doc/character-delivery" target="_blank">character parameters delivery page</a> in the reference manual.') % self.main_host})
 
     def advice_context_menu(self, args, advice):
         advice.append({"title": self._("Character context menu documentation"), "content": self._('You can find detailed information on the character context menu settings in the <a href="//www.%s/doc/character-menu" target="_blank">character menu page</a> in the reference manual.') % self.main_host})

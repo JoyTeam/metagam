@@ -1025,7 +1025,7 @@ class QuestsAdmin(ConstructorModule):
     def admin_inventory_actions(self):
         req = self.req()
         actions = [act.copy() for act in self.conf("quest-item-actions.list", [])]
-        self.call("admin.advice", {"title": self._("Quests documentation"), "content": self._('You can find detailed information on the quests engine in the <a href="//www.%s/doc/quests" target="_blank">quests engine page</a> in the reference manual.') % self.main_host, "order": 20})
+        self.call("admin.advice", {"title": self._("Quests and triggers subsystem documentation"), "content": self._('This is the coremost part of the MMO Constructor. It can be used to assign arbitrary actions to various game events. You can find detailed information on the quests engine in the <a href="//www.%s/doc/quests" target="_blank">quests engine page</a> in the reference manual.') % self.main_host, "order": 20})
         if req.args:
             m = re_del.match(req.args)
             if m:

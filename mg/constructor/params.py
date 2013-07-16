@@ -44,6 +44,7 @@ class ParamsAdmin(ConstructorModule):
     def admin_params(self):
         req = self.req()
         self.call("admin.advice", {"title": self._("Parameters documentation"), "content": self._('You can find detailed information on the parameters system in the <a href="//www.%s/doc/parameters" target="_blank">parameters page</a> in the reference manual.') % self.main_host, "order": 30})
+        self.call("admin.advice", {"title": self._("Parameters changing with time"), "content": self._('Parameters can change with time automatically. See <a href="//www.%s/doc/dynamic" target="_blank">parameters changing with time page</a> for detail.') % self.main_host, "order": 35})
         if req.args:
             m = re_del.match(req.args)
             if m:

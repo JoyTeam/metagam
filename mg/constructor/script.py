@@ -989,6 +989,10 @@ class ScriptAdmin(ConstructorModule):
         self.rhook("menu-admin-gameinterface.index", self.menu_gameinterface_index)
         self.rhook("headmenu-admin-gameinterface.dynamic", self.headmenu_dynamic)
         self.rhook("ext-admin-gameinterface.dynamic", self.admin_dynamic, priv="design")
+        self.rhook("advice-admin-characters.params", self.advice_characters_params)
+
+    def advice_characters_params(self, args, advice):
+        advice.append({"title": self._("Dynamic blocks"), "content": self._('You can use delivered parameters to render them to the dynamic blocks. See <a href="//www.%s/doc/dynamic" target="_blank">dynamic blocks documentation</a>.') % self.main_host, "order": 60})
 
     def menu_gameinterface_index(self, menu):
         req = self.req()
@@ -1007,6 +1011,7 @@ class ScriptAdmin(ConstructorModule):
     def admin_dynamic(self):
         req = self.req()
         dynamic_blocks = self.conf("gameinterface.dynamic-blocks", [])
+        self.call("admin.advice", {"title": self._("Dynamic blocks"), "content": self._('You can find detailed information on the dynamic blocks in <a href="//www.%s/doc/dynamic" target="_blank">dynamic blocks documentation</a>.') % self.main_host, "order": 60})
         if req.args:
             m = re_del.match(req.args)
             if m:

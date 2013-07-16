@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-07-16 11:24+0300\n"
+"PO-Revision-Date: 2013-07-16 12:32+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1336,6 +1336,10 @@ msgstr "Прогресс-бар параметра персонажа"
 msgid "Character parameters"
 msgstr "Параметры персонажа"
 
+#, python-format
+msgid "Character parameters are delivered to the client automatically. See <a href=\"//www.%s/doc/character-delivery\" target=\"_blank\">character parameters delivery documentation</a>."
+msgstr "Параметры могут доставляться в клиент автоматически. Подробности - на странице \"<a href=\"//www.%s/doc/character-delivery\" target=\"_blank\">Доставка параметров персонажей</a>\"."
+
 msgid "Character parameters delivery documentation"
 msgstr "Документация на доставку параметров персонажей"
 
@@ -1375,6 +1379,9 @@ msgstr "Настройка экипировки персонажей"
 
 msgid "Characters images documentation"
 msgstr "Документация на образы персонажей"
+
+msgid "Characters menu documentation"
+msgstr "Документация на меню персонажей"
 
 msgid "Characters parameters"
 msgstr "Параметры персонажей"
@@ -3440,6 +3447,9 @@ msgstr "Меню игрового интерфейса"
 msgid "Game interface scripts"
 msgstr "Скрипты игрового интерфейса"
 
+msgid "Game interface scripts documentation"
+msgstr "Документация на скрипты игрового интерфейса"
+
 msgid "Game interface structure"
 msgstr "Структура игрового интерфейса"
 
@@ -4728,6 +4738,9 @@ msgstr "Локация не указана"
 
 msgid "Location objects"
 msgstr "Объекты на локациях"
+
+msgid "Location objects documentation"
+msgstr "Документация на объекты на локациях"
 
 msgid "Location page layout"
 msgstr "Разметка страницы локации"
@@ -6094,6 +6107,16 @@ msgstr "Параметр с этим кодом уже доставляется 
 msgid "Parameters"
 msgstr "Параметры"
 
+#, python-format
+msgid "Parameters can change with time automatically. See <a href=\"//www.%s/doc/dynamic\" target=\"_blank\">parameters changing with time page</a> for detail."
+msgstr "Параметры могут изменяться со временем автоматически. Подробности - на странице \"<a href=\"//www.%s/doc/dynamic\" target=\"_blank\">Параметры, изменяющиеся со временем</a>\"."
+
+msgid "Parameters changing with time"
+msgstr "Параметры, изменяющиеся со временем"
+
+msgid "Parameters delivery"
+msgstr "Доставка параметров"
+
 msgid "Parameters documentation"
 msgstr "Документация на систему параметров"
 
@@ -6304,6 +6327,9 @@ msgstr "Профиль"
 msgid "Progress bar"
 msgstr "Прогресс-бар"
 
+msgid "Progress bars"
+msgstr "Прогресс-бары"
+
 msgid "Progress bars in this block (one per line). Valid values are:"
 msgstr "Прогресс-бары в этом блоке (по одному в каждой строке). Допустимые значения:"
 
@@ -6489,6 +6515,9 @@ msgstr "Квесты"
 
 msgid "Quests and triggers"
 msgstr "Квесты и триггеры"
+
+msgid "Quests and triggers subsystem documentation"
+msgstr "Документация на систему квестов и триггеров"
 
 msgid "Quests documentation"
 msgstr "Документация на квесты"
@@ -8244,6 +8273,10 @@ msgstr "Это не число"
 msgid "This is not a valid number"
 msgstr "Это не число"
 
+#, python-format
+msgid "This is the coremost part of the MMO Constructor. It can be used to assign arbitrary actions to various game events. You can find detailed information on the quests engine in the <a href=\"//www.%s/doc/quests\" target=\"_blank\">quests engine page</a> in the reference manual."
+msgstr "Это самая центральная часть MMO Constructor. Она может быть использована для настройки произвольной реакции системы на различные игровые события. Подробную информацию о квестовом движке вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/quests\" target=\"_blank\">Квестовый движок</a>."
+
 msgid "This is the public offer"
 msgstr "Это публичная оферта"
 
@@ -9175,6 +9208,10 @@ msgid "You can destroy your game while not created"
 msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
 
 #, python-format
+msgid "You can file detailed information about javascript in the game interface on <a href=\"//www.%s/doc/design/gameinterface#javascript\" target=\"_blank\">arbitrary javascript documentation</a> for detail."
+msgstr "Подробную информацию об использовании JavaScript в игровом интерфейсе вы можете прочитать в руководстве на странице \"<a href=\"//www.%s/doc/design/gameinterface#javascript\" target=\"_blank\">Использование произвольного JavaScript</a>\"."
+
+#, python-format
 msgid "You can find detailed information on the authentication system in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication page</a> in the reference manual."
 msgstr "Подробную информацию о системе аутентификации вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/auth\" target=\"_blank\">Система аутентификации</a>."
 
@@ -9187,12 +9224,16 @@ msgid "You can find detailed information on the character context menu settings 
 msgstr "Подробную информацию о настройке контекстных меню персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-menu\" target=\"_blank\">Настройка контекстного меню персонажа</a>."
 
 #, python-format
+msgid "You can find detailed information on the character menu configuration on the <a href=\"//www.%s/doc/character-menu\" target=\"_blank\">characters menu documentation page</a> in the reference manual."
+msgstr "Подробную информацию о настройке контекстных меню персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-menu\" target=\"_blank\">Настройка контекстного меню персонажа</a>."
+
+#, python-format
 msgid "You can find detailed information on the character names system in the <a href=\"//www.%s/doc/character-names\" target=\"_blank\">characer names page</a> in the reference manual."
 msgstr "Подробную информацию о системе имён персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-names\" target=\"_blank\">Система имён персонажей</a>."
 
 #, python-format
-msgid "You can find detailed information on the character parameters delivery in the <a href=\"//www.%s/doc/character-menu\" target=\"_blank\">character menu page</a> in the reference manual."
-msgstr "Подробную информацию о системе доставки параметров персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-menu\" target=\"_blank\">Настройка контекстного меню персонажа</a>."
+msgid "You can find detailed information on the character parameters delivery in the <a href=\"//www.%s/doc/character-delivery\" target=\"_blank\">character parameters delivery page</a> in the reference manual."
+msgstr "Подробную информацию о доставке параметров персонажей вы можете прочитать в руководстве на странице \"<a href=\"//www.%s/doc/character-delivery\" target=\"_blank\">Доставка параметров персонажей</a>\"."
 
 #, python-format
 msgid "You can find detailed information on the characters equipment system in the <a href=\"//www.%s/doc/equip\" target=\"_blank\">equipment page</a> in the reference manual."
@@ -9205,6 +9246,10 @@ msgstr "Подробную информацию о системе образов
 #, python-format
 msgid "You can find detailed information on the combats engine in the <a href=\"//www.%s/doc/combats\" target=\"_blank\">combats engine page</a> in the reference manual."
 msgstr "Подробную информацию о боевой системе вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/combats\" target=\"_blank\">Боевая система</a>."
+
+#, python-format
+msgid "You can find detailed information on the dynamic blocks in <a href=\"//www.%s/doc/dynamic\" target=\"_blank\">dynamic blocks documentation</a>."
+msgstr "Подробную информацию об использовании динамических блоков вы можете найти в <a href=\"//www.%s/doc/dynamic\" target=\"_blank\">документации на динамические блоки</a>."
 
 #, python-format
 msgid "You can find detailed information on the email sending system in the <a href=\"//www.%s/doc/emailsender\" target=\"_blank\">email sender page</a> in the reference manual."
@@ -9239,6 +9284,10 @@ msgid "You can find detailed information on the location music system in the <a 
 msgstr "Подробную информацию о музыке в локациях вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/sound\" target=\"_blank\">Звук</a>."
 
 #, python-format
+msgid "You can find detailed information on the location objects system in the <a href=\"//www.%s/doc/location-objects\" target=\"_blank\">locations objects documentation page</a> in the reference manual."
+msgstr "Подробную информацию о системе объектов на локациях вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/location-objects\" target=\"_blank\">Система объектов на локациях</a>."
+
+#, python-format
 msgid "You can find detailed information on the location special functions system in the <a href=\"//www.%s/doc/locfunc\" target=\"_blank\">special functions page</a> in the reference manual."
 msgstr "Подробную информацию о системе спецфункций локаций вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/locfunc\" target=\"_blank\">Спецфункции локаций</a>."
 
@@ -9257,6 +9306,10 @@ msgstr "Подробную информацию о системе парамет
 #, python-format
 msgid "You can find detailed information on the permissions system in the <a href=\"//www.%s/doc/permissions\" target=\"_blank\">permissions page</a> in the reference manual."
 msgstr "Подробную информацию о системе привилегий вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/permissions\" target=\"_blank\">Система привилегий</a>."
+
+#, python-format
+msgid "You can find detailed information on the progress bars configuration on the <a href=\"//www.%s/doc/design/progress\" target=\"_blank\">progress bars page</a> in the reference manual."
+msgstr "Подробную информацию о настройке прогресс-баров вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/design/progress\" target=\"_blank\">Прогресс-бары</a>."
 
 #, python-format
 msgid "You can find detailed information on the quests engine in the <a href=\"//www.%s/doc/quests\" target=\"_blank\">quests engine page</a> in the reference manual."
@@ -9308,6 +9361,14 @@ msgstr "Подробную информацию о настройке систе
 
 msgid "You can setup any number of counters on your pages. To do it register in the counting or tracking services and paste the tracking code into this form. The first input field will be put in the [%counters%] template variable and displayed in the counters panel. The second input field will be placed in the &lt;head&gt; section of the HTML document. Google analytics code is placed in the second field."
 msgstr "Вы можете добавить на страницы вашей игры любое количество счётчиков. Чтобы сделать это, зарегистрируйтесь в каталогах, предоставляющих счётчики, на трекинговых сервисах и скопируйте их коды в эту форму. Первое поле ввода будет помещено в переменную шаблонизатора [%counters%] и будет отображаться на странице в блоке счётчиков. Второе поле ввода будет помещено в раздел &lt;head&gt; HTML-документа. Код Google analytics, например, помещается именно во второе поле."
+
+#, python-format
+msgid "You can use delivered parameters to render them as progress bars. See <a href=\"//www.%s/doc/design/progress\" target=\"_blank\">progress bars documentation</a>."
+msgstr "Доставляемые параметры могут использоваться для отображения прогресс-баров. Подробности - на странице \"<a href=\"//www.%s/doc/design/progress\" target=\"_blank\">Прогресс-бары</a>\"."
+
+#, python-format
+msgid "You can use delivered parameters to render them to the dynamic blocks. See <a href=\"//www.%s/doc/dynamic\" target=\"_blank\">dynamic blocks documentation</a>."
+msgstr "Доставленные параметры могут использоваться для отображения динамических блоков. Подробности &mdash; в <a href=\"//www.%s/doc/dynamic\" target=\"_blank\">документации на динамические блоки</a>."
 
 msgid "You can use digits and latin letters only"
 msgstr "Вы можете использовать только цифры и латинские буквы"
@@ -11186,8 +11247,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ msgstr "Ошибка при генерации %s-off.png"
 #~ msgid "Error generating %s-on.png"
 #~ msgstr "Ошибка при генерации %s-on.png"
-#~ msgid "parameters delivery"
-#~ msgstr "доставка параметров"
 #~ msgid "Combat %s server is unavailable"
 #~ msgstr "Сервер боя %s недоступен"
 #~ msgid "Profile of '%s'"

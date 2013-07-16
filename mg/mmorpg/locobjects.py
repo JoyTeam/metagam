@@ -17,6 +17,10 @@ class LocationObjectsAdmin(ConstructorModule):
         self.rhook("admin-locations.links", self.links)
         self.rhook("admin-locations.valid-transitions", self.valid_transitions)
         self.rhook("admin-storage.group-names", self.group_names)
+        self.rhook("advice-admin-locations.index", self.advice_locations)
+
+    def advice_locations(self, hook, args, advice):
+        advice.append({"title": self._("Location objects documentation"), "content": self._('You can find detailed information on the location objects system in the <a href="//www.%s/doc/location-objects" target="_blank">locations objects documentation page</a> in the reference manual.') % self.main_host, "order": 10})
 
     def group_names(self, group_names):
         group_names["location-objects"] = self._("Location objects")

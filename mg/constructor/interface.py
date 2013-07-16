@@ -135,6 +135,20 @@ class Interface(ConstructorModule):
         self.rhook("admin-gameinterface.design-files", self.gameinterface_design_files)
         self.rhook("headmenu-admin-gameinterface.scripts", self.headmenu_scripts)
         self.rhook("ext-admin-gameinterface.scripts", self.admin_gameinterface_scripts, priv="design")
+        self.rhook("advice-admin-characters.params", self.advice_characters_params)
+        self.rhook("advice-admin-gameinterface.popups", self.advice_popups)
+        self.rhook("advice-admin-gameinterface.blocks", self.advice_blocks)
+
+    def advice_blocks(self, args, advice):
+        advice.append({"title": self._("Progress bars"), "content": self._('You can find detailed information on the progress bars configuration on the <a href="//www.%s/doc/design/progress" target="_blank">progress bars page</a> in the reference manual.') % self.main_host, "order": 50})
+
+    def advice_popups(self, args, advice):
+        advice.append({"title": self._("Characters menu documentation"), "content": self._('You can find detailed information on the character menu configuration on the <a href="//www.%s/doc/character-menu" target="_blank">characters menu documentation page</a> in the reference manual.') % self.main_host, "order": 40})
+        advice.append({"title": self._("Parameters delivery"), "content": self._('Character parameters are delivered to the client automatically. See <a href="//www.%s/doc/character-delivery" target="_blank">character parameters delivery documentation</a>.') % self.main_host, "order": 45})
+
+    def advice_characters_params(self, args, advice):
+        advice.append({"title": self._("Parameters delivery"), "content": self._('Character parameters are delivered to the client automatically. See <a href="//www.%s/doc/character-delivery" target="_blank">character parameters delivery documentation</a>.') % self.main_host, "order": 40})
+        advice.append({"title": self._("Progress bars"), "content": self._('You can use delivered parameters to render them as progress bars. See <a href="//www.%s/doc/design/progress" target="_blank">progress bars documentation</a>.') % self.main_host, "order": 50})
 
     def indexpage_design_files(self, files):
         files.append({"filename": "index.html", "description": self._("Game index page"), "doc": "/doc/design/indexpage"})
@@ -861,6 +875,7 @@ class Interface(ConstructorModule):
             {"name": "before", "type": "textarea", "label": self._("JavaScript before the initialization"), "value": self.conf("gameinterface.js-before"), "height": 300},
             {"name": "after", "type": "textarea", "label": self._("JavaScript after the initialization"), "value": self.conf("gameinterface.js-after"), "height": 300},
         ]
+        self.call("admin.advice", {"title": self._("Game interface scripts documentation"), "content": self._('You can file detailed information about javascript in the game interface on <a href="//www.%s/doc/design/gameinterface#javascript" target="_blank">arbitrary javascript documentation</a> for detail.') % self.main_host, "order": 35})
         self.call("admin.form", fields=fields)
 
     def headmenu_scripts(self, args):
