@@ -1,6 +1,7 @@
 import mg
 from mg import *
 import re
+from mg.constructor.script_classes import *
 
 re_valid_docfile = re.compile(r'^[a-z0-9\-]+(/[a-z0-9\-]+)*/?$')
 re_not_found = re.compile(r'^file error - .*: not found$')
