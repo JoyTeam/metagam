@@ -819,6 +819,7 @@ class ScriptEngine(ConstructorModule):
                 attval = getter(field, handle_exceptions=False)
             except AttributeError as e:
                 raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(val[1]), att=field), env)
+            attval = self.call("script.evaluate-dynamic", attval)
             return attval
         elif cmd == "index":
             if len(val) < 3:

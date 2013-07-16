@@ -1142,7 +1142,11 @@ class QuestsAdmin(ConstructorModule):
                                 quest_name = htmlescape(quest.get("name"))
                             state = []
                             for key, val in character.quests.state(qid).iteritems():
-                                state.append(u'quest.p_%s = <strong>%s</strong>' % (htmlescape(key), htmlescape(val)))
+                                if type(val) is list:
+                                    val = htmlescape(self.call("script.unparse-expression", val[1])) + u' <img class="inline-icon" src="/st/icons/dyn-script.gif" alt="{title}" title="{title}" />'.format(title=self._("Parameter changing with time"))
+                                else:
+                                    val = htmlescape(val)
+                                state.append(u'quest.p_%s = <strong>%s</strong>' % (htmlescape(key), val))
                             state.sort()
                             cur_quests.append([
                                 "char.q_%s" % qid,
@@ -2325,7 +2329,7 @@ class Quests(ConstructorModule):
                 if state:
                     # description
                     if state.get("description"):
-                        rquest["description"] = self.call("script.evaluate-text", state.get("description"), globs={"char": character, "quest": character.quests.quest(qid)}, description=self._("Quest %s description") % qid)
+                        rquest["description"] = self.call("script.evaluate-text", state.get("description"), globs={"char": character, "quest": character.quests.quest(qid)}, description=lambda: self._("Quest %s description") % qid)
                     cur_quests.append(rquest)
                     # buttons
                     rbuttons = []
@@ -2341,7 +2345,7 @@ class Quests(ConstructorModule):
                                 if tp[0] == "button":
                                     rbuttons.append({
                                         "id": tp[1],
-                                        "text": self.call("script.evaluate-text", tp[2], globs={"char": character, "quest": character.quests.quest(qid)}, description=self._("Button '{button}' text in the quest '{quest}'").format(quest=qid, button=tp[1])),
+                                        "text": self.call("script.evaluate-text", tp[2], globs={"char": character, "quest": character.quests.quest(qid)}, description=lambda: self._("Button '{button}' text in the quest '{quest}'").format(quest=qid, button=tp[1])),
                                         "href": "/quests#%s" % qid,
                                     })
                                     # handling button press
