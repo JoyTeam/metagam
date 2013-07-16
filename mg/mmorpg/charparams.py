@@ -450,7 +450,7 @@ class CharacterParams(Params):
         vars["js_modules"].add("characters")
         vars["js_init"].append("Characters.context_menu = %s;" % json.dumps(self.call("characters.context-menu")))
         for param in self.call("characters.params"):
-            if param.get("owner_visible") and param.get("type", 0) == 0 and self.call("characters.visibility-condition", param, character):
+            if param.get("owner_visible") and self.call("characters.visibility-condition", param, character):
                 value = self.call("characters.param-value-rec", character, param)
                 vars["js_init"].append("Characters.myparam({param: '%s', value: %s});" % (param["code"], json.dumps(value)))
 

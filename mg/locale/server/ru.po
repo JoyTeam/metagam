@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-07-15 00:59+0300\n"
+"PO-Revision-Date: 2013-07-16 11:24+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -6006,6 +6006,10 @@ msgstr "Параметр %s"
 msgid "Parameter %s is not stored in the database"
 msgstr "Параметр %s не сохраняется в базе данных"
 
+#, python-format
+msgid "Parameter '%s' not found"
+msgstr "Параметр '%s' не найден"
+
 msgid "Parameter changing with time"
 msgstr "Параметр, изменяющийся со временем"
 
@@ -6056,6 +6060,9 @@ msgstr "Название параметра для магазинов (напр:
 
 msgid "Parameter name in genitive"
 msgstr "Название параметра в родительном падеже"
+
+msgid "Parameter name must be a string"
+msgstr "Название параметра должно быть строкой"
 
 msgid "Parameter name must start with 'p_' and contain latin letters, digits and underscores only"
 msgstr "Название параметра должно начинаться с \"p_\" и содержать только латинские буквы, цифры и символы подчёркивания"
@@ -10613,6 +10620,10 @@ msgstr "отправляем сообщение в канал чата {channel}
 #, python-format
 msgid "sending javascript %s"
 msgstr "отправляем javascript %s"
+
+#, python-format
+msgid "sending parameter %s"
+msgstr "отправляем параметр %s"
 
 msgid "sending public chat message to channel {channel}: {msg}"
 msgstr "отправляем публичное сообщение в канал чата {channel}: {msg}"

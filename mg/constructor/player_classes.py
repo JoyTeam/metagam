@@ -268,9 +268,12 @@ class Character(Module, ParametrizedObject):
         return res
 
     def send_param(self, param, val):
-        if param.get("owner_visible") and param.get("type", 0) == 0 and self.call("characters.visibility-condition", param, self):
+        if param.get("owner_visible") and self.call("characters.visibility-condition", param, self):
             if self.tech_online:
-                self.call("stream.character", self, "characters", "myparam", param=param["code"], value=val)
+                self.send_param_force(param, val)
+
+    def send_param_force(self, param, val):
+        self.call("stream.character", self, "characters", "myparam", param=param["code"], value=val)
 
     def set_location(self, location, instance=None, delay=None):
         old_location = self.location

@@ -1003,6 +1003,9 @@ class QuestsAdmin(ConstructorModule):
                     result += " fade=%s" % self.call("script.unparse-expression", options["fade"])
                 result += "\n"
                 return result
+            elif val[0] == "sendchar":
+                result = "  " * indent + "sendchar " + ", ".join([self.call("script.unparse-expression", v) for v in val[1]]) + "\n"
+                return result
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
     def headmenu_inventory_actions(self, args):
@@ -2055,6 +2058,15 @@ class Quests(ConstructorModule):
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("stopping music"), cls="quest-action", indent=indent+2)
                                         self.call("sound.music", char, None, **attrs)
+                                    elif cmd_code == "sendchar":
+                                        for param_code in cmd[1]:
+                                            param, val = char.find_param_and_eval(param_code)
+                                            if param:
+                                                char.send_param_force(param, val)
+                                                if debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("sending parameter %s") % param_code, cls="quest-action", indent=indent+2)
+                                            else:
+                                                raise QuestError(self._("Parameter '%s' not found") % param_code)
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:

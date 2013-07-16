@@ -23,13 +23,13 @@ class ParametrizedObject(object):
             # 'param-value' handles cache storing automatically
             return param, self.call("%s.param-value" % self._param_cls, self, key, handle_exceptions)
 
-    def _param_eval(self, key, handle_exceptions=True):
+    def find_param_and_eval(self, key, handle_exceptions=True):
         param, value = self._param(key, handle_exceptions)
         value = self.call("script.evaluate-dynamic", value)
         return param, value
 
     def param(self, key, handle_exceptions=True):
-        param, value = self._param_eval(key, handle_exceptions)
+        param, value = self.find_param_and_eval(key, handle_exceptions)
         return value
 
     def param_dyn(self, key, handle_exceptions=True):
@@ -37,7 +37,7 @@ class ParametrizedObject(object):
         return type(value) is list
 
     def param_html(self, key, handle_exceptions=True):
-        param, value = self._param_eval(key, handle_exceptions)
+        param, value = self.find_param_and_eval(key, handle_exceptions)
         if param is None:
             return None
         return self.call("%s.param-html" % self._param_cls, param, value)

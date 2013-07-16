@@ -184,6 +184,9 @@ class TokenMusic(Parsing.Token):
 class TokenStop(Parsing.Token):
     "%token stop"
 
+class TokenSendChar(Parsing.Token):
+    "%token sendchar"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
@@ -676,6 +679,24 @@ class QuestAction(Parsing.Nonterm):
             options["fade"] = fade
         self.val = ["musicstop", options]
 
+    def reduceSendChar(self, cmd, lst):
+        "%reduce sendchar CharParamList"
+        self.val = ["sendchar", lst.val]
+
+class CharParamList(Parsing.Nonterm):
+    "%nonterm"
+    def reduceParam(self, text):
+        "%reduce scalar"
+        if type(text.val) != str and type(text.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Parameter name must be a string"))
+        self.val = [text.val]
+
+    def reduceAddParam(self, lst, comma, text):
+        "%reduce CharParamList comma scalar"
+        if type(text.val) != str and type(text.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Parameter name must be a string"))
+        self.val = lst.val + [text.val]
+
 class RandomContent(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -963,6 +984,7 @@ class QuestScriptParser(ScriptParser):
     syms["sound"] = TokenSound
     syms["music"] = TokenMusic
     syms["stop"] = TokenStop
+    syms["sendchar"] = TokenSendChar
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
