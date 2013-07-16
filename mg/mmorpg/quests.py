@@ -238,6 +238,7 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-quests.index", self.menu_quests_index)
+        self.rhook("menu-admin-inventory.index", self.menu_inventory_index)
         self.rhook("headmenu-admin-quests.editor", self.headmenu_quests_editor)
         self.rhook("ext-admin-quests.editor", self.admin_quests_editor, priv="quests.editor")
         self.rhook("advice-admin-quests.index", self.advice_quests)
@@ -347,9 +348,12 @@ class QuestsAdmin(ConstructorModule):
         req = self.req()
         if req.has_access("quests.editor"):
             menu.append({"id": "quests/editor", "text": self._("Quests editor"), "order": 20, "leaf": True})
+
+    def menu_inventory_index(self, menu):
         if self.conf("module.inventory"):
+            req = self.req()
             if req.has_access("quests.inventory"):
-                menu.append({"id": "inventory/actions", "text": self._("Actions for items"), "order": 30, "leaf": True}) 
+                menu.append({"id": "inventory/actions", "text": self._("Actions for items"), "order": 30, "leaf": True})
 
     def advice_quests(self, hook, args, advice):
         advice.append({"title": self._("Scripts documentation"), "content": self._('You can find detailed information on the scripting engine in the <a href="//www.%s/doc/script" target="_blank">scripting engine page</a> in the reference manual.') % self.main_host, "order": 10})
@@ -1021,6 +1025,7 @@ class QuestsAdmin(ConstructorModule):
     def admin_inventory_actions(self):
         req = self.req()
         actions = [act.copy() for act in self.conf("quest-item-actions.list", [])]
+        self.call("admin.advice", {"title": self._("Quests documentation"), "content": self._('You can find detailed information on the quests engine in the <a href="//www.%s/doc/quests" target="_blank">quests engine page</a> in the reference manual.') % self.main_host, "order": 20})
         if req.args:
             m = re_del.match(req.args)
             if m:

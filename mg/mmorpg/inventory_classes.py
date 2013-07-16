@@ -62,6 +62,8 @@ def dna_make(mods):
             new_tokens.append((k, str(v)))
         elif type(v) == str or type(v) == unicode:
             new_tokens.append((k, urlencode(v)))
+        elif type(v) == list:
+            new_tokens.append((k, urlencode(json.dumps(v, sort_keys=True))))
         else:
             raise RuntimeError("Unknown DNA value type: %s" % type(v))
     tokens = "&".join('%s=%s' % (k, v) for k, v in new_tokens)

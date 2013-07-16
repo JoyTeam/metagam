@@ -1137,7 +1137,11 @@ class InventoryAdmin(ConstructorModule):
                 mod = item_type.mods.items()
                 mod.sort(cmp=lambda x, y: cmp(x[0], y[0]))
                 for m in mod:
-                    tokens.append(u'%s=<span class="value quantity">%s</span>' % (m[0], htmlescape(m[1])))
+                    if type(m[1]) is list:
+                        val = htmlescape(self.call("script.unparse-expression", m[1][1])) + u' <img class="inline-icon" src="/st/icons/dyn-script.gif" alt="{title}" title="{title}" />'.format(title=self._("Parameter changing with time"))
+                    else:
+                        val = htmlescape(m[1])
+                    tokens.append(u'%s=<span class="value quantity">%s</span>' % (m[0], val))
             row = [
                 u'<br />'.join(tokens),
                 quantity,
