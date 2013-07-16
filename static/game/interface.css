@@ -109,7 +109,7 @@ area { border: none }
 .progress-horizontal, .progress-horizontal-1, .progress-horizontal-2, .progress-horizontal-3, .progress-horizontal-4, .progress-horizontal-5, .progress-horizontal-6, .progress-horizontal-7, .progress-horizontal-8, .progress-horizontal-9 { height: 100% }
 .progress-vertical, .progress-vertical-1, .progress-vertical-2, .progress-vertical-3, .progress-vertical-4, .progress-vertical-5, .progress-vertical-6, .progress-vertical-7, .progress-vertical-8, .progress-vertical-9 { height: 100% }
 .progress-indicator { background-color: #202080 }
-.progress-indicator-horizontal { height: 100% }
+.progress-indicator-horizontal { height: 100%; font-size: 10px }
 .location-movement-full { background-color: #208020 }
 .location-movement-notfull { background-color: #802020 }
 .progress-bars-vertical-td { vertical-align: bottom }

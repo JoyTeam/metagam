@@ -100,16 +100,18 @@ Game.progress_show = function(id, ratio) {
     var els = Ext.query('.progress-' + id);
     for (var i = 0; i < els.length; i++) {
         var el = Ext.get(els[i]);
+        if (el.content_width == undefined) {
+            el.content_width = el.parent().getWidth(true);
+        }
+        if (el.content_height == undefined) {
+            el.content_height = el.parent().getHeight(true);
+        }
         if (el.hasClass('progress-indicator-horizontal')) {
-            if (el.content_width == undefined) {
-                el.content_width = el.parent().getWidth(true);
-            }
             el.dom.style.width = Math.floor(ratio * el.content_width) + 'px';
+            el.dom.style.height = el.content_height + 'px';
         }
         if (el.hasClass('progress-indicator-vertical')) {
-            if (el.content_height == undefined) {
-                el.content_height = el.parent().getHeight(true);
-            }
+            el.dom.style.width = el.content_width + 'px';
             el.dom.style.height = Math.floor(ratio * el.content_height) + 'px';
         }
         if (!el.hasClass(id + '-notfull')) {
