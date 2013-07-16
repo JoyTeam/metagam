@@ -113,7 +113,7 @@ VisualObject.prototype.render = function(form) {
                     id: 'elem_position-' + this.id,
                     items: { 
                         id: 'form-field-position-' + this.id,
-                        fieldLabel: gt.gettext('Object position expression') + ' <img class="inline-icon" src="/st/icons/script.gif" alt="" />',
+                        fieldLabel: gt.gettext('Object position expression') + ' <img class="inline-icon" src="/st/icons/dyn-script.gif" alt="" />',
                         name: 'position-' + this.id,
                         value: this.position,
                         xtype: 'textfield',
@@ -142,7 +142,7 @@ VisualObject.prototype.render = function(form) {
                     id: 'elem_visible-' + this.id,
                     items: { 
                         id: 'form-field-visible-' + this.id,
-                        fieldLabel: gt.gettext('Visibility condition') + ' <img class="inline-icon" src="/st/icons/script.gif" alt="" />',
+                        fieldLabel: gt.gettext('Visibility condition') + ' <img class="inline-icon" src="/st/icons/dyn-script.gif" alt="" />',
                         name: 'visible-' + this.id,
                         value: this.visible,
                         xtype: 'textfield',
