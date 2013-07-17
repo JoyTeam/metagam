@@ -32,6 +32,11 @@ class DBLocParams(CassandraObject):
 class DBLocParamsList(CassandraObjectList):
     objcls = DBLocParams
 
+class FakeLocation(object):
+    "Simulate real location when parsing expressions"
+    def script_attr(self, attr, handle_exceptions=True):
+        return None
+
 class Location(Module, ParametrizedObject):
     def __init__(self, app, uuid, fqn="mg.mmorpg.locations.Location"):
         Module.__init__(self, app, fqn)

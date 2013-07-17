@@ -1,5 +1,6 @@
 from mg import *
 from mg.constructor import *
+from mg.mmorpg.locations_classes import FakeLocation
 from uuid import uuid4
 import datetime
 import re
@@ -313,12 +314,13 @@ class Chat(ConstructorModule):
                         config.set("chat.cmd-dip", "")
             # chat messages
             char = self.character(req.user())
+            loc = FakeLocation()
             config.set("chat.msg_went_online", self.call("script.admin-text", "msg_went_online", errors, globs={"char": char}, require_glob=["char"]))
             config.set("chat.msg_went_offline", self.call("script.admin-text", "msg_went_offline", errors, globs={"char": char}, require_glob=["char"]))
-            config.set("chat.msg_entered_location", self.call("script.admin-text", "msg_entered_location", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}, require_glob=["char"]))
-            config.set("chat.msg_left_location", self.call("script.admin-text", "msg_left_location", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}, require_glob=["char"]))
-            config.set("chat.msg_you_entered_location", self.call("script.admin-text", "msg_you_entered_location", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}, require_glob=["loc_to"]))
-            config.set("chat.msg_location_messages", self.call("script.admin-text", "msg_location_messages", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}))
+            config.set("chat.msg_entered_location", self.call("script.admin-text", "msg_entered_location", errors, globs={"char": char, "loc_from": loc, "loc_to": loc}, require_glob=["char"]))
+            config.set("chat.msg_left_location", self.call("script.admin-text", "msg_left_location", errors, globs={"char": char, "loc_from": loc, "loc_to": loc}, require_glob=["char"]))
+            config.set("chat.msg_you_entered_location", self.call("script.admin-text", "msg_you_entered_location", errors, globs={"char": char, "loc_from": loc, "loc_to": loc}, require_glob=["loc_to"]))
+            config.set("chat.msg_location_messages", self.call("script.admin-text", "msg_location_messages", errors, globs={"char": char, "loc_from": loc, "loc_to": loc}))
             config.set("chat.auth-msg-channel", "wld" if req.param("auth_msg_channel") else "loc")
             # analysing errors
             if len(errors):
