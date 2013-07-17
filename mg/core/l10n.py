@@ -346,7 +346,10 @@ class L10n(Module):
         try:
             if lang == "ru":
                 if val != int(val):
-                    return values[1]
+                    if len(values) >= 4:
+                        return values[3]
+                    else:
+                        return values[1]
                 if (val % 100) >= 10 and (val % 100) <= 20:
                     return values[2]
                 if (val % 10) >= 2 and (val % 10) <= 4:
@@ -372,7 +375,7 @@ class L10n(Module):
             values = values.split("/")
         lang = self.call("l10n.lang")
         if lang == "ru":
-            return len(values) == 3
+            return len(values) == 4
         return len(values) == 2
 
     def l10n_literal_interval(self, seconds, html=False):
