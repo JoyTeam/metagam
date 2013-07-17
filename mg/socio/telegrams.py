@@ -1,4 +1,7 @@
 from mg import *
+import re
+
+re_newline = re.compile(r'\n')
 
 class Telegram(CassandraObject):
     clsname = "Telegram"
@@ -108,6 +111,9 @@ class Telegrams(Module):
         cname = req.param("cname").strip()
         content = req.param("content").strip()
         user = req.user()
+        restraints = {}
+        self.call("restraints.check", user, restraints)
+        silence = restraints.get("forum-silence") or restraints.get("chat-silence")
         if req.ok():
             if not cname:
                 form.error("cname", self._("Enter recipient name"))
@@ -119,6 +125,14 @@ class Telegrams(Module):
                     form.error("cname", self._("You can't send messages to the system"))
             if not content:
                 form.error("content", self._("Enter message content"))
+            elif silence:
+                message = self._("Silence till %s") % self.call("l10n.time_local", silence.get("till"))
+                reason_user = silence.get("reason_user")
+                if reason_user:
+                    message += u'\n%s' % silence.get("reason_user")
+                    message = htmlescape(message)
+                    message = re_newline.sub('<br />', message)
+                form.error("content", message)
             if not form.errors:
                 self.call("telegrams.send", user, recipient.uuid, self.call("socio.format_text", content))
                 self.call("web.redirect", "/telegrams/user/%s#reply-form" % recipient.uuid)

@@ -2898,7 +2898,7 @@ class SocioAdmin(Module):
         menu.append({"id": "socio.index", "text": self._("Socio"), "order": 1000})
 
     def message_silence(self):
-        return self.conf("socio.message-silence", self._("Your access to the forum is temporarily blocked till {till}"))
+        return self.conf("socio.message-silence", self._("Your access is temporarily blocked till {till}"))
 
     def permissions_list(self, perms):
         perms.append({"id": "socio.messages", "name": self._("Socio interface message editor")})
