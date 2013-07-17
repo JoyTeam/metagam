@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-07-16 12:32+0300\n"
+"PO-Revision-Date: 2013-07-18 00:42+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -6620,6 +6620,9 @@ msgstr "Причина"
 msgid "Reason is mandatory"
 msgstr "Укажите причину"
 
+msgid "Reason visible to the violator"
+msgstr "Причина, видимая нарушителю"
+
 msgid "Reason why do you change this parameter. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"
 msgstr "Причина, по которой вы изменяете параметр. Обязательно укажите реальную причину. Она будет инспектироваться службой безопасности MMO Constructor"
 
@@ -11006,6 +11009,16 @@ msgstr "{class=\"combat-log-member\"}{member.name}{/class} {class=\"combat-log-d
 
 msgid "{cnt} objects at {performed}"
 msgstr "объектов: {cnt}, дата: {performed}"
+
+msgid ""
+"{content}\n"
+"Reason for the user: {reason}"
+msgstr "{content}\nПричина для пользователя: {reason}"
+
+msgid ""
+"{content}\n"
+"Reason: {reason}"
+msgstr "{content}\nПричина: {reason}"
 
 msgid "{ip} till {till}"
 msgstr "{ip} до {till}"

@@ -30,11 +30,14 @@ class Restraints(Module):
         ])
         now = self.now()
         lst.load(silent=True)
-        till = None
+        ban = None
         for obj in lst:
-            if (till is None or obj.get("till") > till) and now < obj.get("till"):
-                till = obj.get("till")
-        return till
+            if (ban is None or obj.get("till") > ban["till"]) and now < obj.get("till"):
+                ban = {
+                    "till": obj.get("till"),
+                    "reason_user": obj.get("reason_user"),
+                }
+        return ban
 
     def restraints_check(self, user_uuid, restraints):
         user_restraints = self.objlist(UserRestraintList, query_index="user", query_equal=user_uuid)
@@ -50,8 +53,13 @@ class Restraints(Module):
                     restraints[kind] = {
                         "till": till
                     }
+                if ent.get("reason_user"):
+                    if restraints[kind].get("reason_user"):
+                        restraints[kind]["reason_user"] += u'\n%s' % ent.get("reason_user")
+                    else:
+                        restraints[kind]["reason_user"] = ent.get("reason_user")
 
-    def restraints_set(self, user_uuid, kind, interval, reason, admin=None, prolong=False):
+    def restraints_set(self, user_uuid, kind, interval, reason, admin=None, prolong=False, reason_user=None):
         with self.lock(["UserRestraints"]):
             user_restraints = self.objlist(UserRestraintList, query_index="user", query_equal=user_uuid)
             user_restraints.load(silent=True)
@@ -71,6 +79,8 @@ class Restraints(Module):
                 ent.set("user", user_uuid)
                 ent.set("till", self.now(interval))
                 ent.set("kind", kind)
+                if reason_user:
+                    ent.set("reason_user", reason_user)
                 ent.store()
         if kind == "chat-silence":
             content = self._("Chat silence")
@@ -89,7 +99,9 @@ class Restraints(Module):
             interval = '%s %s' % (self._("plus"), interval)
         content = '%s: %s' % (content, interval)
         if reason:
-            content = '%s\n%s' % (content, reason)
+            content = self._('{content}\nReason: {reason}').format(content=content, reason=reason)
+        if reason_user:
+            content = self._('{content}\nReason for the user: {reason}').format(content=content, reason=reason_user)
         self.call("dossier.write", user=user_uuid, admin=admin, content=content)
 
 class RestraintsAdmin(Module):
@@ -212,6 +224,7 @@ class RestraintsAdmin(Module):
             reason = req.param("reason").strip()
             if not reason:
                 errors["reason"] = self._("Reason is mandatory")
+            reason_user = req.param("reason_user").strip()
             if kind == "ban-ip":
                 ips = set()
                 for mask, label in ip_addresses:
@@ -235,15 +248,19 @@ class RestraintsAdmin(Module):
                     obj.set("ip", ip)
                     obj.set("till", till)
                     obj.set("user", user_uuid)
+                    if reason_user:
+                        obj.set("reason_user", reason_user)
                     obj.store()
                 # writing to dossier
                 interval = self.call("l10n.literal_interval", interval)
-                content = '%s: %s' % (self._("Ban {ip_addresses}").format(ip_addresses=", ".join(ips)), interval)
+                content = u'%s: %s' % (self._("Ban {ip_addresses}").format(ip_addresses=", ".join(ips)), interval)
                 if reason:
-                    content = '%s\n%s' % (content, reason)
+                    content = self._('{content}\nReason: {reason}').format(content=content, reason=reason)
+                if reason_user:
+                    content = self._('{content}\nReason for the user: {reason}').format(content=content, reason=reason_user)
                 self.call("dossier.write", user=user_uuid, admin=req.user(), content=content)
             else:
-                self.call("restraints.set", user_uuid, kind=kind, prolong=(mode == 1), interval=interval, reason=reason, admin=req.user())
+                self.call("restraints.set", user_uuid, kind=kind, prolong=(mode == 1), interval=interval, reason=reason, admin=req.user(), reason_user=reason_user)
             self.call("admin.redirect", "auth/user-dashboard/%s" % user_uuid, {"active_tab": "restraints"})
         # rendering form
         intervals = [
@@ -276,6 +293,7 @@ class RestraintsAdmin(Module):
         else:
             fields.append({"name": "mode", "label": self._("Restraint setting mode"), "type": "combo", "value": default_mode, "values": [(1, self._("Prolong")), (2, self._("Replace"))], "inline": True})
         fields.append({"name": "reason", "label": self._("Reason"), "type": "textarea"})
+        fields.append({"name": "reason_user", "label": self._("Reason visible to the violator"), "type": "textarea"})
         self.call("admin.form", fields=fields)
 
     def headmenu_restraints_add(self, args):

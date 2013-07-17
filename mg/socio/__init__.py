@@ -24,6 +24,7 @@ edit_comment_timeout = 900
 
 re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
 re_r = re.compile(r'\r')
+re_newline = re.compile(r'\n')
 re_emptylines = re.compile(r'(\s*\n)+\s*')
 re_trimlines = re.compile(r'^\s*(.*?)\s*$', re.DOTALL | re.MULTILINE)
 re_images = re.compile(r'\[img:([0-9a-f]+)\]')
@@ -955,6 +956,8 @@ class Forum(Module):
         silence = self.silence(self.call("socio.user"))
         if silence:
             vars["socio_message_top"] = self.call("socio-admin.message-silence").format(till=self.call("l10n.time_local", silence.get("till")))
+            if silence.get("reason_user"):
+                vars["socio_message_top"] += u"<br />%s" % re_newline.sub('<br />', htmlescape(silence.get("reason_user")))
         else:
             vars["socio_message_top"] = self.conf("socio.message-top")
 
@@ -1101,9 +1104,14 @@ class Forum(Module):
             if errors is not None:
                 errors["may_write"] = self._("You are not logged in")
             return False
-        if self.silence(user):
+        slc = self.silence(user)
+        if slc:
             if errors is not None:
                 errors["may_write"] = self._("Silence restraint")
+                if slc.get("reason_user"):
+                    html = htmlescape(slc.get("reason_user"))
+                    html = u"<br />%s" % re_newline.sub(u'<br />', html)
+                    errors["may_write"] += html
             return False
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
@@ -1126,9 +1134,12 @@ class Forum(Module):
             if errors is not None:
                 errors["may_create_topic"] = self._("You are not logged on")
             return False
-        if self.silence(user):
+        slc = self.silence(user)
+        if slc:
             if errors is not None:
                 errors["may_create_topic"] = self._("Silence restraint")
+                if slc.get("reason_user"):
+                    errors["may_create_topic"] += u"<br />%s" % re_newline.sub('<br />', htmlescape(slc.get("reason_user")))
             return False
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:

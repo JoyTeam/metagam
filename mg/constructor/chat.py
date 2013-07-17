@@ -25,6 +25,7 @@ re_valid_cls = re.compile(r'^[a-z][a-z\-]*$')
 re_sharp = re.compile(r'#')
 re_q = re.compile(r'q')
 re_del = re.compile(r'^del/(.+)$')
+re_newline = re.compile(r'\n')
 
 #logging.getLogger("mg.constructor.chat.Chat").setLevel(logging.INFO)
 
@@ -568,7 +569,13 @@ class Chat(ConstructorModule):
         restraints = {}
         self.call("restraints.check", user, restraints)
         if restraints.get("chat-silence"):
-            self.call("web.response_json", {"error": self._("Silence till %s") % self.call("l10n.time_local", restraints["chat-silence"].get("till")), "hide_title": True})
+            message = self._("Silence till %s") % self.call("l10n.time_local", restraints["chat-silence"].get("till"))
+            reason_user = restraints["chat-silence"].get("reason_user")
+            if reason_user:
+                message += u'\n%s' % restraints["chat-silence"].get("reason_user")
+                message = htmlescape(message)
+                message = re_newline.sub('<br />', message)
+            self.call("web.response_json", {"error": message, "hide_title": True})
         author = self.character(user)
         text = req.param("text") 
         if len(text) > max_chat_message:

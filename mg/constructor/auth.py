@@ -7,6 +7,9 @@ from mg.constructor.players import DBCharacter, DBCharacterList, DBPlayer, DBPla
 import hashlib
 import copy
 import random
+import re
+
+re_newline = re.compile(r'\n')
 
 class AppSession(CassandraObject):
     clsname = "AppSession"
@@ -546,9 +549,15 @@ class Auth(ConstructorModule):
         if self.conf("auth.closed"):
             self.call("web.response_json", {"success": False, "error": htmlescape(self.conf("auth.close-message") or self._("Game is closed for non-authorized users"))})
         # checking IP ban
-        till = self.call("restraints.ip-banned", req.remote_addr())
-        if till:
-            self.call("web.response_json", {"success": False, "error": self._("You are banned till %s") % self.call("l10n.time_local", till)})
+        ban = self.call("restraints.ip-banned", req.remote_addr())
+        if ban:
+            message = self._("You are banned till %s") % self.call("l10n.time_local", ban["till"])
+            reason_user = ban.get("reason_user")
+            if reason_user:
+                message += u'\n%s' % ban.get("reason_user")
+                message = htmlescape(message)
+                message = re_newline.sub('<br />', message)
+            self.call("web.response_json", {"success": False, "error": message})
         session = req.session(True)
         # registragion form
         fields = self.character_form()
@@ -706,11 +715,17 @@ class Auth(ConstructorModule):
 
     def player_login(self):
         req = self.req()
-        # checking IP ban
+        # check IP ban
         if False:
-            till = self.call("restraints.ip-banned", req.remote_addr())
-            if till:
-                self.call("web.response_json", {"error": self._("You are banned till %s") % self.call("l10n.time_local", till)})
+            ban = self.call("restraints.ip-banned", req.remote_addr())
+            if ban:
+                message = self._("You are banned till %s") % self.call("l10n.time_local", ban["till"])
+                reason_user = ban.get("reason_user")
+                if reason_user:
+                    message += u'\n%s' % ban.get("reason_user")
+                    message = htmlescape(message)
+                    message = re_newline.sub('<br />', message)
+                self.call("web.response_json", {"success": False, "error": message})
         # logging in
         name = req.param("name") or req.param("email")
         password = req.param("password")
@@ -768,8 +783,15 @@ class Auth(ConstructorModule):
             if len(chars):
                 restraints = {}
                 self.call("restraints.check", chars[0].uuid, restraints)
-                if restraints.get("ban"):
-                    self.call("web.response_json", {"error": self._("You are banned till %s") % self.call("l10n.time_local", restraints["ban"]["till"])})
+                ban = restraints.get("ban")
+                if ban:
+                    message = self._("You are banned till %s") % self.call("l10n.time_local", restraints["ban"]["till"])
+                    reason_user = ban.get("reason_user")
+                    if reason_user:
+                        message += u'\n%s' % ban.get("reason_user")
+                        message = htmlescape(message)
+                        message = re_newline.sub('<br />', message)
+                    self.call("web.response_json", {"error": message})
                 session = req.session(True)
                 self.call("stream.login", session.uuid, chars[0].uuid)
                 self.call("web.response_json", {"ok": 1, "session": session.uuid})
