@@ -385,7 +385,7 @@ VisualObject.prototype.loadImage = function () {
     if (!obj.image) {
         return;
     }
-    var img = new Image();
+    var img = document.createElement('image');
     img.onload = function () {
         obj.img = img;
         LocObjectsEditor.touch_object(obj);
@@ -588,7 +588,7 @@ LocObjectsEditor.select_object = function () {
                     }
 
                     /* Load the image */
-                    var img = new Image();
+                    var img = document.createElement('image');
                     img.onload = function () {
                         var obj = th.new_object();
                         th.active_object = obj;

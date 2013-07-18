@@ -128,7 +128,7 @@ wait(['location', 'objects', 'hints'], function () {
          */
         setBackgroundImage: function (uri) {
             var self = this;
-            var img = new Image();
+            var img = document.createElement('image');
             self.backgroundImageLoading = img;
             img.onload = function () {
                 if (self.backgroundImageLoading != img)
@@ -377,7 +377,7 @@ wait(['location', 'objects', 'hints'], function () {
             if (info.image) {
                 self.imageWidth = info.width;
                 self.imageHeight = info.height;
-                var img = new Image();
+                var img = document.createElement('image');
                 img.onload = function () {
                     self.image = img;
                     self.touch();
