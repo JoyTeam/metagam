@@ -404,7 +404,7 @@ class MoneyAdmin(Module):
                 for code, info in sorted(currencies.iteritems(), cmp=lambda x, y: cmp(x[1].get("order", 0.0), y[1].get("order", 0.0)) or cmp(x[0], y[0])):
                     real = '<center>%s</center>' % ('<img src="/st/img/coins-16x16.png" alt="" /><br />%s %s' % (info.get("real_price"), info.get("real_currency")) if info.get("real") else '-')
                     declensions = []
-                    for i in (0, 1, 2, 5, 10, 21, 1.5):
+                    for i in (0, 1, 2, 5, 10, 21, 0.1):
                         declensions.append("<nobr>%s %s</nobr>" % (i, self.call("l10n.literal_value", i, info.get("name_local"))))
                     code = '<hook:admin.link href="money/currencies/{0}" title="{0}" />'.format(code)
                     if info.get("icon"):
