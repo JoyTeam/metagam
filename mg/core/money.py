@@ -197,7 +197,13 @@ class MoneyAdmin(Module):
                         currencies[code] = info
                     else:
                         info = currencies.get(req.args)
-                    if not name_local:
+                    # allow not changed name_local when the project is published
+                    if name_local and project and (project.get("moderation") or project.get("published")) and info.get("real"):
+                        if name_local != info.get("name_local"):
+                            errors["name_local"] = self._("You can't change real money currency name after game publication")
+                        else:
+                            pass
+                    elif not name_local:
                         errors["name_local"] = self._("Currency name is mandatory")
                     elif not self.call("l10n.literal_values_valid", name_local):
                         errors["name_local"] = self._("Invalid field format")
