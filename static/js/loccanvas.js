@@ -1,5 +1,15 @@
 var LocObjectsManager, LocObjects, LocObject;
 var LocCanvas = {};
+var is_chrome = window.chrome;
+
+function createImage()
+{
+    if (is_chrome) {
+        return document.createElement('image');
+    } else {
+        return new Image();
+    }
+}
 
 LocCanvas.resize = function () {
     var w = Loc.window_w - Loc.margin_x;
@@ -128,7 +138,7 @@ wait(['location', 'objects', 'hints'], function () {
          */
         setBackgroundImage: function (uri) {
             var self = this;
-            var img = document.createElement('image');
+            var img = createImage();
             self.backgroundImageLoading = img;
             img.onload = function () {
                 if (self.backgroundImageLoading != img)
@@ -377,7 +387,7 @@ wait(['location', 'objects', 'hints'], function () {
             if (info.image) {
                 self.imageWidth = info.width;
                 self.imageHeight = info.height;
-                var img = document.createElement('image');
+                var img = createImage();
                 img.onload = function () {
                     self.image = img;
                     self.touch();

@@ -1,3 +1,14 @@
+var is_chrome = window.chrome;
+
+function createImage()
+{
+    if (is_chrome) {
+        return document.createElement('image');
+    } else {
+        return new Image();
+    }
+}
+
 VisualObject = function(id) {
     this.id = id;
     this.poly = new Array();
@@ -385,7 +396,7 @@ VisualObject.prototype.loadImage = function () {
     if (!obj.image) {
         return;
     }
-    var img = document.createElement('image');
+    var img = createImage();
     img.onload = function () {
         obj.img = img;
         LocObjectsEditor.touch_object(obj);
@@ -588,7 +599,7 @@ LocObjectsEditor.select_object = function () {
                     }
 
                     /* Load the image */
-                    var img = document.createElement('image');
+                    var img = createImage();
                     img.onload = function () {
                         var obj = th.new_object();
                         th.active_object = obj;
