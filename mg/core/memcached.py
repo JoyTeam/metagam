@@ -1,5 +1,6 @@
 from concurrence.memcache.client import Memcache, MemcacheResult
 from concurrence import Tasklet
+from mg.core.tools import utf2str
 import stackless
 import re
 import time
@@ -138,7 +139,7 @@ class Memcached(object):
     def set(self, key, data, expiration=0, flags=0):
         if key == "":
             raise MemcachedEmptyKeyError()
-        if len(str(data)) > 1024 * 1024:
+        if len(utf2str(data)) > 1024 * 1024:
             return
         connection = self.pool.get()
         if not connection:
@@ -163,7 +164,7 @@ class Memcached(object):
     def add(self, key, data, expiration=0, flags=0):
         if key == "":
             raise MemcachedEmptyKeyError()
-        if len(str(data)) > 1024 * 1024:
+        if len(utf2str(data)) > 1024 * 1024:
             return
         connection = self.pool.get()
         if not connection:
@@ -188,7 +189,7 @@ class Memcached(object):
     def replace(self, key, data, expiration=0, flags=0):
         if key == "":
             raise MemcachedEmptyKeyError()
-        if len(str(data)) > 1024 * 1024:
+        if len(utf2str(data)) > 1024 * 1024:
             return
         connection = self.pool.get()
         if not connection:
