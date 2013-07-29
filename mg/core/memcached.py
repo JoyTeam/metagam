@@ -138,7 +138,7 @@ class Memcached(object):
     def set(self, key, data, expiration=0, flags=0):
         if key == "":
             raise MemcachedEmptyKeyError()
-        if len(data) > 1024 * 1024:
+        if len(str(data)) > 1024 * 1024:
             return
         connection = self.pool.get()
         if not connection:
@@ -163,7 +163,7 @@ class Memcached(object):
     def add(self, key, data, expiration=0, flags=0):
         if key == "":
             raise MemcachedEmptyKeyError()
-        if len(data) > 1024 * 1024:
+        if len(str(data)) > 1024 * 1024:
             return
         connection = self.pool.get()
         if not connection:
@@ -188,7 +188,7 @@ class Memcached(object):
     def replace(self, key, data, expiration=0, flags=0):
         if key == "":
             raise MemcachedEmptyKeyError()
-        if len(data) > 1024 * 1024:
+        if len(str(data)) > 1024 * 1024:
             return
         connection = self.pool.get()
         if not connection:
