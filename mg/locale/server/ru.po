@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-07-18 01:35+0300\n"
+"PO-Revision-Date: 2013-07-29 23:05+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -393,6 +393,10 @@ msgstr "Код активации"
 msgid "Activation is required after this number of days ('0' if require on registration)"
 msgstr "Требовать активацию после этого количества дней ('0', если требовать сразу при регистрации)"
 
+#, python-format
+msgid "Activation: %s"
+msgstr "Активация: %s"
+
 msgid "Active"
 msgstr "Активен"
 
@@ -659,6 +663,9 @@ msgstr "Вы уверены, что хотите удалить этот шаб�
 
 msgid "Are you sure want to delete this track from the playlist?"
 msgstr "Вы уверены, что хотите удалить этот трек из плейлиста?"
+
+msgid "Are you sure want to reject this request?"
+msgstr "Вы уверены, что хотите отклонить этот запрос?"
 
 msgid "Are you sure want to remove this lock?"
 msgstr "Вы уверены, что хотите снять эту блокировку?"
@@ -2664,6 +2671,12 @@ msgstr "Документация на рассылку e-mail"
 msgid "Email subject"
 msgstr "Тема e-mail"
 
+msgid "Email template for the reminder"
+msgstr "Шаблон e-mail для напоминания"
+
+msgid "Email template for the request"
+msgstr "Шаблон e-mail для запроса"
+
 msgid "Email unsubscription"
 msgstr "Отписка e-mail"
 
@@ -3501,6 +3514,9 @@ msgstr "Профиль игры сохранён"
 msgid "Game system modules"
 msgstr "Системные модули игры"
 
+msgid "Game title"
+msgstr "Название игры"
+
 msgid "Game title (multiline permitted)"
 msgstr "Название игры (можно указать несколько строк)"
 
@@ -3531,6 +3547,9 @@ msgstr "Шлюз к WebMoney passport API"
 
 msgid "Gate to WebMoney w3s API"
 msgstr "Шлюз к WebMoney w3s API"
+
+msgid "Gate to secure.xsolla.com"
+msgstr "Шлюз к secure.xsolla.com"
 
 msgid "General combat timeout (in seconds)"
 msgstr "Общий таймаут боя (в секундах)"
@@ -3769,6 +3788,19 @@ msgstr ""
 "Используйте любые возможности MMO Constructor, какие захотите.\n"
 "Помните, что всё, чего Вам недостаёт в конструкторе, можно заказать через Аукцион заявок.\n"
 "И ещё мы будем признательны, если после тестирования Вы поругаете или похвалите конструктор на нашем форуме."
+
+msgid ""
+"Hello, {name}.\n"
+"\n"
+"Xsolla has activated your game '{title}'. Now you can accept payments in your game. If you need to accept Yandex Money and Beeline Mobile Payments, you need to make manual request to the operator of the MMO Constructor project.\n"
+"\n"
+"Please, check payments in your game, and notify us if something goes wrong."
+msgstr ""
+"Здравствуйте, {name}.\n"
+"\n"
+"Xsolla активировала вашу игру \"{title}\". Теперь вы можете принимать в ней платежи от игроков. Если вам потребуется принимать Яндекс-деньги или Мобильный Платёж Билайн, то вам необходимо вручную отправить запрос оператору проекта MMO Constructor.\n"
+"\n"
+"Пожалуйста, проверьте приём платежей в вашей игре прямо сейчас и сообщите нам, если что-либо не работает."
 
 #, python-format
 msgid "Here is a list of required files in your design with short descriptions: <ul>%s</ul>"
@@ -4916,6 +4948,12 @@ msgstr "Иконка инфы персонажа мужского пола"
 
 msgid "Man"
 msgstr "Мужчина"
+
+msgid "Manager's e-mail"
+msgstr "E-mail менеджера"
+
+msgid "Manager's name"
+msgstr "Имя менеджера"
 
 msgid "Managing authorized WMIDs"
 msgstr "Управление авторизованными WMID"
@@ -6160,6 +6198,9 @@ msgstr "Структура платежей"
 msgid "Payments structure chart shows your gross receipt by single payment size. If you see some payment sizes are not very popular it means you should add some offers requiring such payments and promote them to the players"
 msgstr "Диаграмма структуры платежей показывает вашу валовую выручку в разбивке по размеру единичного платежа. Если вы видите, что какие-то размеры платежей не очень популярны, это означает, что вам следует добавить какие-нибудь предложения для игроков, за которые им надо будет платить такие суммы, и разрекламировать их."
 
+msgid "Paystation"
+msgstr "Paystation"
+
 msgid "Performed"
 msgstr "Произведено"
 
@@ -6656,6 +6697,9 @@ msgstr "Имя получателя"
 msgid "Recipient's sex"
 msgstr "Пол получателя"
 
+msgid "Record created"
+msgstr "Запись создана"
+
 msgid "Rectangle"
 msgstr "Прямоугольник"
 
@@ -6717,6 +6761,9 @@ msgstr "Причина отказа"
 #, python-format
 msgid "Rejected by moderator: %s"
 msgstr "Отклонено модератором: %s"
+
+msgid "Rejection"
+msgstr "Отказ"
 
 msgid "Relative height"
 msgstr "Относительная высота"
@@ -7197,6 +7244,12 @@ msgstr "Отправить новую телеграмму"
 msgid "Send software exceptions to this e-mail"
 msgstr "Отправлять исключения в программном обеспечении на этот e-mail"
 
+msgid "Sender e-mail"
+msgstr "E-mail отправителя"
+
+msgid "Sender name"
+msgstr "Имя отправителя"
+
 msgid "Sender options"
 msgstr "Возможности отправки"
 
@@ -7590,6 +7643,9 @@ msgstr "Некое другое значение"
 
 msgid "Some header"
 msgstr "Некий заголовок"
+
+msgid "Some projects are still inactive"
+msgstr "Некоторые проекты до сих пор не активированы"
 
 msgid "Some strange value"
 msgstr "Некое странное значение"
@@ -9140,6 +9196,15 @@ msgstr "Поле фрейма по X"
 msgid "XML declarations are not allowed here"
 msgstr "XML-объявления здесь недопустимы"
 
+msgid "Xsolla activation"
+msgstr "Активация Xsolla"
+
+msgid "Xsolla activation management"
+msgstr "Управление активацией Xsolla"
+
+msgid "Xsolla activation settings"
+msgstr "Настройки активации Xsolla"
+
 msgid "Xsolla chargeback"
 msgstr "Возврат платежа Xsolla"
 
@@ -9148,6 +9213,12 @@ msgstr "ID контрагента Xsolla"
 
 msgid "Xsolla dashboard"
 msgstr "Панель управления Xsolla"
+
+msgid "Xsolla id"
+msgstr "Xsolla id"
+
+msgid "Xsolla inactive projects"
+msgstr "Проекты, не активные в Xsolla"
 
 msgid "Xsolla integration"
 msgstr "Интеграция с Xsolla"
@@ -10352,6 +10423,9 @@ msgstr "доставка параметров в клиент"
 msgid "payment///Performed"
 msgstr "Произведен"
 
+msgid "paystation"
+msgstr "paystation"
+
 msgid "pcs"
 msgstr "шт"
 
@@ -10456,6 +10530,9 @@ msgstr "зарегистрироваться"
 
 msgid "registration"
 msgstr "регистрация"
+
+msgid "reject"
+msgstr "отказать"
 
 msgid "remove"
 msgstr "удалить"
@@ -11049,6 +11126,12 @@ msgstr "{targetchar.name} в другой локации"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid "Last request sent"
+#~ msgstr "Последний запрос отправлен"
+#~ msgid "Requested first"
+#~ msgstr "Запрошено впервые"
+#~ msgid "Requested last"
+#~ msgstr "Запрошено последний раз"
 #~ msgid "Parse script expression"
 #~ msgstr "Парсинг скриптового выражения"
 #~ msgid "Evaluation of location object visibility"
@@ -11352,8 +11435,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
 #~ msgid "List of servers online"
 #~ msgstr "Список серверов онлайн"
-#~ msgid "Enter name"
-#~ msgstr "Введите имя"
 #~ msgid "Invalid sex specified"
 #~ msgstr "Указан неверный пол"
 #~ msgid "Send options"

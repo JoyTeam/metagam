@@ -73,7 +73,7 @@ class Constructor(Module):
             "mg.constructor.socialnets.SocialNets", "mg.constructor.socialnets.SocialNetsAdmin",
             "mg.core.monitoring.ClusterMonitor",
             "mg.core.ssl.RedirectSSLModule", "mg.constructor.money.AdminDonate",
-            "mg.constructor.sound.Sound", "mg.constructor.sound.SoundAdmin",
+            "mg.core.money.XsollaActivation",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")

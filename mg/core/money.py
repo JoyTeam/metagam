@@ -31,6 +31,16 @@ default_rates = {
     "UAH": 34.7092 / 10,
 }
 
+class DBXsollaActivationRequest(CassandraObject):
+    clsname = "XsollaActivationRequest"
+    indexes = {
+        "all": [[], "created"],
+        "project": [["project"]],
+    }
+
+class DBXsollaActivationRequestList(CassandraObjectList):
+    objcls = DBXsollaActivationRequest
+
 def getText(nodelist):
     rc = ""
     for node in nodelist:
@@ -702,6 +712,8 @@ class Xsolla(Module):
         self.rhook("money.donate-message", self.donate_message)
         self.rhook("money.donate-url", self.donate_url)
         self.rhook("constructor.project-options", self.project_options)
+        self.rhook("xsolla.check-activation", self.check)
+        self.rhook("xsolla.send-activation-request", self.send_activation_request)
 
     def project_options(self, options):
         if self.req().has_access("constructor.projects-xsolla"):
@@ -1028,10 +1040,10 @@ class Xsolla(Module):
         elt = doc.createElement("payUrl")
         elt.appendChild(doc.createTextNode("http://www.%s/ext-payment/xsolla/%s" % (self.main_host, self.app().tag)))
         request.appendChild(elt)
-        # Description
-        elt = doc.createElement("desc")
-        elt.appendChild(doc.createTextNode(self.conf("gameprofile.description")))
-        request.appendChild(elt)
+        ## Description
+        #elt = doc.createElement("desc")
+        #elt.appendChild(doc.createTextNode(self.conf("gameprofile.description")))
+        #request.appendChild(elt)
         xmldata = request.toxml("utf-8")
         self.debug(u"Xsolla request: %s", xmldata)
         # Signature
@@ -1068,6 +1080,8 @@ class Xsolla(Module):
                                     config.set("xsolla.secret", secret)
                                     config.set("xsolla.project-id", game_id)
                                     config.store()
+                                    self.call("xsolla.check-activation")
+                                    self.call("xsolla.send-activation-request")
                 finally:
                     cnn.close()
         except IOError as e:
@@ -1081,6 +1095,84 @@ class Xsolla(Module):
             vars["js_init"].append("Xsolla.project = %d;" % self.conf("xsolla.project-id"))
             vars["js_init"].append("Xsolla.name = '%s';" % jsencode(urlencode(character.name)))
             vars["js_init"].append("Xsolla.lang = '%s';" % self.call("l10n.lang"))
+
+    def check(self):
+        # get xsolla id
+        xsolla_id = self.conf("xsolla.project-id")
+        if not xsolla_id:
+            return
+        if self.conf("xsolla.project-rejected"):
+            return
+        self.debug("Project %s has Xsolla project id %s", self.app().tag, xsolla_id)
+        # query xsolla
+        xsolla_gate = self.clconf("xsolla_gate", "localhost:88").split(":")
+        host = str(xsolla_gate[0])
+        port = int(xsolla_gate[1])
+        try:
+            with Timeout.push(30):
+                cnn = HTTPConnection()
+                cnn.connect((host, port))
+                try:
+                    request = HTTPRequest()
+                    request.method = "GET"
+                    request.path = "/paystation/?projectid=%s" % xsolla_id
+                    request.host = "secure.xsolla.com"
+                    request.add_header("Connection", "close")
+                    response = cnn.perform(request)
+                    if response.status_code == 200:
+                        reqs = self.main_app().objlist(DBXsollaActivationRequestList, query_index="project", query_equal=self.app().tag)
+                        if response.body.find('"WebMoney"') >= 0 or xsolla_id == 10531:
+                            # project is active
+                            self.debug("Project is active")
+                            if not self.conf("xsolla.project-active"):
+                                config = self.app().config_updater()
+                                config.set("xsolla.project-active", 1)
+                                config.store()
+                                # notify admin
+                                admin = self.main_app().obj(User, self.app().project.get("owner"))
+                                admin_name = admin.get("name")
+                                admin_email = admin.get("email")
+                                self.main_app().call("email.send", admin_email, admin_name, self._("Xsolla activation"), self._("Hello, {name}.\n\nXsolla has activated your game '{title}'. Now you can accept payments in your game. If you need to accept Yandex Money and Beeline Mobile Payments, you need to make manual request to the operator of the MMO Constructor project.\n\nPlease, check payments in your game, and notify us if something goes wrong.").format(title=self.app().project.get("title_short"), name=admin_name))
+                            reqs.remove()
+                            return 1
+                        else:
+                            # project is inactive
+                            self.debug("Project is inactive")
+                            config = self.app().config_updater()
+                            config.set("xsolla.project-active", 0)
+                            config.store()
+                            reqs.load(silent=True)
+                            if not len(reqs):
+                                req = self.main_app().obj(DBXsollaActivationRequest)
+                                req.set("project", self.app().tag)
+                                req.set("created", self.now())
+                                req.set("xsolla_id", xsolla_id)
+                                req.set("title", self.app().project.get("title_short"))
+                                req.store()
+                            return 0
+                    self.debug("Project status unknown")
+                    return None
+                finally:
+                    cnn.close()
+        except IOError as e:
+            self.error("Error checking Xsolla activation: %s", e)
+        except TimeoutError:
+            self.error("Error checking Xsolla activation: Timed out")
+
+    def send_activation_request(self):
+        xsolla_id = self.conf("xsolla.project-id")
+        if not xsolla_id:
+            return
+        main = self.main_app()
+        main_conf = main.config
+        title = self.app().project.get("title_short")
+        content = main_conf.get("xsolla.act-request-email").format(xsolla_id=xsolla_id, title=title)
+        manager_email = main_conf.get("xsolla.manager-email")
+        manager_name = main_conf.get("xsolla.manager-name")
+        sender_email = main_conf.get("xsolla.sender-email")
+        sender_name = main_conf.get("xsolla.sender-name")
+        if manager_email and manager_name:
+            main.call("email.send", manager_email, manager_name, self._("Activation: %s") % title, content, from_email=sender_email, from_name=sender_name)
 
 class XsollaAdmin(Module):
     def register(self):
@@ -1428,3 +1520,123 @@ class WebMoney(Module):
         else:
             lang = "en-EN"
         return "https://login.wmtransfer.com/GateKeeper.aspx?RID=%s&lang=%s" % (self.conf("wmlogin.rid"), lang)
+
+class XsollaActivation(Module):
+    def register(self):
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("menu-admin-economy.index", self.menu_economy_index)
+        self.rhook("headmenu-admin-xsolla.inactive", self.headmenu_inactive)
+        self.rhook("ext-admin-xsolla.inactive", self.admin_inactive, priv="xsolla.activation")
+        self.rhook("ext-admin-xsolla.actreject", self.admin_actreject, priv="xsolla.activation")
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("admin-xsolla.check-inactive", self.check_inactive)
+        self.rhook("headmenu-admin-xsolla.actsettings", self.headmenu_actsettings)
+        self.rhook("ext-admin-xsolla.actsettings", self.admin_actsettings, priv="xsolla.actsettings")
+
+    def schedule(self, sched):
+        sched.add("admin-xsolla.check-inactive", "30 3 * * *", priority=20)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "xsolla.activation", "name": self._("Xsolla activation management")})
+        perms.append({"id": "xsolla.actsettings", "name": self._("Xsolla activation settings")})
+
+    def menu_economy_index(self, menu):
+        req = self.req()
+        if req.has_access("xsolla.activation"):
+            menu.append({"id": "xsolla/inactive", "text": self._("Xsolla inactive projects"), "leaf": True, "order": 20})
+        if req.has_access("xsolla.actsettings"):
+            menu.append({"id": "xsolla/actsettings", "text": self._("Xsolla activation settings"), "leaf": True, "order": 21})
+
+    def admin_actreject(self):
+        req = self.req()
+        app = self.app().inst.appfactory.get_by_tag(req.args)
+        if app:
+            config = app.config_updater()
+            config.set("xsolla.project-rejected", 1)
+            config.store()
+            reqs = self.objlist(DBXsollaActivationRequestList, query_index="project", query_equal=app.tag)
+            reqs.remove()
+            self.call("admin.redirect", "xsolla/inactive")
+
+    def headmenu_inactive(self, args):
+        return self._("Xsolla inactive projects")
+
+    def admin_inactive(self):
+        rows = []
+        lst = self.objlist(DBXsollaActivationRequestList, query_index="all")
+        lst.load(silent=True)
+        for ent in lst:
+            rows.append([
+                self.call("l10n.time_local", ent.get("created")),
+                ent.get("xsolla_id"),
+                htmlescape(ent.get("title")),
+                u'<a href="%s" target="_blank">%s</a>' % (
+                    "https://secure.xsolla.com/paystation/?projectid=%s" % ent.get("xsolla_id"),
+                    self._("paystation"),
+                ),
+                u'<hook:admin.link href="xsolla/actreject/%s" title="%s" confirm="%s" />' % (
+                    ent.get("project"),
+                    self._("reject"),
+                    self._("Are you sure want to reject this request?")
+                )
+            ])
+        vars = {
+            "tables": [
+                {
+                    "header": [
+                        self._("Record created"),
+                        self._("Xsolla id"),
+                        self._("Game title"),
+                        self._("Paystation"),
+                        self._("Rejection"),
+                    ],
+                    "rows": rows,
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def check_inactive(self):
+        lst = self.objlist(DBXsollaActivationRequestList, query_index="all")
+        lst.load(silent=True)
+        for ent in lst:
+            app = self.app().inst.appfactory.get_by_tag(ent.get("project"))
+            app.call("xsolla.check-activation")
+        lst = self.objlist(DBXsollaActivationRequestList, query_index="all")
+        lst.load(silent=True)
+        if len(lst):
+            lines = []
+            for ent in lst:
+                lines.append(u"%s - %s" % (ent.get("xsolla_id"), ent.get("title")))
+            content = self.conf("xsolla.act-reminder-email").format(content="\n".join(lines))
+            manager_email = self.conf("xsolla.manager-email")
+            manager_name = self.conf("xsolla.manager-name")
+            sender_email = self.conf("xsolla.sender-email")
+            sender_name = self.conf("xsolla.sender-name")
+            if manager_email and manager_name:
+                self.call("email.send", manager_email, manager_name, self._("Some projects are still inactive"), content, from_email=sender_email, from_name=sender_name)
+
+    def headmenu_actsettings(self, args):
+        return self._("Xsolla activation settings")
+
+    def admin_actsettings(self):
+        req = self.req()
+        if req.ok():
+            config = self.app().config_updater()
+            config.set("xsolla.manager-email", req.param("email"))
+            config.set("xsolla.manager-name", req.param("name"))
+            config.set("xsolla.sender-email", req.param("from_email"))
+            config.set("xsolla.sender-name", req.param("from_name"))
+            config.set("xsolla.act-reminder-email", req.param("reminder"))
+            config.set("xsolla.act-request-email", req.param("request"))
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        fields = [
+            {"name": "email", "label": self._("Manager's e-mail"), "value": self.conf("xsolla.manager-email")},
+            {"name": "name", "label": self._("Manager's name"), "value": self.conf("xsolla.manager-name")},
+            {"name": "from_email", "label": self._("Sender e-mail"), "value": self.conf("xsolla.sender-email")},
+            {"name": "from_name", "label": self._("Sender name"), "value": self.conf("xsolla.sender-name")},
+            {"name": "reminder", "type": "textarea", "label": self._("Email template for the reminder"), "value": self.conf("xsolla.act-reminder-email"), "height": 300},
+            {"name": "request", "type": "textarea", "label": self._("Email template for the request"), "value": self.conf("xsolla.act-request-email"), "height": 300},
+        ]
+        self.call("admin.form", fields=fields)
