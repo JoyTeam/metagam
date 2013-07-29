@@ -3,6 +3,7 @@ from mg.constructor.player_classes import *
 import re
 from uuid import uuid4
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
+from mg.core.safejson import SafeEncoder
 import cStringIO
 
 re_charparam = re.compile(r'^charparam/(.+)$')
@@ -448,11 +449,11 @@ class CharacterParams(Params):
 
     def gameinterface_render(self, character, vars, design):
         vars["js_modules"].add("characters")
-        vars["js_init"].append("Characters.context_menu = %s;" % json.dumps(self.call("characters.context-menu")))
+        vars["js_init"].append("Characters.context_menu = %s;" % json.dumps(self.call("characters.context-menu"), cls=SafeEncoder))
         for param in self.call("characters.params"):
             if param.get("owner_visible") and self.call("characters.visibility-condition", param, character):
                 value = self.call("characters.param-value-rec", character, param)
-                vars["js_init"].append("Characters.myparam({param: '%s', value: %s});" % (param["code"], json.dumps(value)))
+                vars["js_init"].append("Characters.myparam({param: '%s', value: %s});" % (param["code"], json.dumps(value, cls=SafeEncoder)))
 
     def context_menu(self):
         menu = self.conf("characters.context-menu")
