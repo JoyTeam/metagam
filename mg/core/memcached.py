@@ -324,7 +324,7 @@ class MemcachedLock(object):
                 success = True
                 badlock = None
                 for key in self.keys:
-                    if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
+                    if self.mc.add(key, self.value, self.ttl) != MemcacheResult.NOT_STORED:
                         locked.append(key)
                     else:
                         for k in locked:
@@ -366,7 +366,7 @@ class MemcachedLock(object):
         locked = []
         try:
             for key in self.keys:
-                if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
+                if self.mc.add(key, self.value, self.ttl) != MemcacheResult.NOT_STORED:
                     locked.append(key)
                 else:
                     for k in locked:
