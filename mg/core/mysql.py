@@ -36,7 +36,7 @@ class MySQL(object):
                 # connection is ready here
                 try:
                     method = getattr(conn, method_name)
-                except AttributeError:
+                except AttributeError as e:
                     self.pool.error(e)
                     raise
                 # method is ready here
@@ -47,7 +47,6 @@ class MySQL(object):
                     raise
                 except dbapi.IntegrityError:
                     self.pool.error()
-                    conn = self.pool.cget()
                     raise
                 else:
                     self.pool.success(conn)
