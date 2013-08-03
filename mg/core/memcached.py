@@ -117,9 +117,6 @@ class Memcached(object):
                     raise MemcachedEmptyKeyError()
                 query_keys.append(qk)
             got = connection.get_multi(query_keys)
-            if got[0] == MemcacheResult.ERROR or got[0] == MemcacheResult.TIMEOUT:
-                self.pool.new()
-                return {}
             res = {}
             for item in got[1].iteritems():
                 (key, data) = item
