@@ -13,6 +13,7 @@ def main():
         "mg.core.procman.ProcessManager",
         "mg.constructor.procman.ProcessManager",
         "mg.core.realplexor.RealplexorDaemon",
+        "mg.core.tasks.Tasks",
     ])
     app.call("cluster.cleanup-host")
     app.call("cluster.register-daemon")

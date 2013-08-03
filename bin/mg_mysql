@@ -11,6 +11,7 @@ def main():
         "mg.core.web.Web",
         "mg.core.cluster.ClusterDaemon",
         "mg.core.mysql_maintenance.MySQLMonitor",
+        "mg.core.tasks.Tasks",
     ])
     app.call("cluster.register-daemon")
     app.call("cluster.run-int-service")

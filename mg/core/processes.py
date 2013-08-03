@@ -372,7 +372,7 @@ class Instance(Loggable):
         return self._daemons_dir
 
 def dispatch(main):
-    def _dispatch():
+    def _tasklet():
         try:
             main()
         except RuntimeError as e:
@@ -381,4 +381,6 @@ def dispatch(main):
             logging.exception(e)
         finally:
             os._exit(0)
+    def _dispatch():
+        Tasklet.new(_tasklet, name='main')()
     concurrence_dispatch(_dispatch)

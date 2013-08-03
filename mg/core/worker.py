@@ -13,4 +13,5 @@ class Worker(Module):
             "mg.core.queue.Queue",
             "mg.core.dbexport.Export",
             "mg.core.cluster.ClusterDaemon",
+            "mg.core.tasks.Tasks",
         ])
