@@ -173,7 +173,7 @@ class QueueRunner(Module):
                     app_tag = str(task["app"])
                     hook = str(task["hook"])
                     args = json.loads(task["data"])
-                    self.debug("Executing %s.%s(%s)", app_tag, hook, args)
+                    self.debug("Executing %s.%s", app_tag, hook)
                     app = self.app().inst.appfactory.get_by_tag(app_tag)
                     if app is None:
                         self.info("Found queue event for unknown application %s", app_tag)
