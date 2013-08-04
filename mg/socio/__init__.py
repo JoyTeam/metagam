@@ -2774,8 +2774,18 @@ class Forum(Module):
         query = req.args.lower().strip()
         words = list(self.call("socio.word_extractor", query))
         render_objects = self.call("socio.fulltext_search", "ForumSearch", words)
-        if len(render_objects) > search_results_per_page:
-            del render_objects[search_results_per_page:]
+        # pagination
+        pages = (len(render_objects) + search_results_per_page - 1) / search_results_per_page
+        if pages < 1:
+            pages = 1
+        page = intz(req.param("page"))
+        if page < 1:
+            page = 1
+        elif page > pages:
+            page = pages
+        del render_objects[page * search_results_per_page:]
+        del render_objects[0:(page - 1) * search_results_per_page]
+        # prepare list of search results
         posts = []
         while len(render_objects):
             get_cnt = 1000
@@ -2817,12 +2827,12 @@ class Forum(Module):
                     data["uuid"] = obj.uuid
                     self.posts_htmlencode([data])
                     topic_posts = self.objlist(ForumPostList, query_index="topic", query_equal=data.get("topic"))
-                    page = ""
+                    topage = ""
                     for i in range(0, len(topic_posts)):
                         if topic_posts[i].uuid == data.get("uuid"):
-                            page = "?page=%d" % (i / posts_per_page + 1)
+                            topage = "?page=%d" % (i / posts_per_page + 1)
                             break
-                    data["post_actions"] = '<a href="/forum/topic/%s%s#%s">%s</a>' % (data.get("topic"), page, data.get("uuid"), self._("open"))
+                    data["post_actions"] = '<a href="/forum/topic/%s%s#%s">%s</a>' % (data.get("topic"), topage, data.get("uuid"), self._("open"))
                     posts.append(data)
         if len(posts):
             posts[-1]["lst"] = True
@@ -2838,6 +2848,20 @@ class Forum(Module):
             "Tags": self._("Tags"),
             "new_post_form": "" if len(posts) else self._("Nothing found")
         }
+        # render pages
+        if pages > 1:
+            pages_list = []
+            last_show = None
+            for i in range(1, pages + 1):
+                show = (i <= 5) or (i >= pages - 5) or (abs(i - page) < 5)
+                if show:
+                    pages_list.append({"entry": {"text": i, "a": None if i == page else {"href": "/forum/search/%s?page=%d" % (urlencode(query), i)}}})
+                elif last_show:
+                    pages_list.append({"entry": {"text": "..."}})
+                last_show = show
+            pages_list[-1]["lst"] = True
+            vars["pages"] = pages_list
+        self.call("forum.vars-topic", vars)
         self.call("socio.response_template", "topic.html", vars)
 
     def ext_subscribed(self):
