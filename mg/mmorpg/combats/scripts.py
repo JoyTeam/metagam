@@ -74,7 +74,7 @@ class CombatScriptsAdmin(ConstructorModule):
         for st in code:
             st_cmd = st[0]
             if st_cmd == "damage":
-                result = u"%sdamage %s %s" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3]))
+                result = u"%sdamage %s value %s" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3]))
                 if len(st) >= 5:
                     attrs = st[4]
                     if "maxval" in attrs:
@@ -82,7 +82,7 @@ class CombatScriptsAdmin(ConstructorModule):
                 result += "\n"
                 lines.append(result)
             elif st_cmd == "heal":
-                result = u"%sheal %s %s" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3]))
+                result = u"%sheal %s value %s" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3]))
                 if len(st) >= 5:
                     attrs = st[4]
                     if "maxval" in attrs:
