@@ -53,6 +53,7 @@ re_format_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) \d\d:\d\d:\d\d$')
 re_valid_date = re.compile(r'^(\d\d\.\d\d\.\d\d\d\d|\d\d\.\d\d\.\d\d\d\d \d\d:\d\d:\d\d)$')
 re_valid_tag = re.compile(r'^[\w\- ]+$', re.UNICODE)
 re_whitespace = re.compile(r'\s+')
+re_search_query = re.compile(r'"([^"]*)"|-([^%s]+)|([^%s]+)' % (delimiters, delimiters))
 
 class UserForumSettings(CassandraObject):
     clsname = "UserForumSettings"
@@ -505,7 +506,9 @@ class Socio(Module):
         return req._socio_semi_user
 
     def word_extractor(self, text):
+        # remove tags
         text = re_any_tag.sub('', text)
+        # extract words
         for chunk in re_text_chunks.finditer(text):
             text = chunk.group()
             while True:
@@ -594,11 +597,12 @@ class Socio(Module):
                 self.db().batch_mutate({"%s_*" % self.app().db.app: {cf: mutations}}, ConsistencyLevel.QUORUM)
                 self.db().remove("%s_%s" % (self.app().db.app, uuid), ColumnPath(cf), timestamp, ConsistencyLevel.QUORUM)
 
-    def fulltext_search(self, group, words):
+    def fulltext_search(self, group, tokens):
         app_tag = str(self.app().tag)
         render_objects = None
-        for word in words:
-            query_search = word
+        tokens.sort(cmp=lambda x, y: cmp(x.get("substract", False), y.get("substract", False)))
+        for token in tokens:
+            query_search = self.stem(token["word"].lower())
             if len(query_search) > max_word_len:
                 query_search = query_search[0:max_word_len]
             start = (query_search + "//").encode("utf-8")
@@ -614,7 +618,12 @@ class Socio(Module):
                 cf = "%s_Search" % group
             objs = self.app().db.get_slice(row, ColumnParent(cf), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)
             objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in objs])
-            if render_objects is None:
+            if token.get("substract"):
+                if render_objects:
+                    for k, v in render_objects.items():
+                        if k in objs:
+                            del render_objects[k]
+            elif render_objects is None:
                 render_objects = objs
             else:
                 for k, v in render_objects.items():
@@ -2770,11 +2779,29 @@ class Forum(Module):
         for cat in categories:
             if self.may_read(user_uuid, cat, rules=rules[cat["id"]], roles=roles):
                 may_read_category.add(cat["id"])
-        # querying
+        # get query
         query = req.args.lower().strip()
-        words = list(self.call("socio.word_extractor", query))
-        render_objects = self.call("socio.fulltext_search", "ForumSearch", words)
-        # pagination
+        # parse query
+        tokens = []
+        for match in re_search_query.findall(query):
+            if match[0]:
+                for word in re_not_word_symbol.split(match[0]):
+                    if word:
+                        tokens.append({
+                            "word": word
+                        })
+            elif match[1]:
+                tokens.append({
+                    "word": match[1],
+                    "substract": True,
+                })
+            elif match[2]:
+                tokens.append({
+                    "word": match[2]
+                })
+        print tokens
+        render_objects = self.call("socio.fulltext_search", "ForumSearch", tokens)
+        # paginate
         pages = (len(render_objects) + search_results_per_page - 1) / search_results_per_page
         if pages < 1:
             pages = 1
