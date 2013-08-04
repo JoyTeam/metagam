@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-08-03 22:48+0300\n"
+"PO-Revision-Date: 2013-08-04 12:07+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3869,6 +3869,9 @@ msgstr "Как запустить игру"
 #, python-format
 msgid "How to setup character form you can read in the <a href=\"//www.%s/doc/character-form\" target=\"_blank\">character forms</a> manual page"
 msgstr "О том, как настроить анкету персонажа, вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/character-form\" target=\"_blank\">Анкета персонажа</a>."
+
+msgid "How to write perfect e-mail"
+msgstr "Как написать хорошее письмо"
 
 msgid "Hyperlink URL"
 msgstr "URL гиперссылки"
@@ -8680,6 +8683,9 @@ msgstr "Треугольник 2"
 
 msgid "Try to describe your choice"
 msgstr "Попытайтесь описать свой выбор"
+
+msgid "Try to use as much personalisation as possible. A player should feel that e-mail is not just a bulk e-mail delivery, but a directed email to himself. Greet a player personally: 'Hello [%char.name%]', use correct sex, character class and so on: 'Dear fairy Maria'."
+msgstr "Постарайтесь сделать как можно больше персонализации. Игрок должен почувствовать, что полученное им письмо - это не просто массовая рассылка, а сообщение, созданное именно для него. Поздоровайтесь лично с игроком: \"Здравствуйте, [%char.name%]\", используйте корректные пол, класс персонажа и т.д.: \"Дорогая фея Maria\"."
 
 msgid "Turn timeout (in seconds)"
 msgstr "Таймаут на ход (в секундах)"

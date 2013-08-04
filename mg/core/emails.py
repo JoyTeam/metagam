@@ -441,6 +441,11 @@ class EmailSender(Module):
                 {"name": "content", "value": content, "type": "htmleditor", "label": self._("Message content")},
             ]
             self.call("admin-email-sender.message-form-render", message, fields)
+            self.call("admin.advice", {
+                "title": self._("How to write perfect e-mail"),
+                "content": self._("Try to use as much personalisation as possible. A player should feel that e-mail is not just a bulk e-mail delivery, but a directed email to himself. Greet a player personally: 'Hello [%char.name%]', use correct sex, character class and so on: 'Dear fairy Maria'."),
+                "order": 20
+            })
             self.call("admin.form", fields=fields, modules=["HtmlEditorPlugins"])
         rows = []
         lst = self.objlist(BulkEmailMessageList, query_index="created", query_reversed=True)
