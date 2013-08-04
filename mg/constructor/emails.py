@@ -82,7 +82,6 @@ class EmailSenderAdmin(ConstructorModule):
                             return app.hooks.call("script.evaluate-expression", cond, globs={"char": char}, description=lambda: self._("Script condition whether to deliver an e-mail"))
                         app.modules.load(["mg.core.emails.EmailSender", "mg.constructor.emails.EmailSender"])
                         def run_process():
-                            Tasklet.sleep(20)
                             info = app.hooks.call("admin-email-sender.actual-deliver", message, ent.get("params"), errors, grep=grep)
                             ent.delkey("sending")
                             message.delkey("sending")
