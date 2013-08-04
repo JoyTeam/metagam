@@ -603,6 +603,8 @@ class Socio(Module):
         tokens.sort(cmp=lambda x, y: cmp(x.get("substract", False), y.get("substract", False)))
         for token in tokens:
             query_search = self.stem(token["word"].lower())
+            if len(query_search) < 3:
+                continue
             if len(query_search) > max_word_len:
                 query_search = query_search[0:max_word_len]
             start = (query_search + "//").encode("utf-8")
@@ -2779,12 +2781,52 @@ class Forum(Module):
         for cat in categories:
             if self.may_read(user_uuid, cat, rules=rules[cat["id"]], roles=roles):
                 may_read_category.add(cat["id"])
+        # advanced search form
+        early_pagination = True
+        form = self.call("web.form", action="/forum/search")
+        form.method = "get"
         # get query
-        query = req.args.lower().strip()
+        query = req.param("query").strip() or req.args.lower().strip()
+        author = req.param("author").strip()
+        category = req.param("category")
+        since = req.param("since").strip()
+        till = req.param("till").strip()
+        if req.param("query"):
+            search_topics = True if req.param("search_topics") else False
+            search_comments = True if req.param("search_comments") else False
+            if not search_topics or not search_comments:
+                early_pagination = False
+        else:
+            search_topics = True
+            search_comments = True
+        # process author
+        author_obj = None
+        if author:
+            author_obj = self.call("session.find_user", author)
+            if not author_obj:
+                form.error("author", self._("No such user"))
+            else:
+                early_pagination = False
+                author = author_obj.get("name")
+        # process since
+        since_val = None
+        if since:
+            since_val = self.call("l10n.parse_date", since)
+            if since_val is None:
+                form.error("since", self._("Invalid date format"))
+            else:
+                early_pagination = False
+        # process till
+        till_val = None
+        if till:
+            till_val = self.call("l10n.parse_date", till, dayend=True)
+            if till_val is None:
+                form.error("till", self._("Invalid date format"))
+            else:
+                early_pagination = False
         # parse query
         tokens = []
         exact_matches = []
-        early_pagination = True
         for match in re_search_query.findall(query):
             if match[0]:
                 early_pagination = False
@@ -2803,128 +2845,187 @@ class Forum(Module):
                 tokens.append({
                     "word": match[2]
                 })
-        render_objects = self.call("socio.fulltext_search", "ForumSearch", tokens)
-        # paginate
-        pages = (len(render_objects) + search_results_per_page - 1) / search_results_per_page
-        if pages < 1:
-            pages = 1
-        page = intz(req.param("page"))
-        if page < 1:
-            page = 1
-        elif page > pages:
-            page = pages
-        # early pagination
-        if early_pagination:
-            del render_objects[page * search_results_per_page:]
-            del render_objects[0:(page - 1) * search_results_per_page]
-        # load topics and posts
-        search_result = []
-        topics_content = {}
-        while len(render_objects):
-            get_cnt = 1000
-            if get_cnt > len(render_objects):
-                get_cnt = len(render_objects)
-            bucket = [render_objects[i][1] for i in range(0, get_cnt)]
-            del render_objects[0:get_cnt]
-            loaded = dict()
-            posts_list = self.objlist(ForumPostList, bucket)
-            posts_list.load(silent=True)
-            for post in posts_list:
-                loaded[post.uuid] = post
-            remain = [uuid for uuid in bucket if uuid not in loaded]
-            if len(remain):
-                topics_list = self.objlist(ForumTopicList, remain)
-                topics_list.load(silent=True)
-                topics_content_list = self.objlist(ForumTopicContentList, topics_list.uuids())
-                topics_content_list.load(silent=True)
-                for obj in topics_content_list:
-                    topics_content[obj.uuid] = obj.data
-                for topic in topics_list:
-                    loaded[topic.uuid] = topic
-            for uuid in bucket:
-                obj = loaded.get(uuid)
-                if obj and obj.get("category") in may_read_category:
-                    search_result.append(obj)
-        # additional filtering
-        def contains_exact_matches(obj):
-            if type(obj) == ForumTopic:
-                topic_content = topics_content.get(obj.uuid)
-                if topic_content:
-                    subject = re_whitespace.sub(' ', obj.get("subject").lower()).strip()
-                    content = re_whitespace.sub(' ', topic_content.get("content").lower()).strip()
-                    for match in exact_matches:
-                        if subject.find(match) < 0 and content.find(match) < 0:
-                            return False
-                else:
-                    return False
-            else:
-                content = re_whitespace.sub(' ', obj.get("content").lower()).strip()
-                for match in exact_matches:
-                    if content.find(match) < 0:
-                        return False
-            return True
-        if exact_matches:
-            search_result = [obj for obj in search_result if contains_exact_matches(obj)]
-        # late pagination
-        if not early_pagination:
-            del search_result[page * search_results_per_page:]
-            del search_result[0:(page - 1) * search_results_per_page]
-        # render posts
-        posts = []
-        for obj in search_result:
-            data = obj.data_copy()
-            if type(obj) == ForumTopic:
-                data["topic"] = obj.uuid
-                content = topics_content.get(obj.uuid)
-                if content is not None:
-                    data["content_html"] = content.get("content_html")
-                    self.topics_htmlencode([data], load_settings=True)
-                    data["post_actions"] = '<a href="/forum/topic/%s">%s</a>' % (data.get("uuid"), self._("open"))
-                    data["post_title"] = data.get("subject_html")
-                    if content.get("tags"):
-                        data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [htmlescape(tag) for tag in content.get("tags")]])
-                    posts.append(data)
-                if "uuid" in data:
-                    del data["uuid"]
-            else:
-                data["uuid"] = obj.uuid
-                self.posts_htmlencode([data])
-                topic_posts = self.objlist(ForumPostList, query_index="topic", query_equal=data.get("topic"))
-                topage = ""
-                for i in range(0, len(topic_posts)):
-                    if topic_posts[i].uuid == data.get("uuid"):
-                        topage = "?page=%d" % (i / posts_per_page + 1)
-                        break
-                data["post_actions"] = '<a href="/forum/topic/%s%s#%s">%s</a>' % (data.get("topic"), topage, data.get("uuid"), self._("open"))
-                posts.append(data)
-        # render serp
-        if len(posts):
-            posts[-1]["lst"] = True
+        if not tokens:
+            form.error("query", self._("The query is empty"))
         vars = {
             "search_query": htmlescape(query),
             "title": htmlescape(query),
-            "posts": posts,
             "menu": [
                 { "href": "/forum", "html": self._("Forum categories") },
                 { "html": self._("results///Search") },
                 { "html": htmlescape(query) },
             ],
             "Tags": self._("Tags"),
-            "new_post_form": "" if len(posts) else self._("Nothing found")
         }
-        # render pages
-        if pages > 1:
-            pages_list = []
-            last_show = None
-            for i in range(1, pages + 1):
-                show = (i <= 5) or (i >= pages - 5) or (abs(i - page) < 5)
-                if show:
-                    pages_list.append({"entry": {"text": i, "a": None if i == page else {"href": "/forum/search/%s?page=%d" % (urlencode(query), i)}}})
-                elif last_show:
-                    pages_list.append({"entry": {"text": "..."}})
-                last_show = show
-            pages_list[-1]["lst"] = True
-            vars["pages"] = pages_list
+        if not form.errors:
+            # search index
+            render_objects = self.call("socio.fulltext_search", "ForumSearch", tokens)
+            # early pagination
+            if early_pagination:
+                pages = (len(render_objects) + search_results_per_page - 1) / search_results_per_page
+                if pages < 1:
+                    pages = 1
+                page = intz(req.param("page"))
+                if page < 1:
+                    page = 1
+                elif page > pages:
+                    page = pages
+                del render_objects[page * search_results_per_page:]
+                del render_objects[0:(page - 1) * search_results_per_page]
+            # load topics and posts
+            search_result = []
+            topics_content = {}
+            while len(render_objects):
+                get_cnt = 1000
+                if get_cnt > len(render_objects):
+                    get_cnt = len(render_objects)
+                bucket = [render_objects[i][1] for i in range(0, get_cnt)]
+                del render_objects[0:get_cnt]
+                loaded = dict()
+                if search_comments:
+                    posts_list = self.objlist(ForumPostList, bucket)
+                    posts_list.load(silent=True)
+                    for post in posts_list:
+                        loaded[post.uuid] = post
+                remain = [uuid for uuid in bucket if uuid not in loaded]
+                if len(remain) and search_topics:
+                    topics_list = self.objlist(ForumTopicList, remain)
+                    topics_list.load(silent=True)
+                    topics_content_list = self.objlist(ForumTopicContentList, topics_list.uuids())
+                    topics_content_list.load(silent=True)
+                    for obj in topics_content_list:
+                        topics_content[obj.uuid] = obj.data
+                    for topic in topics_list:
+                        loaded[topic.uuid] = topic
+                for uuid in bucket:
+                    obj = loaded.get(uuid)
+                    if obj and obj.get("category") in may_read_category:
+                        search_result.append(obj)
+            # exact matches filter
+            def contains_exact_matches(obj):
+                if type(obj) == ForumTopic:
+                    topic_content = topics_content.get(obj.uuid)
+                    if topic_content:
+                        subject = re_whitespace.sub(' ', obj.get("subject").lower()).strip()
+                        content = re_whitespace.sub(' ', topic_content.get("content").lower()).strip()
+                        for match in exact_matches:
+                            if subject.find(match) < 0 and content.find(match) < 0:
+                                return False
+                    else:
+                        return False
+                else:
+                    content = re_whitespace.sub(' ', obj.get("content").lower()).strip()
+                    for match in exact_matches:
+                        if content.find(match) < 0:
+                            return False
+                return True
+            if exact_matches:
+                search_result = [obj for obj in search_result if contains_exact_matches(obj)]
+            # author filter
+            if author_obj:
+                search_result = [obj for obj in search_result if obj.get("author") == author_obj.uuid]
+            # category filter
+            if category:
+                search_result = [obj for obj in search_result if obj.get("category") == category]
+            # since filter
+            if since_val:
+                search_result = [obj for obj in search_result if obj.get("created") >= since_val]
+            # till filter
+            if till_val:
+                search_result = [obj for obj in search_result if obj.get("created") <= till_val]
+            # late pagination
+            if not early_pagination:
+                pages = (len(search_result) + search_results_per_page - 1) / search_results_per_page
+                if pages < 1:
+                    pages = 1
+                page = intz(req.param("page"))
+                if page < 1:
+                    page = 1
+                elif page > pages:
+                    page = pages
+                del search_result[page * search_results_per_page:]
+                del search_result[0:(page - 1) * search_results_per_page]
+            # render serp
+            posts = []
+            for obj in search_result:
+                data = obj.data_copy()
+                if type(obj) == ForumTopic:
+                    data["topic"] = obj.uuid
+                    content = topics_content.get(obj.uuid)
+                    if content is not None:
+                        data["content_html"] = content.get("content_html")
+                        self.topics_htmlencode([data], load_settings=True)
+                        data["post_actions"] = '<a href="/forum/topic/%s">%s</a>' % (data.get("uuid"), self._("open"))
+                        data["post_title"] = data.get("subject_html")
+                        if content.get("tags"):
+                            data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [htmlescape(tag) for tag in content.get("tags")]])
+                        posts.append(data)
+                    if "uuid" in data:
+                        del data["uuid"]
+                else:
+                    data["uuid"] = obj.uuid
+                    self.posts_htmlencode([data])
+                    topic_posts = self.objlist(ForumPostList, query_index="topic", query_equal=data.get("topic"))
+                    topage = ""
+                    for i in range(0, len(topic_posts)):
+                        if topic_posts[i].uuid == data.get("uuid"):
+                            topage = "?page=%d" % (i / posts_per_page + 1)
+                            break
+                    data["post_actions"] = '<a href="/forum/topic/%s%s#%s">%s</a>' % (data.get("topic"), topage, data.get("uuid"), self._("open"))
+                    posts.append(data)
+            if len(posts):
+                posts[-1]["lst"] = True
+            # output templates
+            vars["posts"] = posts
+            vars["new_post_form"] = "" if len(posts) else self._("Nothing found")
+            # render pages
+            if pages > 1:
+                if since_val or till_val or not search_topics or not search_comments or author_obj or category:
+                    page_url_template = "/forum/search?query=%s" % urlencode(query)
+                    if since_val:
+                        page_url_template += "&since=%s" % urlencode(self.call("l10n.unparse_date", since_val))
+                    if till_val:
+                        page_url_template += "&till=%s" % urlencode(self.call("l10n.unparse_date", till_val, dayend=True))
+                    if search_topics:
+                        page_url_template += "&search_topics=1"
+                    if search_comments:
+                        page_url_template += "&search_comments=1"
+                    if author_obj:
+                        page_url_template += "&author=%s" % urlencode(author)
+                    if category:
+                        page_url_template += "&category=%s" % urlencode(category)
+                    page_url_template += "&page="
+                else:
+                    page_url_template = "/forum/search/%s?page=" % urlencode(query)
+                pages_list = []
+                last_show = None
+                for i in range(1, pages + 1):
+                    show = (i <= 5) or (i >= pages - 5) or (abs(i - page) < 5)
+                    if show:
+                        pages_list.append({"entry": {"text": i, "a": None if i == page else {"href": page_url_template + str(i)}}})
+                    elif last_show:
+                        pages_list.append({"entry": {"text": "..."}})
+                    last_show = show
+                pages_list[-1]["lst"] = True
+                vars["pages"] = pages_list
+        # render form
+        form.input(self._("Search query"), "query", query)
+        categories = self.categories()
+        rules = self.load_rules([cat["id"] for cat in categories])
+        roles = {}
+        self.call("security.users-roles", [user_uuid], roles)
+        roles = roles.get(user_uuid, [])
+        categories = [cat for cat in categories if self.may_read(user_uuid, cat, rules=rules[cat["id"]], roles=roles)]
+        rcategories = [{"value": "", "description": self._("All categories")}] + [{"value": cat["id"], "description": cat["title"]} for cat in categories]
+        form.select(self._("forum///Category"), "category", category, rcategories)
+        form.input(self._("Post author"), "author", author, inline=True)
+        form.input(self._("forumsearch///Since (dd.mm.yyyy)"), "since", since)
+        form.input(self._("forumsearch///Till (dd.mm.yyyy)"), "till", till, inline=True)
+        form.checkbox(self._("Search topics"), "search_topics", search_topics, inline=True)
+        form.checkbox(self._("Search comments"), "search_comments", search_comments, inline=True)
+        form.submit(None, None, self._("btn///Search"))
+        vars["advanced_search_form"] = form.html()
+        # render page
         self.call("forum.vars-topic", vars)
         self.call("socio.response_template", "topic.html", vars)
 
