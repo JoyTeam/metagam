@@ -885,6 +885,8 @@ class Chat(ConstructorModule):
             self.call("chat.channel-join", character, channel, send_myself=False)
 
     def character_init(self, session_uuid, character):
+        syschannel = "id_%s" % session_uuid
+        self.call("stream.packet", syschannel, "chat", "clear")
         channels = []
         self.call("chat.character-channels", character, channels)
         # reload_channels resets destroyes all channels not listed in the 'channels' list and unconditionaly clears online lists
@@ -899,7 +901,6 @@ class Chat(ConstructorModule):
         self.call("stream.character", character, "chat", "reload_channels", channels=show_channels)
         # send information about all characters on all subscribed channels
         # also load old messages
-        syschannel = "id_%s" % session_uuid
         messages = []
         for channel in channels:
             if channel["id"] == "loc":
