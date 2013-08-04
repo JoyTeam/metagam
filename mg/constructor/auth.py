@@ -255,7 +255,7 @@ class Auth(ConstructorModule):
     def menu_game_index(self, menu):
         req = self.req()
         if req.has_access("auth.close-project"):
-            menu.append({"id": "auth/close-project", "text": self._("Close project login"), "leaf": True, "order": 30, "even_unpublished": True})
+            menu.append({"id": "auth/close-project", "text": self._("Close project login"), "leaf": True, "order": 30, "even_unpublished": True, "icon": "/st-mg/menu/lock.png"})
 
     def close_project(self):
         req = self.req()

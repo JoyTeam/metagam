@@ -997,7 +997,7 @@ class ScriptAdmin(ConstructorModule):
     def menu_gameinterface_index(self, menu):
         req = self.req()
         if req.has_access("design"):
-            menu.append({"id": "gameinterface/dynamic", "text": self._("Dynamic blocks"), "leaf": True, "order": 9})
+            menu.append({"id": "gameinterface/dynamic", "text": self._("Dynamic blocks"), "leaf": True, "order": 9, "icon": "/st-mg/menu/dynamic-block.png"})
 
     def headmenu_dynamic(self, args):
         if args == "new":

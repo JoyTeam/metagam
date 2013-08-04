@@ -97,7 +97,7 @@ class GlobalFunctionsAdmin(ConstructorModule):
     def menu_gameinterface_index(self, menu):
         req = self.req()
         if req.has_access("interface.globfunc"):
-            menu.append({"id": "globfunc/editor", "text": self._("Global interfaces"), "leaf": True, "order": 60})
+            menu.append({"id": "globfunc/editor", "text": self._("Global interfaces"), "leaf": True, "order": 60, "icon": "/st-mg/menu/interface.png"})
 
     def headmenu_globfunc_editor(self, args):
         cmd = args

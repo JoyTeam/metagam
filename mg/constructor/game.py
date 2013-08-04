@@ -32,7 +32,7 @@ class Game(Module):
         menu.append({"id": "game.index", "text": self._("Game"), "order": 20})
         req = self.req()
         if req.has_access("project.admin"):
-            menu.append({"id": "game/modules", "text": self._("Game system modules"), "leaf": True, "order": 1, "icon": "/st-mg/menu/modules.png"})
+            menu.append({"id": "game/modules", "text": self._("Game system modules"), "leaf": True, "order": 1, "icon": "/st-mg/menu/modules.png?3"})
 
     def permissions_list(self, perms):
         perms.append({"id": "game.lang", "name": self._("Game language editor")})
@@ -42,11 +42,11 @@ class Game(Module):
     def menu_game_index(self, menu):
         req = self.req()
         if req.has_access("game.lang"):
-            menu.append({"id": "game/lang", "text": self._("Language"), "leaf": True, "order": 0})
+            menu.append({"id": "game/lang", "text": self._("Language"), "leaf": True, "order": 0, "icon": "/st-mg/menu/language.png"})
         if req.has_access("game.profile"):
-            menu.append({"id": "game/profile", "text": self._("Profile"), "leaf": True, "order": 10, "even_unpublished": True})
+            menu.append({"id": "game/profile", "text": self._("Profile"), "leaf": True, "order": 10, "even_unpublished": True, "icon": "/st-mg/menu/profile.png"})
         if req.has_access("game.logo"):
-            menu.append({"id": "game/logo", "text": self._("Logo"), "leaf": True, "order": 20, "even_unpublished": True})
+            menu.append({"id": "game/logo", "text": self._("Logo"), "leaf": True, "order": 20, "even_unpublished": True, "icon": "/st-mg/menu/icon.png?1"})
 
     def headmenu_profile(self, args):
         return self._("Game profile")

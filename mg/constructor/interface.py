@@ -570,11 +570,11 @@ class Interface(ConstructorModule):
     def menu_gameinterface_index(self, menu):
         req = self.req()
         if req.has_access("design"):
-            menu.append({"id": "gameinterface/layout", "text": self._("Layout scheme"), "leaf": True, "order": 4})
-            menu.append({"id": "gameinterface/panels", "text": self._("Interface panels"), "leaf": True, "order": 7})
-            menu.append({"id": "gameinterface/scripts", "text": self._("Scripts"), "leaf": True, "order": 8})
-            menu.append({"id": "gameinterface/popups", "text": self._("Popup menus"), "leaf": True, "order": 10})
-            menu.append({"id": "gameinterface/buttons", "text": self._("Buttons editor"), "leaf": True, "order": 12})
+            menu.append({"id": "gameinterface/layout", "text": self._("Layout scheme"), "leaf": True, "order": 4, "icon": "/st-mg/menu/layout.png"})
+            menu.append({"id": "gameinterface/panels", "text": self._("Interface panels"), "leaf": True, "order": 7, "icon": "/st-mg/menu/panel.png"})
+            menu.append({"id": "gameinterface/scripts", "text": self._("Scripts"), "leaf": True, "order": 8, "icon": "/st-mg/menu/script.gif"})
+            menu.append({"id": "gameinterface/popups", "text": self._("Popup menus"), "leaf": True, "order": 10, "icon": "/st-mg/menu/popup.png"})
+            menu.append({"id": "gameinterface/buttons", "text": self._("Buttons editor"), "leaf": True, "order": 12, "icon": "/st-mg/menu/button.png?5"})
 
     def gameinterface_layout(self):
         req = self.req()
