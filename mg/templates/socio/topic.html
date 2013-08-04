@@ -1,5 +1,8 @@
 <table id="socio-topic-head"><tr>
-<td id="socio-topic-title"><div>[%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%][%if googleplus_plusone%]&nbsp;&nbsp;[%googleplus_plusone%][%end%]</div></td>
+        <td id="socio-topic-title"><div>[%topic.subject_html%]
+                [%if topic.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]
+                [%if topic.closed%]&nbsp;<img src="/st-mg/[%ver%]/socio/closed.gif" alt="" class="close-mark" />[%end%]
+                [%if googleplus_plusone%]&nbsp;&nbsp;[%googleplus_plusone%][%end%]</div></td>
 [%if pages%]<td class="socio-topic-pages">
 [%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</span>
 </td>[%end%]</tr></table>
@@ -51,7 +54,10 @@
 [%if post.author_menu%]<div class="socio-member-menu">[%foreach ent in post.author_menu%]<div><a href="[%ent.href%]">[%ent.title%]</a></div>[%end%]</div>[%end%]
 </td>
 
-<td class="socio-post-content" colspan="2">[%if post.post_title%]<div class="socio-post-title">[%post.post_title%][%if post.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]</div>[%end%]
+<td class="socio-post-content" colspan="2">[%if post.post_title%]<div class="socio-post-title">[%post.post_title%]
+    [%if post.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]
+    [%if post.closed%]&nbsp;<img src="/st-mg/[%ver%]/socio/closed.gif" alt="" class="close-mark" />[%end%]
+</div>[%end%]
 [%post.content_html%]
 [%if post.tags_html%]<div class="socio-tags">[%Tags%]: <span class="socio-tags-list">[%post.tags_html%]</span></div>[%end%]
 </td>

@@ -903,6 +903,8 @@ class Forum(Module):
         self.rhook("ext-forum.unsubscribe", self.ext_unsubscribe, priv="logged")
         self.rhook("ext-forum.pin", self.ext_pin, priv="logged")
         self.rhook("ext-forum.unpin", self.ext_unpin, priv="logged")
+        self.rhook("ext-forum.close", self.ext_close, priv="logged")
+        self.rhook("ext-forum.open", self.ext_open, priv="logged")
         self.rhook("ext-forum.move", self.ext_move, priv="logged")
         self.rhook("ext-forum.tag", self.ext_tag, priv="public")
         self.rhook("ext-forum.tags", self.ext_tags, priv="public")
@@ -1104,6 +1106,11 @@ class Forum(Module):
             if errors is not None:
                 errors["may_write"] = self._("You are not logged in")
             return False
+        if topic:
+            if topic.get("closed"):
+                if errors is not None:
+                    errors["may_write"] = self._("This topic is closed")
+                return False
         slc = self.silence(user)
         if slc:
             if errors is not None:
@@ -1208,6 +1215,9 @@ class Forum(Module):
             if perm == "+M" and role in roles:
                 return True
         return False
+
+    def may_close(self, cat, topic=None, rules=None, roles=None):
+        return self.may_moderate(cat, topic, rules, roles)
 
     def may_pin(self, cat, topic=None, rules=None, roles=None):
         return self.may_moderate(cat, topic, rules, roles)
@@ -1706,6 +1716,11 @@ class Forum(Module):
                         menu.append({"href": "/forum/unpin/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("unpin"), "right": True})
                     else:
                         menu.append({"href": "/forum/pin/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("pin"), "right": True})
+                if self.may_close(cat, topic, rules=rules, roles=roles):
+                    if topic.get("closed"):
+                        menu.append({"href": "/forum/open/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("open"), "right": True})
+                    else:
+                        menu.append({"href": "/forum/close/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("close"), "right": True})
                 if self.may_move(cat, topic, rules=rules, roles=roles):
                     menu.append({"href": "/forum/move/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("move"), "right": True})
         self.call("forum.topic-menu", topic, menu)
@@ -1729,7 +1744,7 @@ class Forum(Module):
             errors = {}
             if not content:
                 form.error("content", self._("Enter post content"))
-            elif not self.may_write(cat, rules=rules, roles=roles, errors=errors):
+            elif not self.may_write(cat, topic, rules=rules, roles=roles, errors=errors):
                 form.error("content", errors.get("may_write", self._("Access denied")))
             self.call("forum.reply-form", form, "validate")
             if not form.errors:
@@ -1753,7 +1768,7 @@ class Forum(Module):
             "menu": menu,
         }
         errors = {}
-        if req.ok() or (self.may_write(cat, rules=rules, roles=roles, errors=errors) and (page == pages)):
+        if req.ok() or (self.may_write(cat, topic, rules=rules, roles=roles, errors=errors) and (page == pages)):
             if errors.get("may_write"):
                 form.error("content", errors["may_write"])
             form.texteditor(None, "content", content)
@@ -2378,6 +2393,46 @@ class Forum(Module):
             if not self.may_pin(cat, topic):
                 self.call("web.forbidden")
             topic.delkey("pinned")
+            topic.sync()
+            topic.store()
+        redirect = req.param("redirect")
+        if redirect is not None and redirect != "":
+            self.call("web.redirect", redirect)
+        self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+
+    def ext_close(self):
+        req = self.req()
+        with self.lock(["ForumTopic-" + req.args]):
+            try:
+                topic = self.obj(ForumTopic, req.args)
+            except ObjectNotFoundException:
+                self.call("web.not_found")
+            cat = self.call("forum.category", topic.get("category"))
+            if cat is None:
+                self.call("web.not_found")
+            if not self.may_close(cat, topic):
+                self.call("web.forbidden")
+            topic.set("closed", 1)
+            topic.sync()
+            topic.store()
+        redirect = req.param("redirect")
+        if redirect is not None and redirect != "":
+            self.call("web.redirect", redirect)
+        self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+
+    def ext_open(self):
+        req = self.req()
+        with self.lock(["ForumTopic-" + req.args]):
+            try:
+                topic = self.obj(ForumTopic, req.args)
+            except ObjectNotFoundException:
+                self.call("web.not_found")
+            cat = self.call("forum.category", topic.get("category"))
+            if cat is None:
+                self.call("web.not_found")
+            if not self.may_close(cat, topic):
+                self.call("web.forbidden")
+            topic.delkey("closed")
             topic.sync()
             topic.store()
         redirect = req.param("redirect")

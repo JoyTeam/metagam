@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-08-04 17:57+0300\n"
+"PO-Revision-Date: 2013-08-04 18:14+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -8443,6 +8443,9 @@ msgstr "Этот магазин продаёт товары"
 msgid "This slot is currently unavailable"
 msgstr "Этот слот в данный момент недоступен"
 
+msgid "This topic is closed"
+msgstr "Эта тема закрыта"
+
 msgid "This type of location visualization is not supported by location objects subsystem"
 msgstr "Этот тип визуализации локации не поддерживается подсистемой объектов на локациях"
 
@@ -9912,6 +9915,9 @@ msgstr "чат"
 
 msgid "class"
 msgstr "класс"
+
+msgid "close"
+msgstr "закрыть"
 
 msgid "combat action attributes"
 msgstr "атрибуты боевого действия"
