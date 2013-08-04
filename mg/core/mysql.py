@@ -42,11 +42,8 @@ class MySQL(object):
                 # method is ready here
                 try:
                     res = method(*args, **kwargs)
-                except concurrence.TimeoutError as e:
+                except Exception as e:
                     self.pool.error(e)
-                    raise
-                except dbapi.IntegrityError:
-                    self.pool.error()
                     raise
                 else:
                     self.pool.success(conn)
