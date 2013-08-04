@@ -4,6 +4,7 @@ import re
 from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
 from mg.constructor.common import Domain, DomainList
+from uuid import uuid4
 
 re_price_value = re.compile(r'^(\d+|\d+\.\d{1,2})$')
 re_person_r = re.compile(r'^\w+( \w+)+$', re.UNICODE)
@@ -17,6 +18,7 @@ re_newline = re.compile(r'\r\n|\r|\n')
 re_response_line = re.compile(r'^(\S+)\s*:\s*(.+)$')
 re_reg_date = re.compile(r'(\d\d)\.(\d\d)\.(\d\d\d\d)')
 re_tld = re.compile(r'\.([a-z]+)$')
+re_del = re.compile(r'^del/(.+)$')
 
 class DNSCheckError(Exception):
     pass
@@ -28,6 +30,14 @@ class Domains(Module):
         self.rhook("domains.assign", self.assign)
         self.rhook("domains.validate_new", self.validate_new)
         self.rhook("admin-game.recommended-actions", self.recommended_actions)
+        self.rhook("domains.blacklisted", self.blacklisted)
+
+    def blacklisted(self, domain):
+        domain = domain.strip().lower()
+        for e in self.main_app().config.get("domains.blacklist", []):
+            if e["domain"] == domain or domain.endswith("." + e["domain"]):
+                return True
+        return False
 
     def tlds(self, tlds):
         tlds.extend(['ru', 'su', 'com', 'net', 'org', 'biz', 'info', 'mobi', 'name', 'ws', 'in', 'cc', 'tv', 'mn', 'me', 'tel', 'asia', 'us'])
@@ -435,6 +445,92 @@ class DomainsAdmin(Module):
         self.rhook("ext-admin-domains.unassign", self.ext_unassign, priv="domains.unassign")
         self.rhook("admin-domains.prolong", self.prolong)
         self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("ext-admin-domains.blacklist", self.ext_blacklist, priv="domains.blacklist")
+        self.rhook("headmenu-admin-domains.blacklist", self.headmenu_blacklist)
+
+    def headmenu_blacklist(self, args):
+        if args == "new":
+            return [self._("New domain"), "domains/blacklist"]
+        elif args:
+            for e in self.conf("domains.blacklist", []):
+                if e["uuid"] == args:
+                    return [htmlescape(e["domain"]), "domains/blacklist"]
+        return self._("Domains blacklist")
+
+    def ext_blacklist(self):
+        req = self.req()
+        blacklist = self.conf("domains.blacklist", [])
+        if req.args:
+            m = re_del.match(req.args)
+            if m:
+                uuid = m.group(1)
+                blacklist = [e for e in blacklist if e["uuid"] != uuid]
+                config = self.app().config_updater()
+                config.set("domains.blacklist", blacklist)
+                config.store()
+                self.call("admin.redirect", "domains/blacklist")
+            if req.args == "new":
+                ent = {
+                    "uuid": uuid4().hex
+                }
+            else:
+                ent = None
+                for e in blacklist:
+                    if e["uuid"] == req.args:
+                        ent = e.copy()
+                        break
+                if not ent:
+                    self.call("admin.redirect", "domains/blacklist")
+            if req.ok():
+                errors = {}
+                # domain
+                domain = req.param("domain").strip()
+                if not domain:
+                    errors["domain"] = self._("This field is mandatory")
+                else:
+                    ent["domain"] = domain.lower()
+                # handle errors
+                if errors:
+                    self.call("admin.response_json", {"success": False, "errors": errors})
+                # save data
+                blacklist = [e for e in blacklist if e["uuid"] != ent["uuid"]]
+                blacklist.append(ent)
+                blacklist.sort(cmp=lambda x, y: cmp(x["domain"], y["domain"]))
+                config = self.app().config_updater()
+                config.set("domains.blacklist", blacklist)
+                config.store()
+                self.call("admin.redirect", "domains/blacklist")
+            fields = [
+                {"name": "domain", "label": self._("Domain name"), "value": ent.get("domain")},
+            ]
+            self.call("admin.form", fields=fields)
+        rows = []
+        for ent in blacklist:
+            rows.append([
+                ent.get("domain"),
+                u'<hook:admin.link href="domains/blacklist/%s" title="%s" />' % (ent.get("uuid"), self._("edit")),
+                u'<hook:admin.link href="domains/blacklist/del/%s" title="%s" />' % (ent.get("uuid"), self._("delete")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {
+                            "hook": "domains/blacklist/new",
+                            "text": self._("New domain"),
+                            "lst": True,
+                        }
+                    ],
+                    "header": [
+                        self._("Domain"),
+                        self._("Editing"),
+                        self._("Deletion")
+                    ],
+                    "rows": rows
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def permissions_list(self, perms):
         perms.append({"id": "domains", "name": self._("Domains: administration")})
@@ -442,6 +538,7 @@ class DomainsAdmin(Module):
         perms.append({"id": "domains.prices", "name": self._("Domains: registration prices")})
         perms.append({"id": "domains.personal-data", "name": self._("Domains: administrator's personal data")})
         perms.append({"id": "domains.unassign", "name": self._("Domains: unassigning")})
+        perms.append({"id": "domains.blacklist", "name": self._("Domains: blacklist")})
 
     def schedule(self, sched):
         sched.add("admin-domains.prolong", "0 17 * * *", priority=150)
@@ -474,6 +571,8 @@ class DomainsAdmin(Module):
             menu.append({"id": "domains/personal-data", "text": self._("Administrator's personal data"), "leaf": True})
         if req.has_access("domains.dns"):
             menu.append({"id": "domains/dns", "text": self._("DNS settings"), "leaf": True})
+        if req.has_access("domains.blacklist"):
+            menu.append({"id": "domains/blacklist", "text": self._("Domains blacklist"), "leaf": True, "order": 10})
 
     def ext_dns(self):
         req = self.req()
@@ -901,6 +1000,8 @@ class DomainWizard(Wizard):
                     errors["domain"] = self._("Domain name can't contain double dash ('--'). International domain names are not supported")
                 elif len(domain) > 63:
                     errors["domain"] = self._("Domain name is too long")
+                elif self.call("domains.blacklisted", domain):
+                    errors["domain"] = self._("This domain is blacklisted")
                 if not len(errors) and not self.main_app().config.get("dns.nocheck"):
                     self.call("domains.validate_new", domain, errors)
                 if len(errors):

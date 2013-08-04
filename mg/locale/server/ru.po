@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-08-04 12:30+0300\n"
+"PO-Revision-Date: 2013-08-04 17:57+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2544,6 +2544,9 @@ msgstr ""
 msgid "Domains"
 msgstr "Домены"
 
+msgid "Domains blacklist"
+msgstr "Чёрный список доменов"
+
 msgid "Domains: DNS settings"
 msgstr "Домены: настройки DNS"
 
@@ -2552,6 +2555,9 @@ msgstr "Домены: администрирование"
 
 msgid "Domains: administrator's personal data"
 msgstr "Домены: персональные данные администратора"
+
+msgid "Domains: blacklist"
+msgstr "Домены: чёрный список"
 
 msgid "Domains: registration prices"
 msgstr "Домены: цены на регистрацию"
@@ -5535,6 +5541,9 @@ msgstr "Новая валюта"
 msgid "New design"
 msgstr "Новое оформление"
 
+msgid "New domain"
+msgstr "Новый домен"
+
 msgid "New dynamic block"
 msgstr "Новый динамический блок"
 
@@ -8248,6 +8257,9 @@ msgstr "Этот домен уже привязан к другому проек
 
 msgid "This domain is already registered by another user of the MMO Constructor"
 msgstr "Этот домен уже зарегистрирован другим пользователем MMO Constructor"
+
+msgid "This domain is blacklisted"
+msgstr "Этот домен находится в чёрном списке"
 
 #, python-format
 msgid "This domain is in the pending state. We don't know the result of the registration. Please contact MMO Constructor administration to get more details. registrar_id=%s"
