@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-08-04 12:07+0300\n"
+"PO-Revision-Date: 2013-08-04 12:30+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -7259,6 +7259,9 @@ msgstr "Возможности отправки"
 msgid "Sending"
 msgstr "Отправка"
 
+msgid "Sending is in progress"
+msgstr "Идёт отправка"
+
 msgid "Sent"
 msgstr "Отправлено"
 
@@ -8258,6 +8261,9 @@ msgstr "Это доменное имя уже занято. Выберите д�
 
 msgid "This domain was not registered by you. You can't use for your project"
 msgstr "Этот домен был зарегистрирован не вами. Вы не можете использовать его для своего проекта"
+
+msgid "This email is being checked by the moderators"
+msgstr "Это сообщение проверяется модераторами"
 
 msgid "This field is mandatory"
 msgstr "Это обязательное поле"

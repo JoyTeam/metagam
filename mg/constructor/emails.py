@@ -81,20 +81,31 @@ class EmailSenderAdmin(ConstructorModule):
                                 return False
                             return app.hooks.call("script.evaluate-expression", cond, globs={"char": char}, description=lambda: self._("Script condition whether to deliver an e-mail"))
                         app.modules.load(["mg.core.emails.EmailSender", "mg.constructor.emails.EmailSender"])
-                        info = app.hooks.call("admin-email-sender.actual-deliver", message, ent.get("params"), errors, grep=grep)
-                        if errors:
-                            self.call("admin.response", u'<br />'.join(errors.values()), {})
-                        ent.delkey("waiting")
-                        send_history = ent.get("send_history", [])
-                        ent.set("send_history", send_history)
-                        message.set("sent", self.now())
-                        message.set("users_sent", info["sent"])
-                        message.set("users_skipped", info["skipped"])
-                        send_history.append(self.now())
-                        message.delkey("moderation")
+                        def run_process():
+                            Tasklet.sleep(20)
+                            info = app.hooks.call("admin-email-sender.actual-deliver", message, ent.get("params"), errors, grep=grep)
+                            ent.delkey("sending")
+                            message.delkey("sending")
+                            if errors:
+                                ent.set("errors", errors)
+                                message.set("errors", errors)
+                            else:
+                                ent.delkey("waiting")
+                                send_history = ent.get("send_history", [])
+                                ent.set("send_history", send_history)
+                                message.set("sent", self.now())
+                                message.set("users_sent", info["sent"])
+                                message.set("users_skipped", info["skipped"])
+                                send_history.append(self.now())
+                                message.delkey("moderation")
+                            ent.store()
+                            message.store()
+                        ent.set("sending", True)
+                        message.set("sending", True)
                         ent.store()
                         message.store()
-                        self.call("admin.response", info["status"], {})
+                        # Run sending in background
+                        Tasklet.new(run_process, name='E-mail sender. app=%s' % self.app().tag)()
                     self.call("admin.redirect", "email/moderation")
                 elif act == "reject":
                     if req.ok():
@@ -150,6 +161,12 @@ class EmailSenderAdmin(ConstructorModule):
                 continue
             owner = self.obj(User, project.get("owner"))
             params = ent.get("params")
+            if ent.get("sending"):
+                status = self._("Sending is in progress")
+            elif ent.get("errors"):
+                status = u'<br />'.join([htmlescape(s) for s in ent.get("errors")])
+            else:
+                status = ''
             rows.append([
                 u'<hook:admin.link href="constructor/project-dashboard/%s" title="%s" /><br />%s: <hook:admin.link href="auth/user-dashboard/%s" title="%s" />' % (
                     project.uuid, htmlescape(project.get("title_short")),
@@ -158,7 +175,8 @@ class EmailSenderAdmin(ConstructorModule):
                 ),
                 self.call("l10n.time_local", ent.get("created")),
                 htmlescape(params["subject"]),
-                u'<hook:admin.link href="email/moderation/%s" title="%s" />' % (ent.uuid, self._("open"))
+                u'<hook:admin.link href="email/moderation/%s" title="%s" />' % (ent.uuid, self._("open")),
+                status
             ])
         vars = {
             "tables": [
@@ -168,6 +186,7 @@ class EmailSenderAdmin(ConstructorModule):
                         self._("Created"),
                         self._("Subject"),
                         self._("Opening"),
+                        self._("Status"),
                     ],
                     "rows": rows,
                 }
@@ -192,6 +211,8 @@ class EmailSender(ConstructorModule):
         advice.append({"title": self._("Email sender documentation"), "content": self._('You can find detailed information on the email sending system in the <a href="//www.%s/doc/emailsender" target="_blank">email sender page</a> in the reference manual.') % self.main_host})
 
     def message_form_render(self, message, fields):
+        if message.get("moderation"):
+            self.call("admin.response", u'<span class="no">%s</span>' % self._("This email is being checked by the moderators"), {})
         fields.append({"name": "cond", "label": self._("Script condition to evaluate whether a character must receive this letter") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", message.get("cond", 1))})
 
     def message_form_validate(self, message, errors):
@@ -257,12 +278,15 @@ class EmailSender(ConstructorModule):
     def deliver(self, message, params, errors):
         req = self.req()
         main_app = self.main_app()
+        if message.get("moderation"):
+            self.call("admin.response", u'<span class="no">%s</span>' % self._("This email is being checked by the moderators"), {})
         obj = main_app.obj(DBBulkEmailQueue, message.uuid, silent=True)
         obj.set("app", self.app().tag)
         obj.set("waiting", 1)
         obj.set("user", req.user())
         obj.set("created", self.now())
         obj.set("params", params)
+        obj.delkey("errors")
         message.set("moderation", self.now())
         message.delkey("reject_reason")
         message.delkey("sent")
