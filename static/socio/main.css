@@ -20,6 +20,8 @@ img { vertical-align: middle; border: none }
 #socio-counters { padding-top: 50px; text-align: right }
 .socio-message-top { border: solid 1px #dd6419; margin: 20px 0 30px 0; padding: 20px; background-color: #ececec }
 .socio-content-menu { padding: 10px 0 20px 0 }
+.advanced-search-form .form-std-form-row { width: 100% }
+.advanced-search-form .form-w100 { width: 100% }
 
 /* INDEX */
 .socio-top-cat { color: #dd6419; font-weight: bold; padding: 10px 0px 10px 0px }
