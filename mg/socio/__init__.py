@@ -2783,13 +2783,17 @@ class Forum(Module):
         query = req.args.lower().strip()
         # parse query
         tokens = []
+        exact_matches = []
+        early_pagination = True
         for match in re_search_query.findall(query):
             if match[0]:
+                early_pagination = False
                 for word in re_not_word_symbol.split(match[0]):
                     if word:
                         tokens.append({
                             "word": word
                         })
+                exact_matches.append(re_whitespace.sub(' ', match[0].lower()).strip())
             elif match[1]:
                 tokens.append({
                     "word": match[1],
@@ -2799,7 +2803,6 @@ class Forum(Module):
                 tokens.append({
                     "word": match[2]
                 })
-        print tokens
         render_objects = self.call("socio.fulltext_search", "ForumSearch", tokens)
         # paginate
         pages = (len(render_objects) + search_results_per_page - 1) / search_results_per_page
@@ -2810,10 +2813,13 @@ class Forum(Module):
             page = 1
         elif page > pages:
             page = pages
-        del render_objects[page * search_results_per_page:]
-        del render_objects[0:(page - 1) * search_results_per_page]
-        # prepare list of search results
-        posts = []
+        # early pagination
+        if early_pagination:
+            del render_objects[page * search_results_per_page:]
+            del render_objects[0:(page - 1) * search_results_per_page]
+        # load topics and posts
+        search_result = []
+        topics_content = {}
         while len(render_objects):
             get_cnt = 1000
             if get_cnt > len(render_objects):
@@ -2831,36 +2837,67 @@ class Forum(Module):
                 topics_list.load(silent=True)
                 topics_content_list = self.objlist(ForumTopicContentList, topics_list.uuids())
                 topics_content_list.load(silent=True)
-                topics_content = dict([(obj.uuid, obj.data) for obj in topics_content_list])
+                for obj in topics_content_list:
+                    topics_content[obj.uuid] = obj.data
                 for topic in topics_list:
                     loaded[topic.uuid] = topic
-            bucket = [loaded.get(uuid) for uuid in bucket if loaded.get(uuid) and loaded.get(uuid).get("category") in may_read_category]
-            for obj in bucket:
-                data = obj.data_copy()
-                if type(obj) == ForumTopic:
-                    data["topic"] = obj.uuid
-                    content = topics_content.get(obj.uuid)
-                    if content is not None:
-                        data["content_html"] = content.get("content_html")
-                        self.topics_htmlencode([data], load_settings=True)
-                        data["post_actions"] = '<a href="/forum/topic/%s">%s</a>' % (data.get("uuid"), self._("open"))
-                        data["post_title"] = data.get("subject_html")
-                        if content.get("tags"):
-                            data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [htmlescape(tag) for tag in content.get("tags")]])
-                        posts.append(data)
-                    if "uuid" in data:
-                        del data["uuid"]
+            for uuid in bucket:
+                obj = loaded.get(uuid)
+                if obj and obj.get("category") in may_read_category:
+                    search_result.append(obj)
+        # additional filtering
+        def contains_exact_matches(obj):
+            if type(obj) == ForumTopic:
+                topic_content = topics_content.get(obj.uuid)
+                if topic_content:
+                    subject = re_whitespace.sub(' ', obj.get("subject").lower()).strip()
+                    content = re_whitespace.sub(' ', topic_content.get("content").lower()).strip()
+                    for match in exact_matches:
+                        if subject.find(match) < 0 and content.find(match) < 0:
+                            return False
                 else:
-                    data["uuid"] = obj.uuid
-                    self.posts_htmlencode([data])
-                    topic_posts = self.objlist(ForumPostList, query_index="topic", query_equal=data.get("topic"))
-                    topage = ""
-                    for i in range(0, len(topic_posts)):
-                        if topic_posts[i].uuid == data.get("uuid"):
-                            topage = "?page=%d" % (i / posts_per_page + 1)
-                            break
-                    data["post_actions"] = '<a href="/forum/topic/%s%s#%s">%s</a>' % (data.get("topic"), topage, data.get("uuid"), self._("open"))
+                    return False
+            else:
+                content = re_whitespace.sub(' ', obj.get("content").lower()).strip()
+                for match in exact_matches:
+                    if content.find(match) < 0:
+                        return False
+            return True
+        if exact_matches:
+            search_result = [obj for obj in search_result if contains_exact_matches(obj)]
+        # late pagination
+        if not early_pagination:
+            del search_result[page * search_results_per_page:]
+            del search_result[0:(page - 1) * search_results_per_page]
+        # render posts
+        posts = []
+        for obj in search_result:
+            data = obj.data_copy()
+            if type(obj) == ForumTopic:
+                data["topic"] = obj.uuid
+                content = topics_content.get(obj.uuid)
+                if content is not None:
+                    data["content_html"] = content.get("content_html")
+                    self.topics_htmlencode([data], load_settings=True)
+                    data["post_actions"] = '<a href="/forum/topic/%s">%s</a>' % (data.get("uuid"), self._("open"))
+                    data["post_title"] = data.get("subject_html")
+                    if content.get("tags"):
+                        data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [htmlescape(tag) for tag in content.get("tags")]])
                     posts.append(data)
+                if "uuid" in data:
+                    del data["uuid"]
+            else:
+                data["uuid"] = obj.uuid
+                self.posts_htmlencode([data])
+                topic_posts = self.objlist(ForumPostList, query_index="topic", query_equal=data.get("topic"))
+                topage = ""
+                for i in range(0, len(topic_posts)):
+                    if topic_posts[i].uuid == data.get("uuid"):
+                        topage = "?page=%d" % (i / posts_per_page + 1)
+                        break
+                data["post_actions"] = '<a href="/forum/topic/%s%s#%s">%s</a>' % (data.get("topic"), topage, data.get("uuid"), self._("open"))
+                posts.append(data)
+        # render serp
         if len(posts):
             posts[-1]["lst"] = True
         vars = {
