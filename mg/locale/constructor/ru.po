@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2013-07-13 00:51+0300\n"
+"PO-Revision-Date: 2013-08-04 11:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -182,6 +182,9 @@ msgstr "Идентификатор объекта"
 msgid "Object position expression"
 msgstr "Выражение для положения объекта"
 
+msgid "Opera Warning"
+msgstr "Предупреждение об Opera"
+
 msgid "Or provide image URL"
 msgstr "Или укажите его URL"
 
@@ -278,6 +281,9 @@ msgstr "Отправка данных..."
 
 msgid "Visibility condition"
 msgstr "Условие видимости"
+
+msgid "You are using old version of Opera browser. It has known bugs that may prevent form uploads from working. Please upgrade to the recent Opera version or use Firefox or Chrome."
+msgstr "Вы используете старую версию браузера Opera. В ней есть известные баги, из-за которых может не работать загрузка файлов на сервер. Пожалуйста, обновите Opera до свежей версии или воспользуйтесь Firefox или Chrome."
 
 msgid "Your action is already being sent to server"
 msgstr "Ваше действие уже отправляется на сервер"
