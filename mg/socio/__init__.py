@@ -44,6 +44,7 @@ re_urls = re.compile(r'(.*?)(((?:http|ftp|https):\/\/|(?=www|ftp)|(?=(?:[a-z][\-
 re_email = re.compile(r'(.*?)(\w[\w\-\.]*\@[a-z0-9][a-z0-9_\-]*(?:\.[a-z0-9][a-z0-9_\-]*)*)(.*)', re.IGNORECASE | re.DOTALL)
 re_split_tags = re.compile(r'\s*(,\s*)+')
 re_text_chunks = re.compile(r'.{1000,}?\S*|.+', re.DOTALL)
+re_any_tag = re.compile(r'\[\/?[a-z]+(?:=([^\[\]]+)|)\]')
 delimiters = r'\s\.,\-\!\&\(\)\'"\:;\<\>\/\?\`\|»\—«\r\n'
 re_word_symbol = re.compile(r'[^%s]' % delimiters)
 re_not_word_symbol = re.compile(r'[%s]' % delimiters)
@@ -504,6 +505,7 @@ class Socio(Module):
         return req._socio_semi_user
 
     def word_extractor(self, text):
+        text = re_any_tag.sub('', text)
         for chunk in re_text_chunks.finditer(text):
             text = chunk.group()
             while True:
@@ -610,7 +612,8 @@ class Socio(Module):
             elif self.app().db.storage == 2:
                 row = "%s_*" % self.app().db.app
                 cf = "%s_Search" % group
-            objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in self.app().db.get_slice(row, ColumnParent(cf), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)])
+            objs = self.app().db.get_slice(row, ColumnParent(cf), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)
+            objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in objs])
             if render_objects is None:
                 render_objects = objs
             else:
