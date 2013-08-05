@@ -506,7 +506,6 @@ class Constructor(Module):
         projects.load(silent=True)
         if len(projects):
             for project in projects:
-                print project.data
                 if project.get("suspended"):
                     continue
                 title = project.get("title_short")
