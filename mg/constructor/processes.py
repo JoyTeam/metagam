@@ -41,6 +41,8 @@ class ConstructorApplicationFactory(ApplicationFactory):
         except ObjectNotFoundException:
             pass
         else:
+            if domain.get("suspended"):
+                return None
             tag = domain.get("project")
             if tag is not None:
                 return str(tag)

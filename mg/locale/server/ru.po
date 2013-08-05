@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-08-05 20:44+0300\n"
+"PO-Revision-Date: 2013-08-05 21:53+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -66,12 +66,24 @@ msgid "%s: Internal server error"
 msgstr "%s: Внутренняя ошибка сервера"
 
 #, python-format
+msgid "%s: domain errors"
+msgstr "%s: ошибки домена"
+
+#, python-format
+msgid "%s: domain is online"
+msgstr "%s: домен онлайн"
+
+#, python-format
 msgid "%s: domain prolongation"
 msgstr "%s: продление домена"
 
 #, python-format
 msgid "%s: domain prolonged"
 msgstr "%s: домен продлён"
+
+#, python-format
+msgid "%s: project suspended"
+msgstr "%s: работа проекта приостановлена"
 
 #, python-format
 msgid "%s: prolong your domain"
@@ -2487,6 +2499,9 @@ msgstr "Домен"
 msgid "Domain %s is available for registration"
 msgstr "Домен %s доступен для регистрации"
 
+msgid "Domain is resumed"
+msgstr "Работа домена возобновлена"
+
 msgid "Domain name"
 msgstr "Доменное имя"
 
@@ -2532,8 +2547,37 @@ msgstr "Домен {0} не найден серверами {1}. Это озна
 msgid "Domain {domain} can not be prolonged, because TLD {tld} is no longer supported."
 msgstr "Не удалось продлить домен {domain}, поскольку TLD {tld} больше не поддерживается."
 
+msgid ""
+"Domain {domain} does not resolve to the MMO Constructor Servers:\n"
+"\n"
+"{errors}\n"
+"\n"
+"After the fifth error your game will be suspended."
+msgstr ""
+"Домен {domain} не указывает на серверы MMO Constructor:\n"
+"\n"
+"{errors}\n"
+"\n"
+"После пятой ошибки работа вашей игры будет приостановлена."
+
+msgid ""
+"Domain {domain} does not resolve to the MMO Constructor Servers:\n"
+"\n"
+"{errors}\n"
+"\n"
+"Your game is now suspended."
+msgstr ""
+"Домен {domain} не указывает на серверы MMO Constructor:\n"
+"\n"
+"{errors}\n"
+"\n"
+"Работа вашей игры приостановлена."
+
 msgid "Domain {domain} is now prolonged."
 msgstr "Домен {domain} продлён."
+
+msgid "Domain {domain} is now resolved to the MMO Constructor Servers again."
+msgstr "Домен {domain} теперь снова указывает на серверы MMO Constructor."
 
 msgid ""
 "Domain {domain} will expire at {reg_till}, but you don't have enough money to prolong it. If you want to prolong {domain}, you must have {price} MM$ on your account.\n"
@@ -2564,6 +2608,9 @@ msgstr "Домены: чёрный список"
 
 msgid "Domains: registration prices"
 msgstr "Домены: цены на регистрацию"
+
+msgid "Domains: resuming"
+msgstr "Домены: возобновление работы"
 
 msgid "Domains: unassigning"
 msgstr "Домены: отсоединение"
@@ -5779,6 +5826,9 @@ msgstr "Нет округления"
 
 msgid "No such category"
 msgstr "Нет такого раздела"
+
+msgid "No such domain in the database"
+msgstr "Такой домен в базе данных не найден"
 
 msgid "No such item"
 msgstr "Нет такого предмета"
@@ -10078,6 +10128,15 @@ msgstr "документация"
 msgid "domain///Are you sure want to unassign domain from this game?"
 msgstr "Вы уверены, что хотите отсоединить домен от этой игры?"
 
+msgid "domain///inactive"
+msgstr "неактивный"
+
+msgid "domain///operational"
+msgstr "работает"
+
+msgid "domain///suspended"
+msgstr "приостановлен"
+
 msgid "domain///unassign"
 msgstr "отсоединить"
 
@@ -10808,6 +10867,9 @@ msgstr "выдать"
 
 msgid "results///Search"
 msgstr "Поиск"
+
+msgid "resume"
+msgstr "возобновить"
 
 msgid "script"
 msgstr "скрипт"

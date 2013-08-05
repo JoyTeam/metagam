@@ -20,6 +20,10 @@ re_reg_date = re.compile(r'(\d\d)\.(\d\d)\.(\d\d\d\d)')
 re_tld = re.compile(r'\.([a-z]+)$')
 re_del = re.compile(r'^del/(.+)$')
 
+DEBUG_RESOLVER = False
+
+DEBUG_DOMAINS = False
+
 class DNSCheckError(Exception):
     pass
 
@@ -31,6 +35,7 @@ class Domains(Module):
         self.rhook("domains.validate_new", self.validate_new)
         self.rhook("admin-game.recommended-actions", self.recommended_actions)
         self.rhook("domains.blacklisted", self.blacklisted)
+        self.rhook("domains.dns-servers", self.dns_servers)
 
     def blacklisted(self, domain):
         domain = domain.strip().lower()
@@ -130,7 +135,8 @@ class Domains(Module):
             result = engine.asynchronous(checkdomain + ".", adns.rr.NS)
             ips = []
             names = []
-            self.debug("Querying %s about domain %s: %s", configtext, checkdomain, [result])
+            if DEBUG_RESOLVER:
+                self.debug("Querying %s about domain %s: %s", configtext, checkdomain, [result])
             for rr in result[3]:
                 names.append(rr[0])
                 if rr[2]:
@@ -139,10 +145,12 @@ class Domains(Module):
                 elif rr[0]:
                     eng = QueryEngine()
                     result = eng.asynchronous(rr[0] + ".", adns.rr.ADDR)
-                    self.debug("Querying main DNS about domain %s: %s", rr[0], [result])
+                    if DEBUG_RESOLVER:
+                        self.debug("Querying main DNS about domain %s: %s", rr[0], [result])
                     for rr in result[3]:
                         ips.append(rr[1])
-            self.debug("NS query complete. ips=%s", ips)
+            if DEBUG_RESOLVER:
+                self.debug("NS query complete. ips=%s", ips)
             if not len(ips):
                 result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
                 if len(result[3]):
@@ -155,7 +163,8 @@ class Domains(Module):
             dnsservers = names
             if ns1 in names or ns2 in names:
                 raise DNSCheckError(self._("{0} is already configured for the project. You may not use its subdomains").format(checkdomain))
-        self.debug("Querying servers '%s' for NSraw %s", configtext, checkdomain)
+        if DEBUG_RESOLVER:
+            self.debug("Querying servers '%s' for NSraw %s", configtext, checkdomain)
         checkdomain = game_domain + "." + checkdomain
         engine = QueryEngine(configtext=configtext)
         result = engine.asynchronous(checkdomain + ".", adns.rr.NSraw)
@@ -444,9 +453,33 @@ class DomainsAdmin(Module):
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("ext-admin-domains.unassign", self.ext_unassign, priv="domains.unassign")
         self.rhook("admin-domains.prolong", self.prolong)
+        self.rhook("admin-domains.check-dns", self.check_dns)
+        self.rhook("admin-domains.check-single-dns", self.check_single_dns)
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("ext-admin-domains.blacklist", self.ext_blacklist, priv="domains.blacklist")
         self.rhook("headmenu-admin-domains.blacklist", self.headmenu_blacklist)
+        self.rhook("ext-admin-domains.resume", self.admin_resume, priv="domains.resume")
+
+    def admin_resume(self):
+        req = self.req()
+        try:
+            domain = self.obj(Domain, req.args)
+        except ObjectNotFoundException:
+            self.call("admin.response", self._("No such domain in the database"), {})
+        user = domain.get("user")
+        if domain.get("suspended"):
+            domain.delkey("suspended")
+            domain.delkey("errors")
+            project_uuid = domain.get("project")
+            if project_uuid:
+                project = self.int_app().obj(Project, project_uuid)
+                project.delkey("suspended")
+                project.store()
+            domain.store()
+        if user:
+            self.call("admin.redirect", "auth/user-dashboard/%s?active_tab=domains" % user)
+        else:
+            self.call("admin.response", self._("Domain is resumed"), {})
 
     def headmenu_blacklist(self, args):
         if args == "new":
@@ -539,9 +572,11 @@ class DomainsAdmin(Module):
         perms.append({"id": "domains.personal-data", "name": self._("Domains: administrator's personal data")})
         perms.append({"id": "domains.unassign", "name": self._("Domains: unassigning")})
         perms.append({"id": "domains.blacklist", "name": self._("Domains: blacklist")})
+        perms.append({"id": "domains.resume", "name": self._("Domains: resuming")})
 
     def schedule(self, sched):
         sched.add("admin-domains.prolong", "0 17 * * *", priority=150)
+        sched.add("admin-domains.check-dns", "0 18 * * *", priority=5)
 
     def money_description_domain_reg(self):
         return {
@@ -777,17 +812,36 @@ class DomainsAdmin(Module):
             domains = self.objlist(DomainList, query_index="user", query_equal=user.uuid)
             domains.load(silent=True)
             if len(domains):
-                status = {
+                regstatus = {
                     "ext": self._("external"),
                     "yes": self._("completed"),
                     "pending": self._("pending"),
                 }
+                rows = []
+                for domain in domains:
+                    if domain.get("suspended"):
+                        status = u'%s, <hook:admin.link href="domains/resume/%s" title="%s" />' % (self._("domain///suspended"), domain.uuid, self._("resume"))
+                    elif domain.get("project"):
+                        status = self._("domain///operational")
+                    else:
+                        status = self._("domain///inactive")
+                    rows.append([
+                        domain.uuid,
+                        regstatus.get(domain.get("registered", "ext"), self._("unknown")),
+                        domain.get("project"),
+                        status,
+                    ])
                 tables.append({
                     "type": "domains",
                     "title": self._("Domains"),
                     "order": 40,
-                    "header": [self._("Domain"), self._("Registration"), self._("Project")],
-                    "rows": [(d.uuid, status.get(d.get("registered", "ext"), self._("unknown")), d.get("project")) for d in domains]
+                    "header": [
+                        self._("Domain"),
+                        self._("Registration"),
+                        self._("Project"),
+                        self._("Status"),
+                    ],
+                    "rows": rows
                 })
 
     def ext_unassign(self):
@@ -960,6 +1014,98 @@ class DomainsAdmin(Module):
                 continue
             except TimeoutError:
                 self.error("Timeout querying registrar")
+
+    def check_dns(self):
+        if self.conf("dns.nocheck"):
+            return
+        domains = self.objlist(DomainList, query_index="all")
+        for domain in domains:
+            self.call("queue.add", "admin-domains.check-single-dns", {
+                "domain": domain.uuid
+            }, priority=5, unique="check-dns-%s" % domain.uuid)
+
+    def check_single_dns(self, domain):
+        try:
+            domain = self.obj(Domain, domain)
+        except ObjectNotFoundException:
+            return
+        if domain.get("suspended"):
+            return
+        project_uuid = domain.get("project")
+        if not project_uuid:
+            return
+        try:
+            servers = self.call("domains.dns-servers", domain.uuid)
+        except DNSCheckError as e:
+            error = unicode(e)
+        else:
+            ns1 = self.conf("dns.ns1")
+            ns2 = self.conf("dns.ns2")
+            if ns1 not in servers or ns2 not in servers or len(servers) != 2:
+                error = self._("Domain servers for {0} are: {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain.uuid, ", ".join(servers), ns1, ns2)
+            else:
+                error = None
+        errors = domain.get("errors", [])
+        if error:
+            self.debug(u"Domain %s: %s (prev errors: %s)", domain.uuid, error, len(errors))
+            errors = errors + [{
+                "detected": self.now(),
+                "text": error
+            }]
+            domain.set("errors", errors)
+            if len(errors) >= 5:
+                # After 5 errors suspend the game
+                domain.set("suspended", True)
+                project = self.int_app().obj(Project, project_uuid)
+                project.set("suspended", True)
+                user_uuid = domain.get("user")
+                if user_uuid:
+                    admin = self.obj(User, user_uuid)
+                    admin_name = admin.get("name")
+                    admin_email = admin.get("email")
+                    self.call("email.send", admin_email, admin_name,
+                        self._("%s: project suspended") % project.get("title_short"),
+                        self._("Domain {domain} does not resolve to the MMO Constructor Servers:\n\n{errors}\n\nYour game is now suspended.").format(
+                            domain = domain.uuid,
+                            errors = u"\n".join([u'%s: %s' % (self.call("l10n.time_local", err["detected"]), err["text"]) for err in errors])
+                        )
+                    )
+                project.store()
+            elif len(errors) >= 2:
+                # If this is not first error, notify admin
+                user_uuid = domain.get("user")
+                if user_uuid:
+                    admin = self.obj(User, user_uuid)
+                    admin_name = admin.get("name")
+                    admin_email = admin.get("email")
+                    project = self.int_app().obj(Project, project_uuid)
+                    self.call("email.send", admin_email, admin_name,
+                        self._("%s: domain errors") % project.get("title_short"),
+                        self._("Domain {domain} does not resolve to the MMO Constructor Servers:\n\n{errors}\n\nAfter the fifth error your game will be suspended.").format(
+                            domain = domain.uuid,
+                            errors = u"\n".join([u'%s: %s' % (self.call("l10n.time_local", err["detected"]), err["text"]) for err in errors])
+                        )
+                    )
+            domain.store()
+        else:
+            self.debug(u"Domain %s: ok (prev errors: %s)", domain.uuid, len(errors))
+            if errors:
+                domain.delkey("errors")
+                if len(errors) >= 2:
+                    # If there were 2+ errors before, notify admin about successful recovery
+                    user_uuid = domain.get("user")
+                    if user_uuid:
+                        admin = self.obj(User, user_uuid)
+                        admin_name = admin.get("name")
+                        admin_email = admin.get("email")
+                        project = self.int_app().obj(Project, project_uuid)
+                        self.call("email.send", admin_email, admin_name,
+                            self._("%s: domain is online") % project.get("title_short"),
+                            self._("Domain {domain} is now resolved to the MMO Constructor Servers again.").format(
+                                domain = domain.uuid,
+                            )
+                        )
+                domain.store()
 
 class DomainWizard(Wizard):
     def new(self, **kwargs):
