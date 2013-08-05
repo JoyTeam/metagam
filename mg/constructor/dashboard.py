@@ -1,5 +1,6 @@
 from mg import *
 from mg.constructor.common import *
+from mg.constructor.processes import re_remove_www
 import cgi
 import re
 
@@ -50,7 +51,10 @@ class ProjectDashboard(Module):
                 })
 
     def menu_root_index(self, menu):
+        req = self.req()
         menu.append({"id": "constructor.index", "text": self._("Constructor"), "order": 10})
+        if req.has_access("constructor.projects"):
+            menu.append({"id": "constructor/project-find", "text": self._("Find project"), "leaf": True, "order": 4, "icon": "/st-mg/menu/find.png"})
 
     def headmenu_project_dashboard(self, args):
         app = self.app().inst.appfactory.get_by_tag(args)
@@ -68,7 +72,6 @@ class ProjectDashboard(Module):
         if req.has_access("constructor.settings"):
             menu.append({"id": "constructor/settings", "text": self._("Global settings"), "leaf": True, "order": 10})
         if req.has_access("constructor.projects"):
-            menu.append({"id": "constructor/project-find", "text": self._("Find project"), "leaf": True, "order": 20})
             menu.append({"id": "constructor/project-dashboard/main", "text": self._("Main project"), "leaf": True, "order": 30})
         if req.has_access("constructor.projects.publish"):
             menu.append({"id": "constructor/waiting-moderation", "text": self._("Waiting for moderation"), "leaf": True, "order": 40})
@@ -103,20 +106,41 @@ class ProjectDashboard(Module):
 
     def ext_project_find(self):
         req = self.req()
-        uuid = req.param("uuid")
         if req.ok():
             errors = {}
-            if not uuid:
-                errors["uuid"] = self._("Enter project uuid")
-            else:
-                app = self.app().inst.appfactory.get_by_tag(uuid)
-                if app is None:
-                    errors["uuid"] = self._("Project not found")
+            tp = req.param("v_type")
+            if tp == "uuid":
+                uuid = req.param("uuid")
+                if not uuid:
+                    errors["uuid"] = self._("Enter project uuid")
                 else:
-                    self.call("admin.redirect", "constructor/project-dashboard/%s" % uuid)
+                    app = self.app().inst.appfactory.get_by_tag(uuid)
+                    if app is None:
+                        errors["uuid"] = self._("Project not found")
+                    else:
+                        self.call("admin.redirect", "constructor/project-dashboard/%s" % uuid)
+            elif tp == "domain":
+                domain = re_remove_www.sub('', req.param("domain").strip().lower())
+                if not domain:
+                    errors["domain"] = self._("This field is mandatory")
+                else:
+                    try:
+                        domain_obj = self.obj(Domain, domain)
+                    except ObjectNotFoundException:
+                        errors["domain"] = self._("This domain is not registered in the database")
+                    else:
+                        uuid = domain_obj.get("project")
+                        if uuid:
+                            self.call("admin.redirect", "constructor/project-dashboard/%s" % uuid)
+                        else:
+                            errors["domain"] = self._("This domain is registered in the database but not connected to any game")
+            else:
+                errors["v_type"] = self._("Make a valid choice")
             self.call("web.response_json", {"success": False, "errors": errors})
         fields = [
-            {"name": "uuid", "label": self._("Project uuid"), "value": uuid},
+            {"name": "type", "label": self._("Search type"), "value": "domain", "type": "combo", "values": [("domain", self._("search///By domain")), ("uuid", self._("search///By UUID"))]},
+            {"name": "uuid", "label": self._("Project UUID"), "condition": "[type]=='uuid'"},
+            {"name": "domain", "label": self._("Project domain"), "condition": "[type]=='domain'"},
         ]
         buttons = [{"text": self._("Search")}]
         self.call("admin.form", fields=fields, buttons=buttons)

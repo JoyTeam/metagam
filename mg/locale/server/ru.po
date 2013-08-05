@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-08-04 21:56+0300\n"
+"PO-Revision-Date: 2013-08-05 20:44+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4946,6 +4946,9 @@ msgstr "Главное изображение (будет помещено на 
 msgid "Main project"
 msgstr "Главный проект"
 
+msgid "Make a valid choice"
+msgstr "Сделайте верный выбор"
+
 msgid "Make a valid selection"
 msgstr "Сделайте верный выбор"
 
@@ -6402,12 +6405,18 @@ msgstr "Проект %s"
 msgid "Project ID"
 msgstr "ID проекта"
 
+msgid "Project UUID"
+msgstr "UUID проекта"
+
 msgid "Project code"
 msgstr "Код проекта"
 
 #, python-format
 msgid "Project code: Font %s"
 msgstr "Код проекта: Шрифт %s"
+
+msgid "Project domain"
+msgstr "Домен проекта"
 
 msgid "Project main administrator"
 msgstr "Главный администратор проекта"
@@ -6421,9 +6430,6 @@ msgstr "Название проекта"
 
 msgid "Project not found"
 msgstr "Проект не найден"
-
-msgid "Project uuid"
-msgstr "UUID проекта"
 
 msgid "Projects"
 msgstr "Проекты"
@@ -7120,6 +7126,9 @@ msgstr "Поисковый запрос"
 
 msgid "Search topics"
 msgstr "Искать темы"
+
+msgid "Search type"
+msgstr "Тип поиска"
 
 msgid "Secret code"
 msgstr "Секретный код"
@@ -8283,8 +8292,14 @@ msgstr "Этот домен находится в чёрном списке"
 msgid "This domain is in the pending state. We don't know the result of the registration. Please contact MMO Constructor administration to get more details. registrar_id=%s"
 msgstr "Этот домен находится в процессе регистрации. Мы пока точно не знаем, каков результат регистрации. Пожалуйста, свяжитесь с администрацией MMO Constructor, чтобы получить более подробные данные. registrar_id=%s"
 
+msgid "This domain is not registered in the database"
+msgstr "Этот домен не зарегистрирован в базе данных"
+
 msgid "This domain is registered by you but not assigned to a project"
 msgstr "Этот домен зарегистрирован вами, но ещё не назначен проекту"
+
+msgid "This domain is registered in the database but not connected to any game"
+msgstr "Этот домен зарегистрирован в базе данных, но не присоединён ни к одной игре"
 
 msgid "This domain name is occupied already. Choose another one"
 msgstr "Это доменное имя уже занято. Выберите другое"
@@ -10800,6 +10815,12 @@ msgstr "скрипт"
 msgid "script handlers"
 msgstr "скриптовые обработчики"
 
+msgid "search///By UUID"
+msgstr "По UUID"
+
+msgid "search///By domain"
+msgstr "По домену"
+
 msgid "second/seconds"
 msgstr "секунда/секунды/секунд"
 
@@ -11189,6 +11210,8 @@ msgstr "{targetchar.name} в другой локации"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid "Project uuid"
+#~ msgstr "UUID проекта"
 #~ msgid "Last request sent"
 #~ msgstr "Последний запрос отправлен"
 #~ msgid "Requested first"
