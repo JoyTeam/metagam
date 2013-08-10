@@ -333,7 +333,7 @@ MMOScript.evaluate = function (val, env) {
         if (fname == 'selrand') {
             var index = Math.floor(Math.random() * (val.length - 2));
             if (index >= 2 && index < val.length) {
-                return self.evaluate(val[i], env);
+                return self.evaluate(val[index], env);
             }
             return undefined;
         }
