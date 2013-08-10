@@ -1769,22 +1769,24 @@ class Quests(ConstructorModule):
                                         mid = cmd[1]
                                         op = cmd[2]
                                         modval = self.call("script.evaluate-expression", cmd[4], globs=kwargs, description=lambda: self._("modifier value")) if len(cmd) >= 5 else 1
-                                        timeout = intz(self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description))
+                                        timeout = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
                                         if timeout is None:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("setting modifier '{modifier}'={modval} infinitely").format(modifier=mid, modval=modval), cls="quest-action", indent=indent+2)
                                             char.modifiers.add(mid, modval, None)
-                                        elif timeout > 0:
-                                            if timeout > 100e6:
-                                                timeout = 100e6
-                                            if op == "add":
-                                                if debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("adding modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
-                                                char.modifiers.add(mid, modval, self.now(timeout))
-                                            elif op == "prolong":
-                                                if debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("prolonging modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
-                                                char.modifiers.prolong(mid, modval, timeout)
+                                        else:
+                                            timeout = intz(timeout)
+                                            if timeout > 0:
+                                                if timeout > 100e6:
+                                                    timeout = 100e6
+                                                if op == "add":
+                                                    if debug:
+                                                        self.call("debug-channel.character", char, lambda: self._("adding modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
+                                                    char.modifiers.add(mid, modval, self.now(timeout))
+                                                elif op == "prolong":
+                                                    if debug:
+                                                        self.call("debug-channel.character", char, lambda: self._("prolonging modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
+                                                    char.modifiers.prolong(mid, modval, timeout)
                                     elif cmd_code == "dialog":
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("opening dialog"), cls="quest-action", indent=indent+2)

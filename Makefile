@@ -79,5 +79,5 @@ deploy: translations
 	@echo Uploading package to mg-storage...
 	@rsync --links --delete -r depl/* mg-storage@213.248.47.138:/home/mg-storage/mg/
 	@echo Deploying to servers...
-	@knife ssh -a ipaddress roles:mmoconstructor 'sudo chef-client -l error'
+	@knife ssh -a normal.ipaddress roles:mmoconstructor 'sudo chef-client -l error'
 	@echo Success
