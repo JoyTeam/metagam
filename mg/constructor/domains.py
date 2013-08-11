@@ -944,6 +944,7 @@ class DomainsAdmin(Module):
             admin = self.obj(User, domain.get("user"))
             admin_name = admin.get("name")
             admin_email = admin.get("email")
+            self.debug("Admin name: %s, email: %s", admin_name, admin_email)
             money = self.call("money.obj", "user", admin.uuid)
             # update reg till
             if reg_till != actual_reg_till:
@@ -986,6 +987,8 @@ class DomainsAdmin(Module):
                     continue
                 domain.set("prolong_lock", lock.uuid)
                 domain.store()
+            else:
+                self.debug("Prolong lock: %s", domain.get("prolong_lock"))
             # send a request to prolong
             try:
                 with Timeout.push(180):
