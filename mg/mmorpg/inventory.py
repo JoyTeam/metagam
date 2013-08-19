@@ -428,31 +428,38 @@ class InventoryAdmin(ConstructorModule):
                     errors["v_exp_mode"] = self._("Make a valid selection")
                 elif exp_mode == 0:
                     obj.delkey("exp-mode")
-                elif exp_mode == 1:
-                    obj.set("exp-mode", 1)
-                    dt = self.call("l10n.parse_date", req.param("exp_till").strip(), dayend=True)
-                    if dt is None:
-                        errors["exp_till"] = self._("Invalid date format")
-                    else:
-                        obj.set("exp-till", dt)
-                elif exp_mode == 2:
-                    obj.set("exp-mode", 2)
-                    exp_interval = req.param("exp_interval")
-                    if not valid_nonnegative_int(exp_interval):
-                        errors["exp_interval"] = self._("Invalid number format")
-                    else:
-                        exp_interval = int(exp_interval)
-                        if exp_interval < 60:
-                            errors["exp_interval"] = self._("Minimal item lifetime is %d seconds") % 60
-                        elif exp_interval > 31536000:
-                            errors["exp_interval"] = self._("Maximal item lifetime is %d seconds") % 31536000
+                else:
+                    if exp_mode == 1:
+                        obj.set("exp-mode", 1)
+                        dt = self.call("l10n.parse_date", req.param("exp_till").strip(), dayend=True)
+                        if dt is None:
+                            errors["exp_till"] = self._("Invalid date format")
                         else:
-                            obj.set("exp-interval", exp_interval)
-                    exp_round = intz(req.param("v_exp_round"))
-                    if exp_round < 0 or exp_round > 3:
-                        errors["v_exp_round"] = self._("Make a valid selection")
+                            obj.set("exp-till", dt)
+                    elif exp_mode == 2:
+                        obj.set("exp-mode", 2)
+                        exp_interval = req.param("exp_interval")
+                        if not valid_nonnegative_int(exp_interval):
+                            errors["exp_interval"] = self._("Invalid number format")
+                        else:
+                            exp_interval = int(exp_interval)
+                            if exp_interval < 60:
+                                errors["exp_interval"] = self._("Minimal item lifetime is %d seconds") % 60
+                            elif exp_interval > 31536000:
+                                errors["exp_interval"] = self._("Maximal item lifetime is %d seconds") % 31536000
+                            else:
+                                obj.set("exp-interval", exp_interval)
+                        exp_round = intz(req.param("v_exp_round"))
+                        if exp_round < 0 or exp_round > 3:
+                            errors["v_exp_round"] = self._("Make a valid selection")
+                        else:
+                            obj.set("exp-round", exp_round)
+                    # exp_title
+                    exp_title = req.param("exp_title").strip()
+                    if not exp_title:
+                        errors["exp_title"] = self._("This field is mandatory")
                     else:
-                        obj.set("exp-round", exp_round)
+                        obj.set("exp-title", exp_title)
                 # prices
                 price = req.param("price").strip()
                 currency = req.param("v_currency")
@@ -620,6 +627,7 @@ class InventoryAdmin(ConstructorModule):
             fields.append({"name": "exp_till", "label": self._("Absolute expiration time (format: {datetime_sample} or {date_sample}, last date inclusive)").format(datetime_sample=self.call("l10n.datetime_sample"), date_sample=self.call("l10n.date_sample")), "value": self.call("l10n.unparse_date", obj.get("exp-till"), dayend=True), "condition": "[exp_mode]==1"})
             fields.append({"name": "exp_interval", "label": self._("Lifetime interval (in seconds)"), "value": obj.get("exp-interval"), "condition": "[exp_mode]==2"})
             fields.append({"name": "exp_round", "label": self._("Expiration rounding"), "value": obj.get("exp-round", 0), "type": "combo", "values": [(0, self._("End of day")), (1, self._("End of week")), (2, self._("End of month")), (3, self._("No rounding"))], "condition": "[exp_mode]==2"})
+            fields.append({"name": "exp_title", "label": self._("Expiration label text"), "value": obj.get("exp-title", self._("itemparam///Expiration")), "condition": "[exp_mode]"})
             # images
             fields.append({"type": "header", "html": self._("Item images")})
             if req.args == "new":
@@ -2490,7 +2498,7 @@ class Inventory(ConstructorModule):
         if value is not None:
             value_html = htmlescape(value)
             params.append({
-                "name": '<span class="item-types-page-expiration-name">%s</span>' % self._("itemparam///Expiration"),
+                "name": '<span class="item-types-page-expiration-name">%s</span>' % obj.get("exp-title", self._("itemparam///Expiration")),
                 "value_raw": value,
                 "value": '<span class="item-types-page-expiration-value">%s</span>' % value_html,
             })
