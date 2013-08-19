@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-08-05 21:53+0300\n"
+"PO-Revision-Date: 2013-08-19 13:51+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -123,6 +123,12 @@ msgstr "Скрипт \"после совершения хода\""
 
 msgid "'After turn timeout' script"
 msgstr "Скрипт \"после таймаута хода\""
+
+msgid "'Unwear' prompt"
+msgstr "Приглашение \"Снять\""
+
+msgid "'Wear' button title"
+msgstr "Текст на кнопке \"Надеть\""
 
 msgid "'combat log' operator can be used in combat events only"
 msgstr "Оператор \"combat log\" может быть использован только в боевых событиях"
@@ -10319,9 +10325,6 @@ msgstr "установлено"
 msgid "item {item} in slot {slot} has broken completely"
 msgstr "предмет {item} в слоте {slot} полностью сломался"
 
-msgid "item///wear"
-msgstr "надеть"
-
 msgid "itemfractions///{used} <span class=\"item-types-page-fraction-text\">of</span> {max}"
 msgstr "{used} <span class=\"item-types-page-fraction-text\">из</span> {max}"
 
@@ -11272,6 +11275,8 @@ msgstr "{targetchar.name} в другой локации"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid "item///wear"
+#~ msgstr "надеть"
 #~ msgid "Project uuid"
 #~ msgstr "UUID проекта"
 #~ msgid "Last request sent"

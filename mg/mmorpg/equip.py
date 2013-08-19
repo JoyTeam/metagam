@@ -738,6 +738,10 @@ class EquipAdmin(ConstructorModule):
         pos += 1
         fields.insert(pos, {"type": "empty", "inline": True})
         pos += 1
+        fields.insert(pos, {"label": self._("'Wear' button title"), "name": "equip_wear_title", "value": obj.get("equip_wear_title", self._("wear")), "condition": "[equip]"})
+        pos += 1
+        fields.insert(pos, {"label": self._("'Unwear' prompt"), "name": "equip_unwear_title", "value": obj.get("equip_unwear_title", self._("Click to unequip")), "condition": "[equip]", "inline": True})
+        pos += 1
         # checkboxes
         slots = self.call("equip.slots")
         col = 0
@@ -792,11 +796,22 @@ class EquipAdmin(ConstructorModule):
                         obj.set(key, nn(val))
                 else:
                     obj.delkey(key)
-            req = self.req()
             char = self.character(req.user())
             obj.set("equip_wear", self.call("script.admin-expression", "equip_wear", errors, globs={"char": char}))
             obj.set("wear_cond", self.call("script.admin-expression", "wear_cond", errors, globs={"char": char}))
             obj.set("unwear_cond", self.call("script.admin-expression", "unwear_cond", errors, globs={"char": char}))
+            # equip_wear_title
+            equip_wear_title = req.param("equip_wear_title").strip()
+            if not equip_wear_title:
+                errors["equip_wear_title"] = self._("This field is mandatory")
+            else:
+                obj.set("equip_wear_title", equip_wear_title)
+            # equip_unwear_title
+            equip_unwear_title = req.param("equip_unwear_title").strip()
+            if not equip_unwear_title:
+                errors["equip_unwear_title"] = self._("This field is mandatory")
+            else:
+                obj.set("equip_unwear_title", equip_unwear_title)
         else:
             obj.delkey("equip")
 
@@ -1172,7 +1187,7 @@ class Equip(ConstructorModule):
                                 params[-1]["lst"] = True
                                 hint_vars["item"]["params"] = params
                             if iface.get("show_actions"):
-                                hint_vars["hint"] = self._("Click to unequip")
+                                hint_vars["hint"] = item_type.get("equip_unwear_title", self._("Click to unequip"))
                             ritem["hint"] = {
                                 "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
                                 "html": jsencode(self.call("design.parse", design, "item-hint.html", None, hint_vars)),
@@ -1253,7 +1268,7 @@ class Equip(ConstructorModule):
                         return item_type.get("equip") and item_type.get("equip-%s" % slot_id) and not equip.cannot_equip(item_type)
                     def render(item_type, ritem):
                         menu = []
-                        menu.append({"href": "/equip/slot/%s/%s" % (slot["id"], item_type.dna), "html": self._("item///wear"), "order": 10})
+                        menu.append({"href": "/equip/slot/%s/%s" % (slot["id"], item_type.dna), "html": item_type.get("equip_wear_title", self._("wear")), "order": 10})
                         if menu:
                             menu[-1]["lst"] = True
                             ritem["menu"] = menu
@@ -1356,7 +1371,7 @@ class Equip(ConstructorModule):
     def items_menu(self, character, item_type, menu):
         if item_type.get("equip"):
             if self.call("script.evaluate-expression", item_type.get("equip_wear", 1), globs={"char": character, "item": item_type}, description=lambda: self._("Whether 'wear' button is available on the item {item} ({name})").format(item=item_type.uuid, name=item_type.name)):
-                menu.append({"href": "/equip/item/%s/%s" % (item_type.cat("inventory"), item_type.dna), "html": htmlescape(self._("wear")), "order": 80})
+                menu.append({"href": "/equip/item/%s/%s" % (item_type.cat("inventory"), item_type.dna), "html": htmlescape(item_type.get("equip_wear_title", self._("wear"))), "order": 80})
 
     def equip_item(self):
         self.call("quest.check-dialogs")
