@@ -582,7 +582,7 @@ class Params(ConstructorModule):
         if not param.get("condition"):
             return True
         try:
-            return self.call("script.evaluate-expression", param["condition"], obj.script_params(), description=self._("Evaluation of '{cls}.{uuid}.{param}' visibility condition").format(cls=self.kind, param=param["code"], uuid=obj.uuid))
+            return self.call("script.evaluate-expression", param["condition"], obj.script_params(), description=lambda: self._("Evaluation of '{cls}.{uuid}.{param}' visibility condition").format(cls=self.kind, param=str2unicode(param["code"]), uuid=obj.uuid))
         except Exception as e:
             self.exception(e)
             return False
