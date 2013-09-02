@@ -1,5 +1,6 @@
 from mg.constructor import *
 from mg.mmorpg.locations_classes import *
+from mg.core.safejson import SafeEncoder
 import re
 import time
 
@@ -270,5 +271,5 @@ class LocationObjects(ConstructorModule):
                         robj["position"] = self.call("script.evaluate-expression", obj["position"], globs=globs, keep_globs=keep_globs)
                     else:
                         robj["position"] = ["call", "vec3", obj["x"], order, obj["y"]]
-                    loc_init.append("LocObjects.addStaticObject(%s);" % json.dumps(robj))
+                    loc_init.append("LocObjects.addStaticObject(%s);" % json.dumps(robj, cls=SafeEncoder))
             loc_init.append("LocObjects.run();");

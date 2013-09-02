@@ -294,8 +294,12 @@ class SoundAdmin(mg.constructor.ConstructorModule):
             used = set()
             for track in tracks:
                 used.add(track)
-            lst = self.objlist(DBStaticObjectList, query_index="content_type", query_equal="audio/mp3")
+            lst = self.objlist(DBStaticObjectList, query_index="content_type", query_equal="audio/mpeg")
             lst.load(silent=True)
+            lst2 = self.objlist(DBStaticObjectList, query_index="content_type", query_equal="audio/mp3")
+            lst2.load(silent=True)
+            for ent in lst2:
+                lst.append(ent)
             if req.ok():
                 tracks = [t for t in tracks]
                 added = None
