@@ -203,3 +203,13 @@ assert.strictEqual(MMOScript.evaluate(['not', 1]), 0);
 assert.strictEqual(MMOScript.evaluate(['not', '']), 1);
 assert.strictEqual(MMOScript.evaluate(['not', '0']), 0);
 assert.strictEqual(MMOScript.evaluate(['not', undefined]), 1);
+
+/* Dates */
+assert(MMOScript.evaluate(['.', ['now'], 'utc_year']) >= 2000);
+assert(MMOScript.evaluate(['.', ['now'], 'utc_year']) <= 3000);
+assert.strictEqual(typeof(MMOScript.evaluate(['.', ['now'], 'utc_year'])), 'number');
+assert.strictEqual(typeof(MMOScript.evaluate(['.', ['now'], 'utc_month'])), 'number');
+assert.strictEqual(typeof(MMOScript.evaluate(['.', ['now'], 'utc_day'])), 'number');
+assert.strictEqual(typeof(MMOScript.evaluate(['.', ['now'], 'utc_hour'])), 'number');
+assert.strictEqual(typeof(MMOScript.evaluate(['.', ['now'], 'utc_minute'])), 'number');
+assert.strictEqual(typeof(MMOScript.evaluate(['.', ['now'], 'utc_second'])), 'number');

@@ -524,6 +524,20 @@ class TestScript(unittest.TestCase):
         self.partialTextEval('string [#2:abc,abces]', 'string abces')
         self.partialTextEval('string [#t:abc,abces]', 'string [#t:abc,abces]')
 
+    def test_dates(self):
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'year'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'month'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'day'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'hour'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'minute'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'second'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'utc_year'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'utc_month'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'utc_day'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'utc_hour'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'utc_minute'])), int)
+        self.assertEqual(type(self.evaluate(['.', ['now'], 'utc_second'])), int)
+
 def main():
     try:
         unittest.main()

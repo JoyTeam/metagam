@@ -15,7 +15,7 @@ MMOScriptHTMLFormatter.prototype.clsEnd = function () {
     return '</span>';
 };
 
-Vec3 = function (x, y, z) {
+var Vec3 = function (x, y, z) {
     this.x = x;
     this.y = y;
     this.z = z;
@@ -363,6 +363,17 @@ MMOScript.evaluate = function (val, env) {
     }
     if (cmd == 'random') {
         return Math.random();
+    }
+    if (cmd == 'now') {
+        var nowUtc = new Date();
+        return {
+            utc_year: nowUtc.getUTCFullYear(),
+            utc_month: nowUtc.getUTCMonth() + 1,
+            utc_day: nowUtc.getUTCDate(),
+            utc_hour: nowUtc.getUTCHours(),
+            utc_minute: nowUtc.getUTCMinutes(),
+            utc_second: nowUtc.getUTCSeconds()
+        };
     }
     if (cmd == 'glob') {
         var name = val[1];
