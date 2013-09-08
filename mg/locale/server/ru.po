@@ -11334,6 +11334,10 @@ msgstr "Ваш проверенный WMID: {wmid}. <a href=\"{url}\">Прове
 msgid "ZIP64 is not supported"
 msgstr "ZIP64 не поддерживается"
 
+#, fuzzy
+msgid "Zero division in the template"
+msgstr "Шаблон интерфейса социалки"
+
 msgid "Zipped design package"
 msgstr "Пакет с оформлением в формате ZIP"
 
