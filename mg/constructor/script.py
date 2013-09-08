@@ -6,6 +6,7 @@ import re
 import traceback
 import math
 import time
+from mg.core.date import Date
 
 re_shorten = re.compile(r'^(.{100}).{3,}$')
 re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
@@ -132,6 +133,8 @@ class ScriptEngine(ConstructorModule):
                 prio = 1
             elif cmd == 'random':
                 prio = 99
+            elif cmd == 'now':
+                prio = 99
             else:
                 raise ScriptParserError("Invalid cmd: '%s'" % cmd)
         return prio
@@ -181,6 +184,8 @@ class ScriptEngine(ConstructorModule):
                 return "random"
             elif cmd == "call":
                 return "%s(%s)" % (val[1], ", ".join([self.unparse_expression(arg) for arg in val[2:]]))
+            elif cmd == "now":
+                return "now"
             else:
                 return "<<<%s: %s>>>" % (self._("Invalid script parse tree"), cmd)
         elif tp is str or tp is unicode:
@@ -777,6 +782,8 @@ class ScriptEngine(ConstructorModule):
                 raise ScriptRuntimeError(self._("Function {fname} is not supported in expression context").format(fname=fname), env)
         elif cmd == "random":
             return random.random()
+        elif cmd == "now":
+            return Date(self.app())
         elif cmd == "glob":
             name = val[1]
             # Partial evaluation

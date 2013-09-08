@@ -201,6 +201,10 @@ class TokenEquip(Parsing.Token):
 
 class TokenMember(Parsing.Token):
     "%token member"
+    
+class TokenNow(Parsing.Token):
+    "%token now"
+
 
 #===============================================================================
 # Nonterminals, with associated productions.  In traditional BNF, the following
@@ -372,6 +376,10 @@ class Expr(Parsing.Nonterm):
     def reduceMember(self, m):
         "%reduce member"
         self.val = ["glob", "member"]
+    
+    def reduceNow(self, n):
+        "%reduce now"
+        self.val = ["now"]
 
 # This is the start symbol; there can be only one such class in the grammar.
 class Result(Parsing.Nonterm):
@@ -415,6 +423,7 @@ class ScriptParser(Parsing.Glr, Module):
         "~": TokenBitNot,
         "&": TokenBitAnd,
         "|": TokenBitOr,
+        'now': TokenNow,
     }
     funcs = set(["min", "max", "uc", "lc", "selrand", "floor",
         "round", "ceil", "abs", "sqrt", "sqr", "pow", "log",
@@ -585,4 +594,3 @@ class ScriptTemplateObject(object):
 
     def __setattr__(self, name, value):
         raise ScriptReadOnlyError(name)
-
