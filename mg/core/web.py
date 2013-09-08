@@ -686,6 +686,8 @@ class Web(Module):
             raise TemplateException("security", self._("Memory overflow during template processing"))
         except TooManyLoops:
             raise TemplateException("security", self._("Too many template loop iterations"))
+        except ZeroDivisionError:
+            raise TemplateException("security", self._("Zero division in the template"))
         if req:
             req.templates_len = req.templates_len + len(content)
         m = re_content.match(content)
