@@ -86,7 +86,8 @@ class ProcessManager(ConstructorModule):
                         uuid = "%s-%s" % (svctype, inst.conf("global", "id", inst.instaddr))
                         val = self.call("cluster.query_server", host["addr"], host["port"], "/service/call/%s/spawn" % host["svcid"], timeout=20, params={
                             "procid": uuid,
-                            "executable": svcinfo["executable"]
+                            "executable": svcinfo["executable"],
+                            "respawn": False,
                         })
                         self.debug("Procman query result: %s", val)
                         if val and val.get("ok"):

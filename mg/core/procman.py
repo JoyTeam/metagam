@@ -82,15 +82,16 @@ class ProcessManager(mg.Module):
         self.debug("Spawning process %s" % args)
         return Popen(args, close_fds=True, env=env)
 
-    def newdaemon(self, procid, executable):
+    def newdaemon(self, procid, executable, respawn=True):
         inst = self.app().inst
-        self.newproc(procid, ["%s/%s" % (inst.daemons_dir, executable), '-c', inst.config_filename])
+        self.newproc(procid, ["%s/%s" % (inst.daemons_dir, executable), '-c', inst.config_filename], respawn=True)
 
     def spawn_index(self):
         req = self.req()
         procid = req.param("procid")
         executable = req.param("executable")
-        self.newdaemon(procid, executable)
+        respawn = True if req.param("respawn") else False
+        self.newdaemon(procid, executable, respawn=respawn)
         self.call("web.response_json", {"ok": 1})
 
     def newproc_index(self):

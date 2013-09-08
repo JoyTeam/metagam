@@ -295,7 +295,7 @@ class Realplexor(mg.Module):
         self.flush()
 
     def tasklet(self):
-        "This tasklet is being run from main application"
+        "This tasklet is being run from the main application"
         # Register service
         inst = self.app().inst
         int_app = inst.int_app
