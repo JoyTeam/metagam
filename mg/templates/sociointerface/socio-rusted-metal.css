@@ -14,3 +14,4 @@ a:hover, a:active, #socio-topmenu a:hover, #socio-topmenu a:active, td.socio-cat
 .socio-topmenu-header, .socio-index-title, .socio-cathead, .socio-topic-created, .socio-delim-left, .socio-signature, .socio-topic-pages, .socio-pages, .socio-pages-list, .socio-top-cat, #socio-topic-title, .socio-member-name, .socio-post-title, .form-list-messages-top, .form-list-messages-bottom { color: #614114 }
 .socio-post-delim a:link, .socio-post-delim a:visited { color: #b5b599 }
 .socio-post-delim a:hover, .socio-post-delim a:active { color: #f3f3cd }
+.socio-category-pinned { background-color: #c5c9af }
