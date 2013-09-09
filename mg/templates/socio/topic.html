@@ -19,6 +19,7 @@
 <td class="socio-avatar-row" rowspan="2">
 [%if topic.avatar%]<div class="socio-avatar"><img src="[%topic.avatar%]" alt="" /></div>[%end%]
 <div class="socio-member-name">[%topic.author_html%]</div>
+[%if topic.author%]<div class="socio-member-online">[%if topic.author.tech_online%][%author_online_text%][%else%][%author_offline_text%][%end%]</div>[%end%]
 [%if topic.status%]<div class="socio-member-status">[%topic.status%]</div>[%end%]
 [%if topic.author_menu%]<div class="socio-member-menu">[%foreach ent in topic.author_menu%]<div><a href="[%ent.href%]">[%ent.title%]</a></div>[%end%]</div>[%end%]
 </td>
@@ -51,6 +52,7 @@
 <td class="socio-avatar-row" rowspan="2">
 [%if post.avatar%]<div class="socio-avatar"><img src="[%post.avatar%]" alt="" /></div>[%end%]
 <div class="socio-member-name">[%post.author_html%]</div>
+[%if post.author%]<div class="socio-member-online">[%if post.author.tech_online%][%author_online_text%][%else%][%author_offline_text%][%end%]</div>[%end%]
 [%if post.status%]<div class="socio-member-status">[%post.status%]</div>[%end%]
 [%if post.author_menu%]<div class="socio-member-menu">[%foreach ent in post.author_menu%]<div><a href="[%ent.href%]">[%ent.title%]</a></div>[%end%]</div>[%end%]
 </td>

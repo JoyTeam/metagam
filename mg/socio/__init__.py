@@ -1689,6 +1689,8 @@ class Forum(Module):
         if topic_content.get("tags"):
             topic_data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [htmlescape(tag) for tag in topic_content.get("tags")]])
         self.topics_htmlencode([topic_data], load_settings=True)
+        # adding Character object into topic_data (if possible)
+        topic_data["author"] = self.call("character.get", topic.get("author"))
         # preparing menu
         menu = [
             { "href": "/forum", "html": self._("Forum categories") },
@@ -1751,6 +1753,8 @@ class Forum(Module):
                 actions.append('<a href="/forum/reply/' + topic.uuid + '/' + post["uuid"] + '">' + self._("reply") + '</a>')
             if len(actions):
                 post["post_actions"] = " / ".join(actions)
+            # adding Character object into post data (if possible)
+            post["author"] = self.call("character.get", post.get("author"))
         # reply form
         content = req.param("content")
         form = self.call("web.form", action="/forum/topic/" + topic.uuid + "#post-form")
@@ -1780,6 +1784,8 @@ class Forum(Module):
             "show_topic": page <= 1,
             "posts": posts,
             "menu": menu,
+            "author_online_text": self._("Status: %s") % self._("Online"),
+            "author_offline_text": self._("Status: %s") % self._("Offline"),
         }
         errors = {}
         if req.ok() or (self.may_write(cat, topic, rules=rules, roles=roles, errors=errors) and (page == pages)):

@@ -53,6 +53,7 @@ class CharactersMod(ConstructorModule):
         self.rhook("admin-gameinterface.design-files", self.design_files)
         self.rhook("character.public-info-menu", self.character_public_info_menu)
         self.rhook("characters.context-menu-available", self.context_menu_available)
+        self.rhook("character.get", self.character_get)
 
     def context_menu_available(self, menu):
         menu.append({
@@ -719,3 +720,6 @@ class CharactersMod(ConstructorModule):
                     self.qevent("expired-%s" % kind, char=character)
                 else:
                     self.qevent("expired-mod-%s" % kind, char=character)
+
+    def character_get(self, uuid):
+        return self.character(uuid)

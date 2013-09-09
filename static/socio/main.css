@@ -84,6 +84,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-avatar img { border: solid 1px #614115; margin: 0 10px 0 33px }
 .socio-member-name { color: #dd6419; font-size: 13px; font-weight: bold; padding: 0px 10px 0px 33px; }
 .socio-member-status { font-size: 11px; padding: 0px 10px 5px 33px }
+.socio-member-online { font-size: 11px; padding: 0px 10px 1px 33px }
 .socio-member-menu { font-size: 11px; color: #0078ac; padding: 5px 10px 5px 33px }
 .socio-member-menu a:link, .socio-member-menu a:visited { color: #0078ac }
 .socio-member-menu a:hover, .socio-member-menu a:active { color: #0098ec }
