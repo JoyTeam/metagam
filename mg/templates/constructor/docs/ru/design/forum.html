@@ -59,6 +59,7 @@
 		<li>subscribed &mdash; признак того, что пользователь подписан на топик;</li>
 		<li>literal_created &mdash; дата создания (написанная словами);</li>
 		<li>avatar &mdash; аватар автора топика;</li>
+                <li>author &mdash; объект Character автора топика;</li>
 		<li>author_html &mdash; имя автора топика;</li>
 		<li>status &mdash; статус автора топика (может отсутствовать);</li>
 		<li>author_menu &mdash; меню ссылок рядом с аватаром автора (может отсутствовать). Если присутствует, то является списком следующих структур:<ul>
@@ -74,6 +75,7 @@
 	<li>posts &mdash; список постов (ответов). Каждый пост &mdash; это структура со следующими полями:<ul>
 		<li>uuid &mdash; идентификатор поста;</li>
 		<li>literal_created &mdash; дата поста (написанная словами);</li>
+                <li>author &mdash; объект Character автора поста;</li>
 		<li>avatar &mdash; аватар автора поста;</li>
 		<li>author_html &mdash; имя автора поста;</li>
 		<li>status &mdash; статус автора поста (может отсутствовать);</li>
