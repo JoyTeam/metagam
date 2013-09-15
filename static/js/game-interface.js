@@ -86,6 +86,20 @@ Game.progress_set = function(id, ratio) {
     this.progress_show(id, ratio);
 };
 
+Game.dom_query = function (query) {
+    var els = Ext.query(query);
+    try {
+        var iframe = Ext.getCmp('main-iframe');
+        var win = iframe.el.dom.contentWindow || window.frames['main-iframe'];
+        var els2 = Ext.query(query, win.document);
+        for (var i = 0; i < els2.length; i++) {
+            els.push(els2[i]);
+        }
+    } catch (e) {
+    }
+    return els;
+};
+
 Game.progress_show = function(id, ratio) {
     if (ratio < 0)
         ratio = 0;

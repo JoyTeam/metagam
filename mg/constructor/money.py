@@ -1,6 +1,7 @@
 from mg import *
 from mg.constructor import *
 from mg.core.money_classes import *
+from mg.core.money import re_valid_code
 from mg.core.projects import Project, ProjectList
 from mg.core.auth import User, UserList
 
@@ -64,6 +65,7 @@ class Money(ConstructorModule):
         self.rhook("admin-money.donate-stats", self.donate_stats)
         self.rhook("money-event.credit", self.event_credit)
         self.rhook("money-event.debit", self.event_debit)
+        self.rhook("hook-character.money", self.hook_money)
 
     def schedule(self, sched):
         sched.add("admin-money.donate-stats", "0 1 * * *", priority=10)
@@ -283,4 +285,18 @@ class Money(ConstructorModule):
             char = self.character(member.member)
             if not char.valid:
                 return
-            self.qevent("money-changed", char=char, amount=amount, balance=member.balance(currency), currency=currency, description=description)
+            balance = member.balance(currency)
+            self.call("stream.character", char, "characters", "money_changed", amount=amount, balance=balance, currency=currency, description=description)
+            self.qevent("money-changed", char=char, amount=amount, balance=balance, currency=currency, description=description)
+
+    def hook_money(self, vars, currency):
+        if not re_valid_code.match(currency):
+            return ''
+        try:
+            req = self.req()
+        except AttributeError:
+            return ''
+        money = self.call("money.obj", "user", req.user())
+        if not money:
+            return ''
+        return '<span class="char-money-balance-%s">%s</span>' % (currency, money.balance(currency))

@@ -191,7 +191,21 @@ Characters.updateParams = function () {
     }
 };
 
-wait(['realplexor-stream', 'mmoscript', 'timesync'], function () {
+Characters.money_changed = function (obj) {
+    if (Characters.onMoneyChange) {
+        try {
+            Characters.onMoneyChange(obj);
+        } catch (e) {
+            Game.error(gt.gettext('Exception'), 'Characters.onMoneyChange: ' + e);
+        }
+    }
+    var els = Game.dom_query('.char-money-balance-' + obj.currency);
+    for (var i = 0; i < els.length; i++) {
+        els[i].innerHTML = obj.balance;
+    }
+};
+
+wait(['realplexor-stream', 'mmoscript', 'timesync', 'game-interface'], function () {
     Stream.stream_handler('characters', Characters);
     loaded('characters');
 });
