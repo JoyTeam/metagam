@@ -189,6 +189,7 @@ class MemberMoney(Module):
             op.set("description", description)
             account.store()
             op.store()
+        self.call("money-event.credit", self, amount, currency, description)
 
     def debit(self, amount, currency, description, **kwargs):
         if amount < 0:
@@ -226,7 +227,8 @@ class MemberMoney(Module):
             op.set("description", description)
             account.store()
             op.store()
-            return True
+        self.call("money-event.debit", self, amount, currency, description)
+        return True
 
     def force_debit(self, amount, currency, description, **kwargs):
         self.description_validate(description, kwargs)
@@ -257,6 +259,7 @@ class MemberMoney(Module):
             op.set("description", description)
             account.store()
             op.store()
+        self.call("money-event.debit", self, amount, currency, description)
 
     def transfer(self, target, amount, currency, description, **kwargs):
         self.description_validate(description, kwargs)
@@ -305,7 +308,9 @@ class MemberMoney(Module):
             account_to.store()
             op1.store()
             op2.store()
-            return True
+        self.call("money-event.debit", self, amount, currency, description)
+        self.call("money-event.credit", target, amount, currency, description)
+        return True
 
     def lock(self, amount, currency, description, **kwargs):
         self.description_validate(description, kwargs)
