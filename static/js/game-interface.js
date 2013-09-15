@@ -65,9 +65,7 @@ Game.main_open = function(uri) {
         uri = 'http://' + Game.domain + uri;
     }
     try {
-        var iframe = Ext.getCmp('main-iframe');
-        var win = iframe.el.dom.contentWindow || window.frames['main-iframe'];
-        win.location.href = uri;
+        Game.main_frame().location.href = uri;
     } catch (e) {
         this.error(gt.gettext('Exception'), e);
     }
@@ -86,12 +84,16 @@ Game.progress_set = function(id, ratio) {
     this.progress_show(id, ratio);
 };
 
+Game.main_frame = function () {
+    var iframe = Ext.getCmp('main-iframe');
+    var win = iframe.el.dom.contentWindow || window.frames['main-iframe'];
+    return win;
+};
+
 Game.dom_query = function (query) {
     var els = Ext.query(query);
     try {
-        var iframe = Ext.getCmp('main-iframe');
-        var win = iframe.el.dom.contentWindow || window.frames['main-iframe'];
-        var els2 = Ext.query(query, win.document);
+        var els2 = Ext.query(query, Game.main_frame_document());
         for (var i = 0; i < els2.length; i++) {
             els.push(els2[i]);
         }
@@ -111,7 +113,7 @@ Game.progress_show = function(id, ratio) {
         this.progress[id] = progress;
     }
     progress.ratio = ratio;
-    var els = Ext.query('.progress-' + id);
+    var els = Game.dom_query('.progress-' + id);
     for (var i = 0; i < els.length; i++) {
         var el = Ext.get(els[i]);
         if (el.content_width == undefined) {
@@ -181,7 +183,7 @@ Game.onLayout = function() {
         var progress = this.progress[id];
         if (progress.ratio == undefined)
             continue;
-        var els = Ext.query('.progress-' + id);
+        var els = Game.dom_query('.progress-' + id);
         for (var i = 0; i < els.length; i++) {
             var el = Ext.get(els[i]);
             if (el.content_width != undefined) {
@@ -606,7 +608,7 @@ Game.update_dynamic_blocks = function () {
                     var newVal = MMOScript.evaluateText(block.text, env);
                     if (newVal !== block.actualValue) {
                         block.actualValue = newVal;
-                        var els = Ext.query(block.css);
+                        var els = Game.dom_query(block.css);
                         for (var k = 0; k < els.length; k++) {
                             els[k].innerHTML = newVal;
                         }
