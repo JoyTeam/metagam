@@ -741,6 +741,8 @@ class QuestsAdmin(ConstructorModule):
                 return u"event %s" % self.call("script.unparse-expression", val[1])
             elif val[0] == "teleported":
                 return "teleported"
+            elif val[0] == "money-changed":
+                return "money changed"
             elif val[0] == "expired":
                 if val[1] == "mod":
                     return "expired %s" % self.call("script.unparse-expression", val[2])
@@ -1315,7 +1317,27 @@ class Quests(ConstructorModule):
             return e.val
 
     def quest_event(self, event, **kwargs):
-        # loading list of quests handling this type of event
+        char = kwargs.get("char")
+        if not char:
+            return
+        tasklet = Tasklet.current()
+        # avoid recursive call of the same events
+        try:
+            events = tasklet.quest_processing_events
+        except AttributeError:
+            events = set()
+            tasklet.quest_processing_events = events
+        key = "%s-%s" % (char.uuid, event)
+        if key in events:
+            return
+        events.add(key)
+        try:
+            self.execute_quest_event(event, **kwargs)
+        finally:
+            events.discard(key)
+
+    def execute_quest_event(self, event, **kwargs):
+        # load list of quests handling this type of event
         char = kwargs.get("char")
         if not char:
             return
@@ -1403,6 +1425,9 @@ class Quests(ConstructorModule):
                             if attrs and attrs.get("to") and kwargs["new_loc"].uuid != attrs.get("to"):
                                 continue
                             if attrs and attrs.get("from") and kwargs["old_loc"].uuid != attrs.get("from"):
+                                continue
+                        elif event == "money-changed":
+                            if attrs and attrs.get("currency") and kwargs["currency"] != attrs.get("currency"):
                                 continue
                         elif event == "oncombat":
                             if attrs and attrs.get("events") and kwargs["cevent"] not in attrs["events"]:
@@ -2112,10 +2137,12 @@ class Quests(ConstructorModule):
                     for key, val in quest_given_items.iteritems():
                         name = '<span style="font-weight: bold">%s</span> &mdash; %s' % (htmlescape(key), self._("%d pcs") % val)
                         tokens.append(name)
+                    delattr(char, "quest_given_items")
                 quest_given_money = getattr(char, "quest_given_money", None)
                 if quest_given_money:
                     for currency, amount in quest_given_money.iteritems():
                         tokens.append(self.call("money.price-html", amount, currency))
+                    delattr(char, "quest_given_money")
                 if tokens:
                     char.message(u"<br />".join(tokens), title=self._("You have got:"))
         # processing character redirects after processing quest operation

@@ -62,6 +62,8 @@ class Money(ConstructorModule):
         self.rhook("advice-admin-money.index", self.advice_money)
         self.rhook("queue-gen.schedule", self.schedule)
         self.rhook("admin-money.donate-stats", self.donate_stats)
+        self.rhook("money-event.credit", self.event_credit)
+        self.rhook("money-event.debit", self.event_debit)
 
     def schedule(self, sched):
         sched.add("admin-money.donate-stats", "0 1 * * *", priority=10)
@@ -269,3 +271,16 @@ class Money(ConstructorModule):
         amount = nn(amount)
         project.set("monthly_donate", amount)
         project.store()
+
+    def event_credit(self, member, amount, currency, description):
+        self.money_event(member, amount, currency, description)
+
+    def event_debit(self, member, amount, currency, description):
+        self.money_event(member, -amount, currency, description)
+
+    def money_event(self, member, amount, currency, description):
+        if member.member_type == "user":
+            char = self.character(member.member)
+            if not char.valid:
+                return
+            self.qevent("money-changed", char=char, amount=amount, balance=member.balance(currency), currency=currency, description=description)

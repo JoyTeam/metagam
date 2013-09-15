@@ -187,6 +187,12 @@ class TokenStop(Parsing.Token):
 class TokenSendChar(Parsing.Token):
     "%token sendchar"
 
+class TokenMoney(Parsing.Token):
+    "%token money"
+
+class TokenChanged(Parsing.Token):
+    "%token changed"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
@@ -273,6 +279,11 @@ class EventType(Parsing.Nonterm):
         "%reduce teleported Attrs"
         validate_attrs(ev, "teleported", attrs, ["from", "to"])
         self.val = [["teleported"], attrs.val]
+
+    def reduceMoneyChanged(self, ev, ev2, attrs):
+        "%reduce money changed Attrs"
+        validate_attrs(ev, "money changed", attrs, ["currency"])
+        self.val = [["money-changed"], attrs.val]
 
     def reduceExpired(self, ev, modid):
         "%reduce expired scalar"
@@ -985,6 +996,8 @@ class QuestScriptParser(ScriptParser):
     syms["music"] = TokenMusic
     syms["stop"] = TokenStop
     syms["sendchar"] = TokenSendChar
+    syms["money"] = TokenMoney
+    syms["changed"] = TokenChanged
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

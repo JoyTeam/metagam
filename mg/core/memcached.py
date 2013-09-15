@@ -303,13 +303,29 @@ class MemcachedLock(object):
         mc - Memcached instance
         keys - list of keys to lock
         """
+        # Filter out keys that are already locked by the current tasklet
+        tasklet_locks = self.tasklet_locks()
+        self.keys = []
+        for key in sorted(keys):
+            mkey = "LOCK-" + str(key)
+            if mkey not in tasklet_locks:
+                self.keys.append(mkey)
+
         self.mc = mc
-        self.keys = ["LOCK-" + str(key) for key in sorted(keys)]
         self.patience = patience
         self.delay = delay
         self.locked = None
         self.ttl = ttl
         self.value = str(value_prefix) + str(id(Tasklet.current()))
+
+    def tasklet_locks(self):
+        tasklet = Tasklet.current()
+        try:
+            return tasklet.memcached_locks
+        except AttributeError:
+            locks = set()
+            tasklet.memcached_locks = locks
+            return locks
 
     def __del__(self):
         self.__exit__(None, None, None)
@@ -334,6 +350,7 @@ class MemcachedLock(object):
                         break
                 if success:
                     self.locked = time.time()
+                    self.onlocked()
                     return
                 Tasklet.sleep(self.delay)
                 if start is None:
@@ -344,6 +361,7 @@ class MemcachedLock(object):
                     for key in self.keys:
                         self.mc.set(key, self.value, self.ttl)
                     self.locked = time.time()
+                    self.onlocked()
                     return
             except Exception:
                 logging.getLogger("mg.core.memcached.MemcachedLock").error("Exception during locking. Unlock everything immediately")
@@ -351,7 +369,7 @@ class MemcachedLock(object):
                     self.mc.delete(k)
                 raise
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type, value, tb):
         if self.mc is None:
             return
         if self.locked is not None:
@@ -359,6 +377,7 @@ class MemcachedLock(object):
                 for key in self.keys:
                     self.mc.delete(key)
             self.locked = None
+            self.onunlocked()
 
     def trylock(self):
         if self.mc is None:
@@ -378,7 +397,18 @@ class MemcachedLock(object):
                 self.mc.delete(k)
             raise
         self.locked = time.time()
+        self.onlocked()
         return True
 
     def unlock(self):
         self.__exit__(None, None, None)
+
+    def onlocked(self):
+        tasklet_locks = self.tasklet_locks()
+        for key in self.keys:
+            tasklet_locks.add(key)
+
+    def onunlocked(self):
+        tasklet_locks = self.tasklet_locks()
+        for key in self.keys:
+            tasklet_locks.discard(key)
