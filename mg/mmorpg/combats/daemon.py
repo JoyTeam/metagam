@@ -317,6 +317,9 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
         except CombatRunError as e:
             self.call("exception.report", e)
             self.call("combats.debug", self.combat, e.val, cls="combat-error")
+        except ScriptRuntimeError as e:
+            self.call("exception.report", e)
+            self.call("combats.debug", self.combat, e.val, cls="combat-error")
         except Exception as e:
             self.exception(e)
         finally:
