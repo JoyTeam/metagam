@@ -3,7 +3,7 @@ import re
 from uuid import uuid4
 
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
-re_valid_parameter = re.compile(r'^p_([a-zA-Z0-9_]+)$')
+re_valid_parameter = re.compile(r'^p_([a-zA-Z][a-zA-Z0-9_]*)$')
 
 class CombatRulesDialogs(ConstructorModule):
     def register(self):
@@ -142,7 +142,7 @@ class CombatRulesDialog(ConstructorModule):
         if not param_xp:
             errors["param_xp"] = self._("This field is mandatory")
         elif not re_valid_parameter.match(param_xp):
-            errors["param_xp"] = self._("Parameter name must start with 'p_' and contain latin letters, digits and underscores only")
+            errors["param_xp"] = self._("Parameter name must start with 'p_' and contain latin letters, digits and underscores only. First symbol after p_ must be a letter")
         else:
             self.param_xp = param_xp
 
@@ -209,7 +209,7 @@ class CombatRulesDialog(ConstructorModule):
         if not param_hp:
             errors["param_hp"] = self._("This field is mandatory")
         elif not re_valid_parameter.match(param_hp):
-            errors["param_hp"] = self._("Parameter name must start with 'p_' and contain latin letters, digits and underscores only")
+            errors["param_hp"] = self._("Parameter name must start with 'p_' and contain latin letters, digits and underscores only. First symbol after p_ must be a letter")
         else:
             self.param_hp = param_hp
         # param_max_hp
@@ -217,7 +217,7 @@ class CombatRulesDialog(ConstructorModule):
         if not param_max_hp:
             errors["param_max_hp"] = self._("This field is mandatory")
         elif not re_valid_parameter.match(param_max_hp):
-            errors["param_max_hp"] = self._("Parameter name must start with 'p_' and contain latin letters, digits and underscores only")
+            errors["param_max_hp"] = self._("Parameter name must start with 'p_' and contain latin letters, digits and underscores only. First symbol after p_ must be a letter")
         else:
             self.param_max_hp = param_max_hp
 
