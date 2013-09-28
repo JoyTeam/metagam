@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-09-28 12:30+0300\n"
+"PO-Revision-Date: 2013-09-29 00:55+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -251,6 +251,9 @@ msgstr "<span class=\"combat-log-member\">{member.name}</span> [member.sex:по�
 
 msgid "<span class=\"combat-log-member\">{member.name}</span> has joined the combat"
 msgstr "<span class=\"combat-log-member\">{member.name}</span> [member.sex:вступил,вступила] в бой"
+
+msgid "<span class=\"combat-log-member\">{member.name}</span> intervened in the <a href=\"/combat/{combat.id}\" target=\"_blank\">combat</a>"
+msgstr "<span class=\"combat-log-member\">{member.name}</span> [member.sex:вступил,вступила] в <a href=\"/combat/{combat.id}\" target=\"_blank\">бой</a>"
 
 msgid "<strong>{wmid}</strong> (certificate: <strong>{certificate}</strong>)"
 msgstr "<strong>{wmid}</strong> (аттестат: <strong>{certificate}</strong>)"
@@ -1714,6 +1717,9 @@ msgstr "Шаблон боевого интерфейса"
 msgid "Combat interface template (used when no specific combat-rules-*.html exist)"
 msgstr "Шаблон боевого интерфейса (используется, когда не существуют конкретные combat-rules-*.html)"
 
+msgid "Combat is unavailable"
+msgstr "Бой недоступен"
+
 msgid "Combat log"
 msgstr "Лог боя"
 
@@ -2987,6 +2993,10 @@ msgid "Error message when transition is unavailable"
 msgstr "Сообщение об ошибке, когда переход недоступен"
 
 #, python-format
+msgid "Error message: %s"
+msgstr "Сообщение об ошибке: %s"
+
+#, python-format
 msgid "Error near '%s'"
 msgstr "Ошибка рядом с '%s'"
 
@@ -3015,6 +3025,15 @@ msgstr "Ошибка при сохранении объекта {0}: {1}"
 
 msgid "Error storing object {name}: {err}"
 msgstr "Ошибка при сохранении объекта {name}: {err}"
+
+msgid "Error text"
+msgstr "Текст ошибки"
+
+msgid "Error text for 'require' statement"
+msgstr "Текст ошибки для оператора \"require\""
+
+msgid "Error text must be a string"
+msgstr "Текст ошибки должен быть строкой"
 
 msgid "Eternal shadow returns"
 msgstr "Вечная тень возвращается"
@@ -3110,6 +3129,9 @@ msgstr "Вычисление текста для системного лога"
 
 msgid "Evaluation of target availability"
 msgstr "Вычисление доступности цели \"target\""
+
+msgid "Evaluation of the combat id"
+msgstr "Вычисление идентификатора боя"
 
 msgid "Evaluation of the condition"
 msgstr "Вычисление условия"
@@ -4499,6 +4521,9 @@ msgstr "Доступна ли кнопка персонажу (вы можете
 
 msgid "It seems that your post contains script code without [code]...[/code] tags. Please select your script and press the 'CODE' button. It will make you code looking better. If you think this message is erroneous set the checkbox"
 msgstr "Похоже, что в вашем посте есть код скрипта без тегов [code]...[/code]. Пожалуйста, выделите ваш скрипт и нажмите кнопку \"CODE\". Ваш код будет выглядеть лучше. Если вы считаете, что это сообщение ошибочное, установите галочку"
+
+msgid "It's impossible to attack yourself"
+msgstr "Атаковать себя невозможно"
 
 msgid "It's impossible to edit this template because it is not a valid utf-8 file"
 msgstr "Отредактировать этот шаблон невозможно, поскольку его кодировка не является валидным utf-8"
@@ -5932,6 +5957,9 @@ msgstr "Теперь загрузите ваш новый цветной ава�
 
 msgid "Now you can use all premium forum settings"
 msgstr "Теперь вы можете воспользоваться премиум-услугами в настройках форума"
+
+msgid "Number of NPC characters in a combat can't be more then 10x number of player members"
+msgstr "Количество компьютерных участников боя не может превышать количество игроков более, чем в 10 раз"
 
 msgid "Number of actions points per turn"
 msgstr "Количество очков действия на ход"
@@ -8844,6 +8872,9 @@ msgstr "URL %s - это не изображение"
 msgid "URL must start with '/'"
 msgstr "URL должен начинаться с \"/\""
 
+msgid "Unable to join the combat"
+msgstr "Невозможно присоединиться к бою"
+
 msgid "Uncategorized"
 msgstr "Без раздела"
 
@@ -9397,6 +9428,9 @@ msgstr "У вас уже есть валюта, продаваемая за ре
 msgid "You already have paid service with same ID"
 msgstr "У вас уже есть платная услуга с таким же идентификатором"
 
+msgid "You are already in a combat"
+msgstr "Вы уже в бою"
+
 #, python-format
 msgid "You are banned till %s"
 msgstr "Вы забанены до %s"
@@ -9599,6 +9633,9 @@ msgstr "Вы не можете изменять курс обмена реаль
 
 msgid "You can't create more characters"
 msgstr "Вы больше не можете создавать персонажей"
+
+msgid "You can't intervent for yourself"
+msgstr "Вы не можете вмешаться за себя"
 
 msgid "You can't remove real money currency after game publication"
 msgstr "Вы не можете удалить реальную валюту после публикации игры"
@@ -10099,6 +10136,9 @@ msgstr "конструктор"
 msgid "contextmenu///Attack"
 msgstr "Напасть"
 
+msgid "contextmenu///Help in combat"
+msgstr "Помочь в бою"
+
 msgid "copy"
 msgstr "копировать"
 
@@ -10370,6 +10410,9 @@ msgstr "параметры предметов"
 
 msgid "items, list, catalog"
 msgstr "предметы, список, каталог"
+
+msgid "joining {name} to combat {combat} for team {team}"
+msgstr "присоединяем {name} к бою {combat} за команду {team}"
 
 msgid "launching combat"
 msgstr "запускаем бой"
@@ -11291,8 +11334,17 @@ msgstr "{price} на {period_a}"
 msgid "{price} forever"
 msgstr "{price} навсегда"
 
+msgid "{targetchar.name} is already in a combat"
+msgstr "{targetchar.name} уже в бою"
+
 msgid "{targetchar.name} is in the different location"
 msgstr "{targetchar.name} в другой локации"
+
+msgid "{targetchar.name} is not in a combat"
+msgstr "{targetchar.name} не в бою"
+
+msgid "{targetchar.name} is offline"
+msgstr "{targetchar.name} не в игре"
 
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
@@ -11589,9 +11641,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 
 #~ msgid "Error generating %s-on.png"
 #~ msgstr "Ошибка при генерации %s-on.png"
-
-#~ msgid "Combat %s server is unavailable"
-#~ msgstr "Сервер боя %s недоступен"
 
 #~ msgid "Profile of '%s'"
 #~ msgstr "%s: профиль"

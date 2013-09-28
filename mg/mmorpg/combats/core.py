@@ -56,6 +56,14 @@ class CombatLocker(mg.constructor.ConstructorModule):
                 lock_keys.append(key)
         return self.lock(lock_keys)
 
+    def set_busy_member(self, minfo):
+        "Mark specified member busy. If impossible raise CombatMemberBusyError"
+        with self.busy_lock():
+            obj = minfo["object"]
+            mtype = obj[0]
+            if self.call("combats-%s.set-busy" % mtype, self.cobj, *obj[1:]):
+                raise CombatMemberBusyError(format_gender(minfo.get("sex", 0), self._("%s is busy and can't join combat") % minfo.get("name", mtype)))
+
     def set_busy(self):
         "Mark all members busy. If impossible raise CombatMemberBusyError"
         with self.busy_lock():
@@ -824,6 +832,17 @@ class CombatMember(CombatObject, CombatParamsContainer):
         self.controllers = []
         self.clear_available_action_cache()
         self.log = combat.log
+
+    def get_short_info(self):
+        return {
+            "id": getattr(self, "id", None),
+            "name": self.param("name"),
+            "sex": self.param("sex"),
+            "team": self.param("team"),
+            "may_turn": self.param("may_turn"),
+            "active": self.param("active"),
+            "image": self.param("image")
+        }
 
     def set_param(self, key, val):
         if CombatParamsContainer.set_param(self, key, val):

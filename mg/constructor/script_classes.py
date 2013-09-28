@@ -8,6 +8,7 @@ re_numeric = re.compile(r'^#(.+)')
 class ScriptMemoryObject(object):
     def __init__(self):
         self.data = {}
+        self.allow_compound = True
 
     def script_attr(self, attr, handle_exceptions=True):
         return self.data.get(attr)

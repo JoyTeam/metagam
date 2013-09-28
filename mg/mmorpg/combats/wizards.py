@@ -1,6 +1,7 @@
 from mg.constructor import *
 import re
 from uuid import uuid4
+import mg
 
 re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
 re_valid_parameter = re.compile(r'^p_([a-zA-Z][a-zA-Z0-9_]*)$')
@@ -80,7 +81,7 @@ class CombatRulesDialog(ConstructorModule):
         self.store_combat_quest(config)
 
     def store_combat_quest(self, config):
-        quests = self.conf("quests.list", {})
+        quests = self.conf("quests.list", {}).copy()
         if "combat_triggers" not in quests:
             quests["combat_triggers"] = {
                 "name": self._("Generic combat triggers"),
@@ -90,10 +91,26 @@ class CombatRulesDialog(ConstructorModule):
             }
             config.set("quests.list", quests)
             config.set("quests.debug_combat_triggers", True)
+            with open(mg.__path__[0] + "/data/combat/quest.txt") as f:
+                quest_data = f.read()
+                f.close()
+                quest_data = quest_data.decode("utf-8")
             config.set("quest-combat_triggers.states", {
                 "init": {
                     "order": 0.0,
-                    "script": self.call("quests.parse-script", 'combat defeat draw { equipbreak random < 0.5 } combat victory { combat syslog \'Total inflicted damage: member=<b>{member.id}</b>, char=<b>{char.name}</b>, damage=<b>{member.p_inflicted_damage}</b>\' if member.p_inflicted_damage > 0 { set local.p_xp = member.p_inflicted_damage set char.%s = char.%s + local.p_xp combat log \'%s\' cls="combat-log-xp" } } clicked "attack" { if char.id != targetchar.id { if (char.location and targetchar.location and char.location.id == targetchar.location.id) { combat rules=\'%s\' ctitle=\'%s\' flags="pvp" { member char team=1 member targetchar team=2 } } else { error \'%s\' } } }' % (self.param_xp, self.param_xp, self._('<span class="combat-log-member">{member.name}</span> has got <span class="combat-log-xp-value">{local.p_xp}</span> [#local.p_xp:point,points] of experience'), self.code, self._('{char.name} has attacked {targetchar.name}'), self._("{targetchar.name} is in the different location"))),
+                    "script": self.call("quests.parse-script", quest_data.format(
+                        param_xp = self.param_xp,
+                        log_experience = self._('<span class="combat-log-member">{member.name}</span> has got <span class="combat-log-xp-value">{local.p_xp}</span> [#local.p_xp:point,points] of experience'),
+                        combat_code = self.code,
+                        combat_title = self.call("script.unparse-expression", self._('{char.name} has attacked {targetchar.name}')),
+                        different_location = self.call("script.unparse-expression", self._("{targetchar.name} is in the different location")),
+                        attack_self = self.call("script.unparse-expression", self._("It's impossible to attack yourself")),
+                        you_are_in_combat = self.call("script.unparse-expression", self._("You are already in a combat")),
+                        target_offline = self.call("script.unparse-expression", self._("{targetchar.name} is offline")),
+                        target_is_in_combat = self.call("script.unparse-expression", self._("{targetchar.name} is already in a combat")),
+                        intervent_self = self.call("script.unparse-expression", self._("You can't intervent for yourself")),
+                        target_is_not_in_combat = self.call("script.unparse-expression", self._("{targetchar.name} is not in a combat")),
+                    )),
                 }
             })
             self.call("quest-admin.update-quest-handlers", config)
@@ -182,6 +199,8 @@ class CombatRulesDialog(ConstructorModule):
         # scripts
         self.script_append("start", 'chat \'%s\' cls="combat-started"' % self._('Started <a href="/combat/{combat.id}" target="_blank">combat</a> {combat.team1_list} vs {combat.team2_list}'))
         self.script_append("joined", 'log \'%s\' cls="combat-log-joined"' % self._('<span class="combat-log-member">{member.name}</span> has joined the combat'))
+        self.script_append("joined", 'if combat.stage_flags.actions { chat \'%s\' cls="combat-joined" }' % (self._('<span class="combat-log-member">{member.name}</span> intervened in the <a href="/combat/{combat.id}" target="_blank">combat</a>')))
+
         msg = self._('<a href="/combat/{combat.id}" target="_blank">Combat</a> {combat.team1_list} vs {combat.team2_list} was a draw')
         self.script_append("draw", 'set combat.stage = "done" chat \'%s\' cls="combat-stopped" log \'%s\' cls="combat-stopped"' % (msg, msg))
         msg = self._('{winners_list} <a href="/combat/{combat.id}" target="_blank">{winners_count >= 2 ? "have" : "has"} defeated</a> {loosers_list}')

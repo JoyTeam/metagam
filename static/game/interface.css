@@ -266,4 +266,5 @@ area { border: none }
 .chat-msg-combat-log { color: #808080 }
 .chat-msg-combat-start { color: red }
 .chat-msg-combat-started { color: #c08080 }
+.chat-msg-combat-joined { color: #c08080 }
 .chat-msg-combat-stopped { color: #c08080 }

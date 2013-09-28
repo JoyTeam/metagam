@@ -193,6 +193,9 @@ class TokenMoney(Parsing.Token):
 class TokenChanged(Parsing.Token):
     "%token changed"
 
+class TokenJoin(Parsing.Token):
+    "%token join"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
@@ -420,9 +423,16 @@ class QuestAction(Parsing.Nonterm):
         "%reduce error scalar"
         self.val = ["error", err.script_parser.parse_text(expr.val, err.script_parser._("action///Quest error"))]
 
-    def reduceRequire(self, req, expr):
+    def reduceRequire(self, req, expr, attrs):
         "%reduce require Expr"
         self.val = ["require", expr.val]
+
+    def reduceRequireError(self, req, expr, el, er, error):
+        "%reduce require Expr else error scalar"
+        if type(error.val) != str and type(error.val) != unicode:
+            raise Parsing.SyntaxError(req.script_parser._("Error text must be a string"))
+        error = req.script_parser.parse_text(error.val, req.script_parser._("Error text"))
+        self.val = ["require", expr.val, "error", error]
 
     def reduceCall(self, call, attrs):
         "%reduce call ExprAttrs"
@@ -643,6 +653,10 @@ class QuestAction(Parsing.Nonterm):
             options["flags"] = sorted(dict([(f, True) for f in re_comma.split(flags) if f != ""]).keys())
         self.val = ["combat", options]
 
+    def reduceCombatJoin(self, cmd, jcmd, combat, member):
+        "%reduce combat join Expr CombatMember"
+        self.val = ["combatjoin", combat.val, member.val]
+
     def reduceCombatLog(self, cmb, cmd, text, expr):
         "%reduce combat log scalar ExprAttrs"
         self.val = ["combatlog", cmd.script_parser.parse_text(text.val, cmd.script_parser._("Log message")), expr.val]
@@ -727,8 +741,15 @@ class CombatContent(Parsing.Nonterm):
             "members": []
         }
 
-    def reduceMember(self, content, cmd, mtype, attrs):
-        "%reduce CombatContent member CombatMemberType ExprAttrs"
+    def reduceMember(self, content, member):
+        "%reduce CombatContent CombatMember"
+        self.val = content.val.copy()
+        self.val["members"] = self.val["members"] + [member.val]
+
+class CombatMember(Parsing.Nonterm):
+    "%nonterm"
+    def reduceMember(self, cmd, mtype, attrs):
+        "%reduce member CombatMemberType ExprAttrs"
         # validating attributes
         team = get_attr(cmd, "member", attrs, "team", require=True)
         control = get_attr(cmd, "member", attrs, "control")
@@ -744,7 +765,6 @@ class CombatContent(Parsing.Nonterm):
                 valid_params.append(key)
         validate_attrs(cmd, "member", attrs, valid_params)
         # reducing
-        self.val = content.val.copy()
         member = {
             "type": mtype.val,
             "team": team,
@@ -761,7 +781,7 @@ class CombatContent(Parsing.Nonterm):
             member["image"] = image
         if params:
             member["params"] = params
-        self.val["members"] = self.val["members"] + [member]
+        self.val = member
 
 class CombatMemberType(Parsing.Nonterm):
     "%nonterm"
@@ -998,6 +1018,7 @@ class QuestScriptParser(ScriptParser):
     syms["sendchar"] = TokenSendChar
     syms["money"] = TokenMoney
     syms["changed"] = TokenChanged
+    syms["join"] = TokenJoin
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

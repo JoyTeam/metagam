@@ -344,11 +344,21 @@ error "<strong>текстовое выражение</strong>"
 </pre>
 <p>В игровом интерфейсе всплывёт сообщение об ошибке с указанным текстом. Похоже на message, только обычно красным цветом.</p>
 
+<a name="require"></a>
 <h2>Предусловие</h2>
 <pre class="doc-code-sample">
-require <strong>выражение</strong>
+require <strong>выражение</strong> [else error <strong>"сообщение"</strong>]
 </pre>
 <p>Будет вычислено указанное выражение, и, если оно ложно, то выполнение обработчика будет прервано.</p>
+<p>Если указан параметр "else error", то в случае ложного значения игроку будет показана указанная ошибка. Эту возможность полезно использовать для массовой проверки условий, при которых допустимо выполнение того или иного действия:</p>
+<pre class="doc-code-sample">
+require char.id != targetchar.id else error "Атаковать себя невозможно"
+require not char.combat else error "Вы уже в бою"
+require targetchar.online else error "{targetchar.name} не в игре"
+require not targetchar.combat else error "{targetchar.name} уже в бою"
+require char.location else error "{targetchar.name} в другой локации"
+require char.location == targetchar.location else error "{targetchar.name} в другой локации"
+</pre>
 
 <a name="call"></a>
 <h2>Вызов события</h2>
@@ -699,6 +709,7 @@ equipbreak random &lt; 0.5
 equipbreak (random &lt; 0.5) ? 1 : 3
 </pre>
 
+<a name="combat-start"></a>
 <h2>Запуск боя</h2>
 <pre class="doc-code-sample">
 combat rules=<strong>"правила"</strong> [ctitle=<strong>"название"</strong>] [flags=<strong>"список флагов"</strong>] {
@@ -747,6 +758,23 @@ combat rules=<strong>"правила"</strong> [ctitle=<strong>"название
 </ul>
 
 <p>Если хотя бы один из перечисленных в бою персонажей занят, то бой начат не будет. Если в бою вообще нет персонажей, то бой также начат не будет.</p>
+
+<h2>Вмешательство в бой</h2>
+<pre class="doc-code-sample">
+combat join <strong>"combatid"</strong> member <strong>параметры</strong>
+</pre>
+
+<p>Эта команда создаёт нового участника в бою с указанным идентификатором combatid. Параметры участника задаются в том же формате, что и при <a href="#combat-start">запуске боя</a>. Например, чтобы вмешать персонажа char в бой за персонажа targetchar, необходимо выполнить команду:</p>
+<pre class="doc-code-sample">
+combat join targetchar.combat_state.combat member char team=targetchar.combat_state.team
+</pre>
+
+<p>Чтобы вмешать за противоположную команду ("против targetchar"), при условии, что в бою есть всего две команды с id 1 и 2:</p>
+<pre class="doc-code-sample">
+combat join targetchar.combat_state.combat member char team=3 - targetchar.combat_state.team
+</pre>
+
+<p>Если вмешательство в бой по каким-либо причинам не удалось (персонаж занят, бой уже завершён и т.д.), то игроку автоматически показывается всплывающее сообщение о неудачном вмешательстве в бой, а выполнение обработчика прерывается.</p>
 
 <h2>Вывод сообщений в лог боя</h2>
 <pre class="doc-code-sample">

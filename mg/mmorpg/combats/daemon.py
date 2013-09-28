@@ -5,6 +5,7 @@ from mg.mmorpg.combats.turn_order import *
 from mg.mmorpg.combats.ai import AIController
 from mg.mmorpg.combats.logs import CombatDatabaseLog
 from mg.core.cluster import DBCluster, HTTPConnectionRefused
+from mg.core.tools import *
 from concurrence import Tasklet, http
 from concurrence.http import HTTPError
 import re
@@ -31,6 +32,8 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
         self.rhook("cmb-combat.info", self.combat_info, priv="public")
         self.rhook("cmb-combat.state", self.combat_state, priv="public")
         self.rhook("cmb-combat.action", self.combat_action, priv="public")
+        self.rhook("cmb-combat.members", self.combat_members, priv="public")
+        self.rhook("cmb-combat.join", self.combat_join, priv="public")
 
     @property
     def combat(self):
@@ -72,6 +75,13 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
         req = self.req()
         self.controller.request_state(req.param("marker"))
         self.call("web.response_json", {"ok": 1})
+
+    def combat_members(self):
+        req = self.req()
+        members = []
+        for member in self.combat.members:
+            members.append(member.get_short_info())
+        self.call("web.response_json", {"members": members})
 
     def combat_action(self):
         req = self.req()
@@ -135,6 +145,22 @@ class CombatDaemonModule(mg.constructor.ConstructorModule):
                 action.set_attribute(attr["code"], intz(val))
         self.controller.member.enqueue_action(action)
         self.call("web.response_json", {"ok": 1})
+
+    def combat_join(self):
+        req = self.req()
+        member_info = json.loads(req.param("member"))
+        try:
+            csrv = self.app().inst.csrv
+            csrv.join_member(member_info)
+            result = {"ok": 1}
+        except CombatRunError as e:
+            result = {"error": self._("Unable to join the combat")}
+            self.call("exception.report", e)
+            self.call("combats.debug", self.combat, e.val, cls="combat-error")
+        except CombatMemberBusyError as e:
+            result = {"error": e.val}
+            self.call("combats.debug", self.combat, e.val, cls="combat-error")
+        self.call("web.response_json", result)
 
 class CombatRunner(mg.constructor.ConstructorModule):
     def register(self):
@@ -237,8 +263,24 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
         if cobj.get("flags"):
             combat.set_flags(cobj.get("flags"))
 
-    def add_members(self):
-        for minfo in self.cobj.get("members", []):
+    def join_member(self, member):
+        if member["object"][0] != "character":
+            n_char = 0
+            n_npc = 1
+            for mem in self.cobj.get("members"):
+                if mem["object"][0] == "character":
+                    n_char += 1
+                else:
+                    n_npc += 1
+            if n_npc > n_char * 10:
+                raise CombatRunError(self._("Number of NPC characters in a combat can't be more then 10x number of player members"))
+        locker = CombatLocker(self.app(), self.cobj)
+        locker.set_busy_member(member)
+        self.cobj.get("members").append(member)
+        self.add_members([member])
+
+    def add_members(self, members):
+        for minfo in members:
             # member
             obj = minfo["object"]
             mtype = obj[0]
@@ -301,7 +343,7 @@ class CombatService(CombatObject, mg.SingleApplicationWebService):
     def run(self):
         self.app().inst.csrv = self
         try:
-            self.add_members()
+            self.add_members(self.cobj.get("members", []))
             self.run_combat()
             # external interface
             self.serve_any_port()
@@ -433,11 +475,23 @@ class CombatInterface(mg.constructor.ConstructorModule):
         self._state = self.query("/combat/state")
         return self._state
 
+    @property
+    def members(self):
+        try:
+            return self._members
+        except AttributeError:
+            pass
+        self._members = self.query("/combat/members")["members"]
+        return self._members
+
     def state_for_interface(self, char, marker):
         return self.query("/combat/state", {"char": char.uuid, "marker": marker})
 
     def action(self, char, data):
         return self.query("/combat/action", {"char": char.uuid, "data": json.dumps(data)})
+
+    def join(self, member_info):
+        return self.query("/combat/join", {"member": json.dumps(member_info)})
 
 class WebController(CombatMemberController):
     def __init__(self, member, char, fqn="mg.mmorpg.combats.daemons.WebController"):
