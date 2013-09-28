@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-09-28 12:26+0300\n"
+"PO-Revision-Date: 2013-09-28 12:30+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -5984,6 +5984,9 @@ msgstr "Онлайн"
 
 msgid "Online script parser"
 msgstr "Онлайн-парсер скриптов"
+
+msgid "Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted in file names. Filename must have an extention (a-z, 0-9 symbols)"
+msgstr "В именах файлов допустимы только маленькие латинские буквы (a-z), цифры (0-9), подчёркивание (_) и минус (-). Файл должен иметь расширение из символов a-z, 0-9"
 
 msgid "Open"
 msgstr "Открыть"

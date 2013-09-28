@@ -328,12 +328,15 @@ class DesignZip(Module):
             m = re_valid_filename.match(zip_filename)
             if not m:
                 try:
-                    zip_filename = zip_filename.decode("utf-8")
+                    try:
+                        zip_filename = zip_filename.decode("utf-8")
+                    except UnicodeEncodeError:
+                        zip_filename = zip_filename.decode("cp1251")
+                    except UnicodeDecodeError:
+                        zip_filename = zip_filename.decode("cp1251")
+                    list_errors.append(self._("Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted. Filename must have an extention (a-z, 0-9 symbols)") % htmlescape(zip_filename))
                 except UnicodeEncodeError:
-                    zip_filename = zip_filename.decode("cp1251")
-                except UnicodeDecodeError:
-                    zip_filename = zip_filename.decode("cp1251")
-                list_errors.append(self._("Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted. Filename must have an extention (a-z, 0-9 symbols)") % htmlescape(zip_filename))
+                    list_errors.append(self._("Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted in file names. Filename must have an extention (a-z, 0-9 symbols)"))
                 continue
             basename, ext = m.group(1, 2)
             filename = "%s.%s" % (basename, ext)
