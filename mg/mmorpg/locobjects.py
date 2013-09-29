@@ -266,9 +266,9 @@ class LocationObjects(ConstructorModule):
                     }
                     globs = {"char": character, "loc": location}
                     keep_globs = {"t": True}
-                    robj["visible"] = self.call("script.evaluate-expression", obj["visible"], globs=globs, keep_globs=keep_globs)
+                    robj["visible"] = self.call("script.evaluate-expression", obj.get("visible"), globs=globs, keep_globs=keep_globs)
                     if "position" in obj:
-                        robj["position"] = self.call("script.evaluate-expression", obj["position"], globs=globs, keep_globs=keep_globs)
+                        robj["position"] = self.call("script.evaluate-expression", obj.get("position"), globs=globs, keep_globs=keep_globs)
                     else:
                         robj["position"] = ["call", "vec3", obj["x"], order, obj["y"]]
                     loc_init.append("LocObjects.addStaticObject(%s);" % json.dumps(robj, cls=SafeEncoder))
