@@ -423,7 +423,7 @@ class QuestAction(Parsing.Nonterm):
         "%reduce error scalar"
         self.val = ["error", err.script_parser.parse_text(expr.val, err.script_parser._("action///Quest error"))]
 
-    def reduceRequire(self, req, expr, attrs):
+    def reduceRequire(self, req, expr):
         "%reduce require Expr"
         self.val = ["require", expr.val]
 
