@@ -71,8 +71,21 @@ class CombatScriptsAdmin(ConstructorModule):
         if code is None:
             return ""
         lines = []
+        previous_comment = False
         for st in code:
             st_cmd = st[0]
+            if st_cmd == "comment":
+                if lines and not previous_comment:
+                    lines.append("\n")
+                result = "%s#%s%s\n" % (
+                    "  " * indent,
+                    " " if len(st[1]) and st[1][0] != " " else "", # at least 1 space after "#"
+                    st[1]
+                )
+                lines.append(result)
+                previous_comment = True
+                continue
+            previous_comment = False
             if st_cmd == "damage":
                 result = u"%sdamage %s value %s" % ("  " * indent, self.call("script.unparse-expression", [".", st[1], st[2]]), self.call("script.unparse-expression", st[3]))
                 if len(st) >= 5:
@@ -266,7 +279,10 @@ class CombatScripts(ConstructorModule):
                 env.combat_script = True
                 return env
             st_cmd = st[0]
-            if st_cmd == "damage":
+            if st_cmd == "comment":
+                self.combat_debug(combat, lambda: "# %s" % st[1], cls="combat-comment", indent=indent)
+                return
+            elif st_cmd == "damage":
                 obj = self.call("script.evaluate-expression", st[1], globs=globs, description=lambda: self._("Evaluation of damage target member"))
                 attr = st[2]
                 damage = nn(self.call("script.evaluate-expression", st[3], globs=globs, description=lambda: self._("Evaluation of damage value")))

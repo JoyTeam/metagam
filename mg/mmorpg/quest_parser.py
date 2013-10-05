@@ -436,6 +436,10 @@ class CombatEvents(Parsing.Nonterm):
 # ============================
 class QuestAction(Parsing.Nonterm):
     "%nonterm [pQuestActionOp]"
+    def reduceComment(self, comment):
+        "%reduce comment"
+        self.val = ["comment", comment.val]
+    
     def reduceMessage(self, msg, expr):
         "%reduce message scalar"
         self.val = ["message", msg.script_parser.parse_text(expr.val, msg.script_parser._("action///Quest message"))]
@@ -1056,6 +1060,10 @@ class QuestHandlers(Parsing.Nonterm):
     def reduceEmpty(self):
         "%reduce"
         self.val = []
+
+    def reduceComment(self, handlers, comment):
+        "%reduce QuestHandlers comment"
+        self.val = handlers.val + [["comment", comment.val]]
     
     def reduceHandler(self, handlers, evtype, cl, actions, cr):
         "%reduce QuestHandlers EventType curlyleft QuestActions curlyright"

@@ -138,6 +138,10 @@ def validate_attrs(any_obj, obj_name, attrs, valid_attrs):
 
 class CombatStatement(Parsing.Nonterm):
     "%nonterm"
+    def reduceComment(self, comment):
+        "%reduce comment"
+        self.val = ["comment", comment.val]
+
     def reduceDamage(self, cmd, obj, dot, attr, valKw, val, attrs):
         "%reduce damage Expr dot AttrKey value Expr ExprAttrs"
         if not re_param.match(attr.val):

@@ -175,6 +175,12 @@ class TokenScalar(Parsing.Token):
         Parsing.Token.__init__(self, parser)
         self.val = val
 
+class TokenComment(Parsing.Token):
+    "%token comment"
+    def __init__(self, parser, val):
+        Parsing.Token.__init__(self, parser)
+        self.val = val
+
 class TokenIdentifier(Parsing.Token):
     "%token identifier"
     def __init__(self, parser, val):
@@ -390,7 +396,7 @@ class Result(Parsing.Nonterm):
         raise ScriptParserResult(e.val)
 
 class ScriptParser(Parsing.Glr, Module):
-    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|!=|>=|<=|=|>|<|\+|-|\*|\&|\||~|/|%|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*))', re.IGNORECASE)
+    re_token = re.compile(r'(\s*)((-?\d+\.\d+)|(-?\d+)|(==|!=|>=|<=|=|>|<|\+|-|\*|\&|\||~|/|%|\.|,|\(|\)|\?|:|{|})|"((?:\\.|[^"])*)"|\'((?:\\.|[^\'])*)\'|([a-z_][a-z_0-9]*)|#(.*))', re.IGNORECASE)
     syms = {
         "+": TokenPlus,
         "-": TokenMinus,
@@ -479,6 +485,8 @@ class ScriptParser(Parsing.Glr, Module):
                             token.fname = res[7]
                         else:
                             token = TokenIdentifier(self, res[7])
+            elif res[8] is not None:
+                token = TokenComment(self, res[8])
             if token is None:
                 data = input[pos:pos+10]
                 raise ScriptParserError(self._("Error parsing '{expression}': {error}"), expression=u"".join(tokens).strip(), error=self._("unexpected symbols: %s") % data)

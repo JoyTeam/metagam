@@ -523,6 +523,8 @@ class QuestsAdmin(ConstructorModule):
                         raise RuntimeError(self._("Invalid quest states object. Expected {expected}. Found: {found}").format(expected="state", found=script[0]))
                     if "hdls" in script[1]:
                         for handler in script[1]["hdls"]:
+                            if handler[0] == "comment":
+                                continue
                             if handler[0] != "hdl":
                                 raise RuntimeError(self._("Invalid quest states object. Expected {expected}. Found: {found}").format(expected="hdl", found=script[0]))
                             tp = handler[1]["type"]
@@ -698,6 +700,8 @@ class QuestsAdmin(ConstructorModule):
         if objtype == "state":
             if val[1].get("hdls"):
                 for handler in val[1]["hdls"]:
+                    if handler[0] == "comment":
+                        continue
                     if handler[0] != "hdl":
                         raise ScriptError(self._("Handler expected in the handlers list. Received: %s") % handler[0], env)
                     self.quest_script_validate(handler, env)
@@ -740,11 +744,25 @@ class QuestsAdmin(ConstructorModule):
             raise ScriptParserError(self._("Script unparse error. Expected list, received %s") % type(val).__name__)
         if len(val) == 0 or type(val[0]) == list:
             # list of objects
-            return u"".join([self.quest_admin_unparse_script(ent, indent) for ent in val])
+            result = u""
+            last_comment = False
+            for ent in val:
+                is_comment = type(ent) is list and ent[0] == "comment"
+                if is_comment and len(result) and not last_comment:
+                    result += "\n"
+                last_comment = is_comment
+                result += self.quest_admin_unparse_script(ent, indent)
+            return result
         else:
             objtype = val[0]
             if val[0] == "state":
                 return self.quest_admin_unparse_script(val[1].get("hdls"))
+            elif val[0] == "comment":
+                return "%s#%s%s\n" % (
+                    "  " * indent,
+                    " " if len(val[1]) and val[1][0] != " " else "", # at least 1 space after "#"
+                    val[1]
+                )
             elif val[0] == "hdl":
                 result = "  " * indent + self.quest_admin_unparse_script(val[1]["type"])
                 evtype = val[1]["type"][0]
@@ -1575,7 +1593,10 @@ class Quests(ConstructorModule):
 
                                 try:
                                     cmd_code = cmd[0]
-                                    if cmd_code == "message" or cmd_code == "error":
+                                    if cmd_code == "comment":
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: u'# %s' % cmd[1], cls="quest-comment", indent=indent+2)
+                                    elif cmd_code == "message" or cmd_code == "error":
                                         message = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=eval_description)
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: u'%s %s' % (cmd_code, self.call("script.unparse-expression", message)), cls="quest-action", indent=indent+2)
@@ -1746,15 +1767,13 @@ class Quests(ConstructorModule):
                                         money_opts = {}
                                         if len(cmd) >= 5 and cmd[4]:
                                             money_opts["override"] = cmd[4]
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
                                         try:
                                             res = char.money.debit(amount, currency, "quest-take", quest=quest, **money_opts)
                                         except MoneyError as e:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
                                             raise QuestError(e.val)
                                         else:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency} ({result})").format(amount=amount, currency=currency, result=self._("successfully") if res else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
                                             if not res:
                                                 if cmd[3] is not None:
                                                     self.qevent("event-%s-%s" % (quest, cmd[3]), char=char, amount=amount, currency=currency)
@@ -2606,6 +2625,8 @@ class Quests(ConstructorModule):
                             raise RuntimeError(self._("Invalid quest states object. Expected {expected}. Found: {found}").format(expected="state", found=script[0]))
                         if "hdls" in script[1]:
                             for handler in script[1]["hdls"]:
+                                if handler[0] == "comment":
+                                    continue
                                 if handler[0] != "hdl":
                                     raise RuntimeError(self._("Invalid quest states object. Expected {expected}. Found: {found}").format(expected="hdl", found=script[0]))
                                 tp = handler[1]["type"]
