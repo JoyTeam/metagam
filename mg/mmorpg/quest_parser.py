@@ -217,6 +217,9 @@ class TokenActions(Parsing.Token):
 class TokenOnCancel(Parsing.Token):
     "%token oncancel"
 
+class TokenAvailable(Parsing.Token):
+    "%token available"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
@@ -227,17 +230,21 @@ class QuestAttrKey(Parsing.Nonterm):
         "%reduce event"
         self.val = "event"
 
-    def reduceTimeout(self, event):
+    def reduceTimeout(self, timeout):
         "%reduce timeout"
         self.val = "timeout"
 
-    def reduceText(self, event):
+    def reduceText(self, text):
         "%reduce text"
         self.val = "text"
 
     def reduceFunc(self, fnc):
         "%reduce func"
         self.val = fnc.fname
+
+    def reduceAvailable(self, available):
+        "%reduce available"
+        self.val = "available"
 
 class PQuestActionOp(Parsing.Precedence):
     "%left pQuestActionOp >pAttrKey"
@@ -958,12 +965,6 @@ class DialogContent(Parsing.Nonterm):
             self.val["buttons"].append(button_val)
         except KeyError:
             self.val["buttons"] = [button_val]
-        default = 0
-        for btn in self.val["buttons"]:
-            if btn.get("default"):
-                default += 1
-                if default >= 2:
-                    raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain more than 1 default button"))
 
     def reduceTemplate(self, content, cmd, tpl):
         "%reduce DialogContent template scalar"
@@ -1014,7 +1015,7 @@ class ButtonContent(Parsing.Nonterm):
         "%reduce ButtonContent text scalar"
         self.val = content.val.copy()
         if "text" in self.val:
-            raise Parsing.SyntaxError(cmd.script_parser._("Button can't contain multiple 'text' entries"))
+            raise Parsing.SyntaxError(cmd.script_parser._("Button can't contain multiple '%s' entries") % "text")
         if type(text.val) != str and type(text.val) != unicode:
             raise Parsing.SyntaxError(cmd.script_parser._("Button text must be a string"))
         self.val["text"] = cmd.script_parser.parse_text(text.val, cmd.script_parser._("Button text"))
@@ -1023,12 +1024,19 @@ class ButtonContent(Parsing.Nonterm):
         "%reduce ButtonContent event scalar"
         self.val = content.val.copy()
         if "event" in self.val:
-            raise Parsing.SyntaxError(cmd.script_parser._("Button can't contain multiple 'event' entries"))
+            raise Parsing.SyntaxError(cmd.script_parser._("Button can't contain multiple '%s' entries") % "event")
         if type(eventid.val) != str and type(eventid.val) != unicode:
             raise Parsing.SyntaxError(cmd.script_parser._("Button event identifier must be a string"))
         elif not re_valid_identifier.match(eventid.val):
             raise Parsing.SyntaxError(cmd.script_parser._("Button event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val["event"] = eventid.val
+
+    def reduceAvailable(self, content, cmd, available):
+        "%reduce ButtonContent available Expr"
+        self.val = content.val.copy()
+        if "available" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Button can't contain multiple '%s' entries") % "available")
+        self.val["available"] = available.val
 
 class InputContent(Parsing.Nonterm):
     "%nonterm"
@@ -1161,6 +1169,7 @@ class QuestScriptParser(ScriptParser):
     syms["action"] = TokenAction
     syms["actions"] = TokenActions
     syms["oncancel"] = TokenOnCancel
+    syms["available"] = TokenAvailable
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

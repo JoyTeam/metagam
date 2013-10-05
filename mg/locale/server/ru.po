@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-10-05 18:54+0300\n"
+"PO-Revision-Date: 2013-10-05 20:39+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -1227,6 +1227,10 @@ msgstr "Массовые рассылки"
 msgid "Button"
 msgstr "Кнопка"
 
+#, python-format
+msgid "Button '%s' availability"
+msgstr "Доступность кнопки \"%s\""
+
 msgid "Button '{button}' text in the quest '{quest}'"
 msgstr "Текст кнопки \"{button}\" в квесте \"{quest}\""
 
@@ -1237,11 +1241,9 @@ msgstr "Действие для кнопки"
 msgid "Button block: %s"
 msgstr "Блок кнопок: %s"
 
-msgid "Button can't contain multiple 'event' entries"
-msgstr "У кнопки не может быть несколько записей \"event\""
-
-msgid "Button can't contain multiple 'text' entries"
-msgstr "У кнопки не может быть несколько записей \"text\""
+#, python-format
+msgid "Button can't contain multiple '%s' entries"
+msgstr "У кнопки не может быть несколько записей \"%s\""
 
 msgid "Button code (used in quest scripts)"
 msgstr "Код кнопки (используется в квестовых скриптах)"
@@ -2816,9 +2818,6 @@ msgstr "Клуб разработчиков"
 
 msgid "Devil"
 msgstr "Дьявол"
-
-msgid "Dialog can't contain more than 1 default button"
-msgstr "В диалоге не может быть более одной кнопки по умолчанию"
 
 #, python-format
 msgid "Dialog can't contain multiple '%s' entries"
@@ -13019,6 +13018,12 @@ msgstr ""
 "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">"
 "{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : "
 "\"одержал\"} победу</a> над {loosers_list}"
+
+#~ msgid "Dialog can't contain more than 1 default button"
+#~ msgstr "В диалоге не может быть более одной кнопки по умолчанию"
+
+#~ msgid "Button can't contain multiple 'event' entries"
+#~ msgstr "У кнопки не может быть несколько записей \"event\""
 
 #~ msgid "taking money, amount={amount}, currency={currency} ({result})"
 #~ msgstr "забираем деньги, количество={amount}, валюта={currency} ({result})"

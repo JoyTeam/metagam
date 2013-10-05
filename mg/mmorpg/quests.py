@@ -1000,12 +1000,14 @@ class QuestsAdmin(ConstructorModule):
                 if "buttons" in options:
                     for btn in options["buttons"]:
                         default = "default " if btn.get("default") else ""
-                        result += "  " * (indent + 1) + "%sbutton {" % default;
+                        result += "  " * (indent + 1) + "%sbutton {\n" % default;
                         if "text" in btn:
-                            result += " text %s" % self.call("script.unparse-expression", self.call("script.unparse-text", btn["text"]))
+                            result += "%stext %s\n" % ("  " * (indent + 2), self.call("script.unparse-expression", self.call("script.unparse-text", btn["text"])))
                         if "event" in btn:
-                            result += ' event "%s"' % btn["event"]
-                        result += " }\n"
+                            result += '%sevent "%s"\n' % ("  " * (indent + 2), btn["event"])
+                        if "available" in btn:
+                            result += '%savailable %s\n' % ("  " * (indent + 2), self.call("script.unparse-expression", btn["available"]))
+                        result += "  " * (indent + 1) + "}\n"
                 result += "  " * indent + "}\n"
                 return result
             elif val[0] == "random":
@@ -2397,11 +2399,11 @@ class Quests(ConstructorModule):
         if not dialogs:
             self.call("web.redirect", self.call("game-interface.default-location") or "/location")
         dialog = dialogs[0]
+        globs = {"char": character}
+        if "quest" in dialog:
+            globs["quest"] = character.quests.quest(dialog["quest"])
         if dialog.get("type") == "itemselector":
             # item selector dialog
-            globs = {"char": character}
-            if "quest" in dialog:
-                globs["quest"] = character.quests.quest(dialog["quest"])
             vars = {}
             def cancel():
                 # close dialog
@@ -2510,7 +2512,13 @@ class Quests(ConstructorModule):
                 found = False
                 for btn in dialog["buttons"]:
                     if btn.get("event", "") == event:
-                        found = True
+                        try:
+                            available = self.call("script.evaluate-expression", btn.get("available", 1), globs=globs, description=self._("Button '%s' availability") % event)
+                        except ScriptError as e:
+                            self.exception(e)
+                        else:
+                            if available:
+                                found = True
                         break
                 if found:
                     # close dialog
@@ -2533,19 +2541,30 @@ class Quests(ConstructorModule):
             default_event = None
             href = "/quest/dialog/%s" % dialog.get("uuid", "")
             btn_id = 0
-            if len(dialog["buttons"]) == 1:
-                dialog["buttons"][0]["default"] = True
             for btn in dialog["buttons"]:
+                try:
+                    available = self.call("script.evaluate-expression", btn.get("available", 1), globs=globs, description=self._("Button '%s' availability") % btn.get("event"))
+                except ScriptError as e:
+                    self.exception(e)
+                    continue
+                else:
+                    if not available:
+                        continue
                 btn_id += 1
                 buttons.append({
                     "id": btn_id,
                     "text": htmlescape(btn.get("text")),
                     "event": btn.get("event"),
                     "href": href,
+                    "default": btn.get("default"),
                 })
+            if len(buttons) == 1:
+                buttons[0]["default"] = True
+            for btn in buttons:
                 if btn.get("default"):
-                    default_button = btn_id
+                    default_button = btn.get("id")
                     default_event = btn.get("event")
+                    break
             vars = {
                 "title": htmlescape(dialog.get("title")),
                 "buttons": buttons,
