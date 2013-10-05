@@ -9,6 +9,7 @@ re_sell_item = re.compile(r'^sell-([a-f0-9]{32})$')
 re_request_item = re.compile(r'^([a-f0-9_]+)/(\d+\.\d+|\d+)/([A-Z0-9]+)/(\d+)$')
 
 re_stats_arg = re.compile(r'^(sell|buy)/([A-Z0-9a-z]+)/(\d\d\d\d-\d\d-\d\d)$')
+re_valid_template = re.compile(r'^[a-zA-Z][a-zA-Z0-9\-]*\.html$')
 
 class DBShopOperation(CassandraObject):
     clsname = "ShopOperation"
@@ -74,6 +75,9 @@ class ShopsAdmin(ConstructorModule):
         fields.append({"name": "shop_sell_price", "label": self._("Sell price correction") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("shop_sell_price", default_sell_price)), "condition": "[tp]=='shop' && [shop_sell]"})
         fields.append({"name": "shop_buy", "label": self._("This shop buys goods"), "type": "checkbox", "checked": func.get("shop_buy"), "condition": "[tp] == 'shop'"})
         fields.append({"name": "shop_buy_price", "label": self._("Buy price correction") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("shop_buy_price", default_buy_price)), "condition": "[tp]=='shop' && [shop_buy]"})
+        fields.append({"type": "header", "html": self._("Shop design"), "condition": "[tp]=='shop'"})
+        fields.append({"name": "shop_template_default", "label": self._("Use default html template"), "type": "checkbox", "checked": func.get("shop_template") is None, "condition": "[tp]=='shop'"})
+        fields.append({"name": "shop_template", "label": self._("Template name"), "value": func.get("shop_template", "shop-items-layout.html"), "condition": "[tp]=='shop' && ![shop_template_default]"})
 
     def form_store(self, func, errors):
         req = self.req()
@@ -106,6 +110,18 @@ class ShopsAdmin(ConstructorModule):
             func["default_action"] = "buy"
         else:
             func["default_action"] = "sell"
+        # design template
+        if req.param("shop_template_default"):
+            if "shop_template" in func:
+                del func["shop_template"]
+        else:
+            tpl = req.param("shop_template").strip()
+            if not tpl:
+                errors["shop_template"] = self._("This field is mandatory")
+            elif not re_valid_template.match(tpl):
+                errors["shop_template"] = self._("Template name must start with latin letter. Other symbols may be latin letters, digits or '-'. File name extension must be .html")
+            else:
+                func["shop_template"] = tpl
 
     def actions(self, func_id, func, actions):
         req = self.req()
@@ -769,7 +785,7 @@ class Shops(ConstructorModule):
             else:
                 vars["Submit"] = self._("Sell selected items")
             vars["pcs"] = self._("pcs")
-            content = self.call("game.parse_internal", "shop-items-layout.html", vars)
+            content = self.call("game.parse_internal", func.get("shop_template", "shop-items-layout.html"), vars)
             content = self.call("game.parse_internal", "shop-items.html", vars, content)
         elif mode == "sell":
             content = self._("There are no items for sell at the moment")
