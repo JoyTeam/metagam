@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-09-29 00:55+0300\n"
+"PO-Revision-Date: 2013-10-05 14:12+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2420,6 +2420,10 @@ msgstr "Уничтожить эту игру"
 msgid "Detailed description of the currency setup you can read in the <a href=\"//www.%s/doc/newgame#money\" target=\"_blank\">reference manual page</a>."
 msgstr "Подробное описание настройки валют вы можете прочитать на <a href=\"//www.%s/doc/newgame#money\" target=\"_blank\">этой странице руководства</a>."
 
+#, python-format
+msgid "Detailed description of the forms template is provided in the <a href=\"//www.%s/doc/design/forms\" target=\"_blank\">forms documentation</a>"
+msgstr "Подробное описание шаблона форм приведено в <a href=\"//www.%s/doc/design/forms\" target=\"_blank\">документации на формы</a>"
+
 msgid "Developers club"
 msgstr "Клуб разработчиков"
 
@@ -3353,6 +3357,9 @@ msgstr "Поля ввода форм должны иметь атрибут \"na
 
 msgid "Format"
 msgstr "Формат"
+
+msgid "Forms documentation"
+msgstr "Документация на формы"
 
 msgid "Forms inside forms are not allowed"
 msgstr "Формы внутри форм запрещены"
@@ -5495,6 +5502,9 @@ msgstr "Интерфейс локации в виде нескольких ст�
 
 msgid "Multiple static images with different dimensions"
 msgstr "Несколько статических изображений с различными размерами"
+
+msgid "Multipurpose form"
+msgstr "Многоцелевая форма"
 
 msgid "Music"
 msgstr "Музыка"

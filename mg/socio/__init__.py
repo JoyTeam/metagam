@@ -870,7 +870,7 @@ class Socio(Module):
         vars = {
             "title": self._("Upload image")
         }
-        self.call("socio.response_simple", form.html(), vars)
+        self.call("socio.response_simple", form.html(renderer="socio.render-form"), vars)
 
     def ext_user(self):
         req = self.req()
@@ -1463,7 +1463,7 @@ class Forum(Module):
                 { "html": self._("New topic") },
             ],
         }
-        self.call("socio.response", form.html(), vars)
+        self.call("socio.response", form.html(renderer="socio.render-form"), vars)
 
     def newtopic(self, cat, author, subject, content, tags="", created=None, notify=True):
         topic = self.obj(ForumTopic)
@@ -1796,8 +1796,8 @@ class Forum(Module):
             form.submit(None, "save", self._("Post reply"), inline=True)
             self.call("forum.reply-form", form, "render")
             if req.ok():
-                self.call("socio.response", form.html(), vars)
-            vars["new_post_form"] = form.html()
+                self.call("socio.response", form.html(renderer="socio.render-form"), vars)
+            vars["new_post_form"] = form.html(renderer="socio.render-form")
         else:
             if errors.get("may_write"):
                 vars["new_post_form"] = u'<div class="socio-access-error">%s</div>' % errors["may_write"]
@@ -1969,7 +1969,7 @@ class Forum(Module):
                 { "html": self._("Reply") },
             ],
         }
-        self.call("socio.response", form.html(), vars)
+        self.call("socio.response", form.html(renderer="socio.render-form"), vars)
 
     def update_last(self, cat, stat):
         topics = self.objlist(ForumTopicList, query_index="category_list", query_equal=cat["id"], query_reversed=True, query_limit=1)
@@ -2119,7 +2119,7 @@ class Forum(Module):
                 form.input(self._("Tags (delimited with commas)"), "tags", tags)
             self.call("forum.topic-form", topic, form, "form")
         form.submit(None, None, self._("Save"))
-        self.call("socio.response", form.html(), vars)
+        self.call("socio.response", form.html(renderer="socio.render-form"), vars)
 
     def ext_settings(self):
         req = self.req()
@@ -2342,7 +2342,7 @@ class Forum(Module):
             form.add_message_top('<div class="form-avatar-demo"><img src="%s" alt="" /></div>' % avatar)
         if grayscale:
             form.add_message_top(self._('You can use grayscale avatars only. To get an ability to upload coloured avatars <a href="/socio/paid-services">please subscribe</a>'))
-        self.call("socio.response", form.html(), vars)
+        self.call("socio.response", form.html(renderer="socio.render-form"), vars)
 
     def ext_subscribe(self):
         req = self.req()
@@ -2512,7 +2512,7 @@ class Forum(Module):
         vars = {
             "title": self._("Move topic: %s") % topic.get("subject")
         }
-        self.call("socio.response", form.html(), vars)
+        self.call("socio.response", form.html(renderer="socio.render-form"), vars)
 
     def auth_registered(self, user):
         settings = self.obj(UserForumSettings, user.uuid, {})
@@ -3030,7 +3030,7 @@ class Forum(Module):
         form.checkbox(self._("Search topics"), "search_topics", search_topics, inline=True)
         form.checkbox(self._("Search comments"), "search_comments", search_comments, inline=True)
         form.submit(None, None, self._("btn///Search"))
-        vars["advanced_search_form"] = form.html()
+        vars["advanced_search_form"] = form.html(renderer="socio.render-form")
         # render page
         self.call("forum.vars-topic", vars)
         self.call("socio.response_template", "topic.html", vars)
@@ -3145,6 +3145,7 @@ class SocioAdmin(Module):
         files.append({"filename": "global.html", "description": self._("Global template for all socio pages"), "doc": "/doc/design/sociointerface"})
         files.append({"filename": "global-simple.html", "description": self._("Simple global template")})
         files.append({"filename": "list.html", "description": self._("List of miscellaneous items")})
+        files.append({"filename": "form.html", "description": self._("Multipurpose form")})
         files.append({"filename": "user.html", "description": self._("Socio user profile")})
 
     def menu_root_index(self, menu):

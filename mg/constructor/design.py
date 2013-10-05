@@ -1625,6 +1625,8 @@ class DesignAdmin(Module):
                     if doc:
                         fields.append({"type": "html", "html": '<div class="admin-doc-link"><a href="%s://www.%s%s" target="_blank">%s</a></div>' % (self.main_app().protocol, self.main_host, doc, self._("Open documentation page")), "inline": True})
                 fields.append({"type": "textarea", "name": "content", "value": content, "height": 600, "nowrap": True})
+                if fn == "form.html":
+                    self.call("admin.advice", {"title": self._("Forms documentation"), "content": self._('Detailed description of the forms template is provided in the <a href="//www.%s/doc/design/forms" target="_blank">forms documentation</a>') % self.main_host, "order": -40})
                 try:
                     self.call("admin.form", fields=fields)
                 except UnicodeDecodeError:

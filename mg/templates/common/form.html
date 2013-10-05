@@ -48,7 +48,6 @@
 	[%if col.element_textarea%]<textarea name="[%col.name%]" class="form-w100 form-bg" cols="[%form_textarea_cols%]" rows="[%form_textarea_rows%]">[%col.value%]</textarea>[%end%]
 	[%if col.element_textarea_fixed%]<textarea name="[%col.name%]" class="form-bg" cols="[%form_textarea_cols%]" rows="[%form_textarea_rows%]" wrap="hard">[%col.value%]</textarea>[%end%]
 	[%if col.element_submit%]<input type="submit"[%if col.submit_name%] name="[%col.submit_name%]"[%end%] value="[%col.value%]" class="form-submit" />[%end%]
-	[%if col.element_generic_submit%]<input type="submit"[%if col.name%] name="[%col.name.text%]"[%end%] value="[%col.value%]" class="form-submit" />[%end%]
 	[%if col.element_texteditor%]
 	<table class="form-editor-toolbox"><tr>
 	<td><img class="form-clickable" src="/st-mg/form/bold.gif" alt="B" title="[%bold%]" onclick="add_code('[%col.name%]', this, '[b]','[/b]', 1)" /></td>
