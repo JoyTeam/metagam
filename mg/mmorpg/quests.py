@@ -204,11 +204,10 @@ class CharQuest(object):
             if m:
                 param = m.group(1)
                 return self.quests.get(self.qid, param)
+            if handle_exceptions:
+                return None
             else:
-                if handle_exceptions:
-                    return None
-                else:
-                    raise AttributeError(attr)
+                raise AttributeError(attr)
 
     def script_set_attr(self, attr, val, env):
         if attr == "state":

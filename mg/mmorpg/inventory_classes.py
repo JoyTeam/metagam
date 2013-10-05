@@ -4,6 +4,7 @@ import re
 import hashlib
 
 re_param_attr = re.compile(r'^p_(.+)')
+re_html_attr = re.compile(r'^html_(.+)')
 re_dna_parse = re.compile(r'^([a-f0-9]+)(?:|_([0-9a-f]+))$')
 
 class DBItemType(CassandraObject):
@@ -225,8 +226,11 @@ class ItemType(Module, ParametrizedObject):
             if m:
                 param = m.group(1)
                 return self.param(param, handle_exceptions)
-            else:
-                raise AttributeError(attr)
+            m = re_html_attr.match(attr)
+            if m:
+                param = m.group(1)
+                return self.param_html(param, handle_exceptions)
+            raise AttributeError(attr)
 
     def __str__(self):
         return "[item %s]" % utf2str(self.name)
