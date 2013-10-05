@@ -160,7 +160,7 @@ class Interface(ConstructorModule):
         files.append({"filename": "cabinet.html", "description": self._("Cabinet interface (inside the external interface)"), "doc": "/doc/design/cabinet"})
         files.append({"filename": "error.html", "description": self._("Error message"), "doc": "/doc/design/info"})
         files.append({"filename": "info.html", "description": self._("Informational message"), "doc": "/doc/design/info"})
-        files.append({"filename": "form.html", "description": self._("Multipurpose form")})
+        files.append({"filename": "form.html", "description": self._("Multipurpose form"), "doc": "/doc/design/forms"})
         files.append({"filename": "tables.html", "description": self._("Web form"), "doc": "/doc/design/tables"})
 
     def advice_gameinterface(self, hook, args, advice):

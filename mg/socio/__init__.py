@@ -3145,7 +3145,7 @@ class SocioAdmin(Module):
         files.append({"filename": "global.html", "description": self._("Global template for all socio pages"), "doc": "/doc/design/sociointerface"})
         files.append({"filename": "global-simple.html", "description": self._("Simple global template")})
         files.append({"filename": "list.html", "description": self._("List of miscellaneous items")})
-        files.append({"filename": "form.html", "description": self._("Multipurpose form")})
+        files.append({"filename": "form.html", "description": self._("Multipurpose form"), "doc": "/doc/design/forms"})
         files.append({"filename": "user.html", "description": self._("Socio user profile")})
 
     def menu_root_index(self, menu):
