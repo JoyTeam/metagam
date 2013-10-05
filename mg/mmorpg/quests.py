@@ -164,9 +164,22 @@ class CharQuests(ConstructorModule):
                     "text": self._("Close")
                 }
             ]
-        # removing other dialogs from the same quest
+        # remove other dialogs from the same quest
         dialogs = self.dialogs
-        dialogs = [ent for ent in dialogs if ent.get("quest") != quest]
+        if quest:
+            dialogs = [ent for ent in dialogs if ent.get("quest") != quest or ent.get("type") != None]
+        dialogs.insert(0, dialog)
+        self._quests.set(":dialogs", dialogs)
+
+    def itemselector(self, dialog, quest=None):
+        dialog["uuid"] = uuid4().hex
+        dialog["type"] = "itemselector"
+        if quest:
+            dialog["quest"] = quest
+        # remove other dialogs from the same quest
+        dialogs = self.dialogs
+        if quest:
+            dialogs = [ent for ent in dialogs if ent.get("quest") != quest or ent.get("type") != "itemselector"]
         dialogs.insert(0, dialog)
         self._quests.set(":dialogs", dialogs)
 
@@ -914,6 +927,43 @@ class QuestsAdmin(ConstructorModule):
                         return "  " * indent + 'modifier id="%s" add=%s%s\n' % (val[1], self.call("script.unparse-expression", val[3]), modval)
                 elif op == "prolong":
                     return "  " * indent + 'modifier id="%s" prolong=%s%s\n' % (val[1], self.call("script.unparse-expression", val[3]), modval)
+            elif val[0] == "selectitem":
+                options = val[1]
+                result = "  " * indent + "selectitem {\n"
+                if "title" in options:
+                    result += "  " * (indent + 1) + "title %s\n" % self.call("script.unparse-expression", self.call("script.unparse-text", options["title"]))
+                if "show" in options:
+                    result += "  " * (indent + 1) + "show %s\n" % self.call("script.unparse-expression", options["show"])
+                if "fields" in options:
+                    result += "  " * (indent + 1) + "fields {\n"
+                    for field in options["fields"]:
+                        add = ""
+                        if "visible" in field:
+                            add += " visible=%s" % self.call("script.unparse-expression", field["visible"])
+                        result += "  " * (indent + 2) + "field name=%s value=%s%s\n" % (
+                            self.call("script.unparse-expression", self.call("script.unparse-text", field["name"])),
+                            self.call("script.unparse-expression", self.call("script.unparse-text", field["value"])),
+                            add,
+                        )
+                    result += "  " * (indent + 1) + "}\n"
+                if "actions" in options:
+                    result += "  " * (indent + 1) + "actions {\n"
+                    for action in options["actions"]:
+                        add = ""
+                        if "available" in action:
+                            add += " available=%s" % self.call("script.unparse-expression", action["available"])
+                        result += u"  " * (indent + 2) + "action name=%s event=%s%s\n" % (
+                            self.call("script.unparse-expression", self.call("script.unparse-text", action["name"])),
+                            self.call("script.unparse-expression", action["event"]),
+                            add
+                        )
+                    result += "  " * (indent + 1) + "}\n"
+                if "oncancel" in options:
+                    result += "  " * (indent + 1) + "oncancel %s\n" % self.call("script.unparse-expression", options["oncancel"])
+                if "template" in options:
+                    result += "  " * (indent + 1) + "template %s\n" % self.call("script.unparse-expression", options["template"])
+                result += "  " * indent + "}\n"
+                return result
             elif val[0] == "dialog":
                 options = val[1]
                 result = "  " * indent + "dialog {\n"
@@ -1194,7 +1244,7 @@ class QuestsAdmin(ConstructorModule):
                     rdialog = [
                         htmlescape(dialog.get("title")),
                         quest,
-                        htmlescape(dialog.get("template", "dialog.html")),
+                        htmlescape(dialog.get("template", self._("default"))),
                     ]
                     if may_dialogs:
                         rdialog.append(u'<hook:admin.link href="quests/removedialog/%s/%s" title="%s" />' % (character.uuid, dialog.get("uuid"), self._("remove")))
@@ -1878,6 +1928,14 @@ class Quests(ConstructorModule):
                                                     if debug:
                                                         self.call("debug-channel.character", char, lambda: self._("prolonging modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
                                                     char.modifiers.prolong(mid, modval, timeout)
+                                    elif cmd_code == "selectitem":
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("opening item selector"), cls="quest-action", indent=indent+2)
+                                        itemselector = cmd[1].copy()
+                                        if itemselector.get("title"):
+                                            itemselector["title"] = self.call("script.evaluate-text", itemselector["title"], globs=kwargs, description=eval_description)
+                                        char.quests.itemselector(itemselector, quest)
+                                        modified_objects.add(char.quests)
                                     elif cmd_code == "dialog":
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("opening dialog"), cls="quest-action", indent=indent+2)
@@ -2320,67 +2378,173 @@ class Quests(ConstructorModule):
         if not dialogs:
             self.call("web.redirect", self.call("game-interface.default-location") or "/location")
         dialog = dialogs[0]
-        if req.ok():
-            if utf2str(dialog.get("uuid", "")) != utf2str(req.args):
-                self.call("web.redirect", "/quest/dialog")
-            event = req.param("event")
-            found = False
-            for btn in dialog["buttons"]:
-                if btn.get("event", "") == event:
-                    found = True
-                    break
-            if found:
-                # closing dialog
+        if dialog.get("type") == "itemselector":
+            # item selector dialog
+            globs = {"char": character}
+            if "quest" in dialog:
+                globs["quest"] = character.quests.quest(dialog["quest"])
+            vars = {}
+            def cancel():
+                # close dialog
                 del dialogs[0]
                 character.quests.touch()
                 character.quests.store()
-                # sending event
-                if event:
-                    params = {}
-                    if "inputs" in dialog:
-                        for inp in dialog["inputs"]:
-                            params["inp_%s" % inp["id"]] = req.param("input-%s" % inp["id"])
-                    self.qevent("event-%s-%s" % (dialog.get("quest"), event), char=character, **params)
+                # send event
+                if "oncancel" in dialog:
+                    self.qevent("event-%s-%s" % (dialog.get("quest"), dialog["oncancel"]), char=character)
                 self.call("quest.check-redirects")
-                self.call("web.redirect", self.call("game-interface.default-location") or "/location")
-            else:
-                character.error(self._("This button is unavailable"))
-        buttons = []
-        default_button = None
-        default_event = None
-        href = "/quest/dialog/%s" % dialog.get("uuid", "")
-        btn_id = 0
-        if len(dialog["buttons"]) == 1:
-            dialog["buttons"][0]["default"] = True
-        for btn in dialog["buttons"]:
-            btn_id += 1
-            buttons.append({
-                "id": btn_id,
-                "text": htmlescape(btn.get("text")),
-                "event": btn.get("event"),
+            def grep(item_type):
+                if "show" not in dialog:
+                    return True
+                globs["item"] = item_type
+                try:
+                    available = self.call("script.evaluate-expression", dialog["show"], globs=globs, description=lambda: self._("Item %s availability") % item_type.dna)
+                except ScriptError as e:
+                    # Send only one exception report to admin (avoid flooding)
+                    if "script_exception_shown" not in vars:
+                        self.call("exception.report", e)
+                        vars["script_exception_shown"] = True
+                    available = False
+                return available
+            if req.param("dialog") == dialog["uuid"]:
+                if req.param("cancel"):
+                    cancel()
+                    self.call("web.redirect", self.call("game-interface.default-location") or "/location")
+                elif req.param("item"):
+                    # search item
+                    item_type, quantity = character.inventory.find_dna(req.param("item"))
+                    if item_type and quantity > 0:
+                        if grep(item_type):
+                            globs["item"] = item_type
+                            # search action
+                            sel_action = req.param("action")
+                            for action in dialog.get("actions", []):
+                                if action["event"] == sel_action:
+                                    # check action availability
+                                    try:
+                                        available = self.call("script.evaluate-expression", action.get("available", 1), globs=globs, description=lambda: self._("Action %s availability") % action["event"])
+                                    except ScriptError as e:
+                                        # Send only one exception report to admin (avoid flooding)
+                                        if "script_exception_shown" not in vars:
+                                            self.call("exception.report", e)
+                                            vars["script_exception_shown"] = True
+                                        available = False
+                                    if available:
+                                        # close dialog
+                                        del dialogs[0]
+                                        character.quests.touch()
+                                        character.quests.store()
+                                        # execute action
+                                        self.qevent("event-%s-%s" % (dialog.get("quest"), action["event"]), char=character, item=item_type)
+                                        self.call("quest.check-redirects")
+                                        self.call("web.redirect", self.call("game-interface.default-location") or "/location")
+            # looking for items to select
+            def render(item_type, ritem):
+                globs["item"] = item_type
+                if dialog.get("actions"):
+                    menu = []
+                    for action in dialog["actions"]:
+                        if not self.call("script.evaluate-expression", action.get("available", 1), globs=globs, description=lambda: self._("Action %s availability") % action["event"]):
+                            continue
+                        menu.append({
+                            "href": "/quest/dialog?dialog=%s&amp;action=%s&amp;item=%s" % (
+                                dialog["uuid"],
+                                action["event"],
+                                item_type.dna,
+                            ),
+                            "html": self.call("script.evaluate-text", action["name"], globs=globs, description=lambda: self._("Action %s text") % action["event"]),
+                        })
+                    ritem["menu"] = menu
+                    # don't show item if no actions are available
+                    if not menu:
+                        ritem.clear()
+                        return
+                if dialog.get("fields"):
+                    if "params" not in ritem:
+                        ritem["params"] = []
+                    for field in dialog["fields"]:
+                        if not self.call("script.evaluate-expression", field.get("visible", 1), globs=globs, description=lambda: self._("Field visibility")):
+                            continue
+                        ritem["params"].append({
+                            "name": self.call("script.evaluate-text", field["name"], globs=globs, description=lambda: self._("Field name")),
+                            "value": self.call("script.evaluate-text", field["value"], globs=globs, description=lambda: self._("Field value")),
+                        })
+            self.call("inventory.render", character.inventory, vars, grep=grep, render=render, viewer=character)
+            vars["title"] = dialog.get("title")
+            vars["menu_left"] = [
+                {
+                    "href": "/quest/dialog?dialog=%s&amp;cancel=1" % dialog["uuid"],
+                    "html": self._("Cancel"),
+                    "lst": True
+                }
+            ]
+            if not vars["categories"]:
+                cancel()
+                self.call("game.internal-error", self._("No items available"))
+            self.call("game.response_internal", dialog.get("template", "inventory.html"), vars)
+        else:
+            # general dialog
+            if req.ok():
+                if utf2str(dialog.get("uuid", "")) != utf2str(req.args):
+                    self.call("web.redirect", "/quest/dialog")
+                event = req.param("event")
+                found = False
+                for btn in dialog["buttons"]:
+                    if btn.get("event", "") == event:
+                        found = True
+                        break
+                if found:
+                    # close dialog
+                    del dialogs[0]
+                    character.quests.touch()
+                    character.quests.store()
+                    # send event
+                    if event:
+                        params = {}
+                        if "inputs" in dialog:
+                            for inp in dialog["inputs"]:
+                                params["inp_%s" % inp["id"]] = req.param("input-%s" % inp["id"])
+                        self.qevent("event-%s-%s" % (dialog.get("quest"), event), char=character, **params)
+                    self.call("quest.check-redirects")
+                    self.call("web.redirect", self.call("game-interface.default-location") or "/location")
+                else:
+                    character.error(self._("This button is unavailable"))
+            buttons = []
+            default_button = None
+            default_event = None
+            href = "/quest/dialog/%s" % dialog.get("uuid", "")
+            btn_id = 0
+            if len(dialog["buttons"]) == 1:
+                dialog["buttons"][0]["default"] = True
+            for btn in dialog["buttons"]:
+                btn_id += 1
+                buttons.append({
+                    "id": btn_id,
+                    "text": htmlescape(btn.get("text")),
+                    "event": btn.get("event"),
+                    "href": href,
+                })
+                if btn.get("default"):
+                    default_button = btn_id
+                    default_event = btn.get("event")
+            vars = {
+                "title": htmlescape(dialog.get("title")),
+                "buttons": buttons,
                 "href": href,
-            })
-            if btn.get("default"):
-                default_button = btn_id
-                default_event = btn.get("event")
-        vars = {
-            "title": htmlescape(dialog.get("title")),
-            "buttons": buttons,
-            "href": href,
-            "default_button": default_button,
-            "default_event": default_event,
-        }
-        if "inputs" in dialog:
-            inputs = []
-            vars["inputs"] = inputs
-            for inp in dialog["inputs"]:
-                inputs.append(inp)
-        try:
-            content = self.call("game.parse_internal", dialog.get("template", "dialog.html"), vars, dialog.get("text"))
-        except TemplateException as e:
-            self.exception(e)
-            content = self.call("game.parse_internal", "dialog.html", vars, dialog.get("text"))
-        self.call("game.response_internal", "dialog-scripts.html", vars, content)
+                "default_button": default_button,
+                "default_event": default_event,
+            }
+            if "inputs" in dialog:
+                inputs = []
+                vars["inputs"] = inputs
+                for inp in dialog["inputs"]:
+                    inputs.append(inp)
+            try:
+                content = self.call("game.parse_internal", dialog.get("template", "dialog.html"), vars, dialog.get("text"))
+            except TemplateException as e:
+                self.exception(e)
+                content = self.call("game.parse_internal", "dialog.html", vars, dialog.get("text"))
+            self.call("game.response_internal", "dialog-scripts.html", vars, content)
 
     def money_description_quest(self):
         return {

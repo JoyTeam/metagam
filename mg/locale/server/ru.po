@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-10-05 14:12+0300\n"
+"PO-Revision-Date: 2013-10-05 18:54+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -112,6 +112,9 @@ msgstr "\"%s\" - не объект"
 msgid "'%s' is not settable"
 msgstr "\"%s\" изменить нельзя"
 
+msgid "'Actions' must not be empty"
+msgstr "Список действий \"actions\" не должен быть пустым"
+
 msgid "'After get turn' script"
 msgstr "Скрипт \"после получения права хода\""
 
@@ -123,6 +126,9 @@ msgstr "Скрипт \"после совершения хода\""
 
 msgid "'After turn timeout' script"
 msgstr "Скрипт \"после таймаута хода\""
+
+msgid "'Selectitem' must contain 'fields' part"
+msgstr "\"Selectitem\" должен содержать раздел \"fields\""
 
 msgid "'Unwear' prompt"
 msgstr "Приглашение \"Снять\""
@@ -360,6 +366,14 @@ msgstr "Активация аккаунта"
 
 msgid "Action"
 msgstr "Действие"
+
+#, python-format
+msgid "Action %s availability"
+msgstr "Доступность действия %s"
+
+#, python-format
+msgid "Action %s text"
+msgstr "Текст действия %s"
 
 msgid "Action code"
 msgstr "Код действия"
@@ -2433,14 +2447,12 @@ msgstr "Дьявол"
 msgid "Dialog can't contain more than 1 default button"
 msgstr "В диалоге не может быть более одной кнопки по умолчанию"
 
+#, python-format
+msgid "Dialog can't contain multiple '%s' entries"
+msgstr "У диалога не может быть несколько записей \"%s\""
+
 msgid "Dialog can't contain multiple 'template' entries"
 msgstr "У диалога не может быть несколько записей \"template\""
-
-msgid "Dialog can't contain multiple 'text' entries"
-msgstr "У диалога не может быть несколько записей \"text\""
-
-msgid "Dialog can't contain multiple 'title' entries"
-msgstr "У диалога не может быть несколько записей \"title\""
 
 msgid "Dialog template name must be a string"
 msgstr "Имя шаблона диалога должно быть строкой"
@@ -3179,6 +3191,9 @@ msgstr "Идентификатор события должен начинать�
 msgid "Event identifier not specified"
 msgstr "Идентификатор события не указан"
 
+msgid "Event name must be a string"
+msgstr "Идентификатор события должен быть строкой"
+
 msgid "Every channel on a separate tab"
 msgstr "Каждый канал на отдельной вкладке"
 
@@ -3285,8 +3300,17 @@ msgstr "Иконка инфы персонажа женского пола"
 msgid "Field code (identifier for scripting)"
 msgstr "Код поля (для использования в скриптах)"
 
+msgid "Field name"
+msgstr "Название поля"
+
 msgid "Field type"
 msgstr "Тип поля"
+
+msgid "Field value"
+msgstr "Значение поля"
+
+msgid "Field visibility"
+msgstr "Видимость поля"
 
 msgid "File"
 msgstr "Файл"
@@ -4537,6 +4561,10 @@ msgstr "Отредактировать этот шаблон невозможн�
 
 msgid "Italic"
 msgstr "Курсив"
+
+#, python-format
+msgid "Item %s availability"
+msgstr "Доступность предмета %s"
 
 msgid "Item / DNA"
 msgstr "Предмет / ДНК"
@@ -5843,6 +5871,9 @@ msgstr "У локации нет функций"
 
 msgid "No image"
 msgstr "Нет изображения"
+
+msgid "No items available"
+msgstr "Нет доступных предметов"
 
 msgid "No items of such type"
 msgstr "Нет предметов данного типа"
@@ -10620,6 +10651,9 @@ msgstr "открыть выпадающее меню <strong><hook:admin.link hr
 msgid "opening dialog"
 msgstr "открываем диалог"
 
+msgid "opening item selector"
+msgstr "открываем выбор предметов"
+
 msgid "paidservice///{name} for {{period}}"
 msgstr "{name} на {{period_a}}"
 
@@ -11358,6 +11392,12 @@ msgstr "{targetchar.name} не в игре"
 
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
+
+#~ msgid "Item %s action text"
+#~ msgstr "Текст действия на предмете %s"
+
+#~ msgid "Dialog can't contain multiple 'title' entries"
+#~ msgstr "У диалога не может быть несколько записей \"title\""
 
 #~ msgid "Maximal length - 17 characters"
 #~ msgstr "Максимальная длина - 17 символов"

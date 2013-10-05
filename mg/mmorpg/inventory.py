@@ -2353,7 +2353,6 @@ class Inventory(ConstructorModule):
             self.call("item-types.params-owner-important", item_type, params, viewer=viewer)
             params = [par for par in params if par.get("value_raw") is not None or par.get("important")]
             if params:
-                params[-1]["lst"] = True
                 ritem["params"] = params
             cat = item_type.get("cat-inventory")
             misc = None
@@ -2372,6 +2371,13 @@ class Inventory(ConstructorModule):
                 continue
             if render:
                 render(item_type, ritem)
+                # empty ritem means "skip after rendering stage"
+                if not ritem:
+                    continue
+            if ritem.get("menu"):
+                ritem["menu"][-1]["lst"] = True
+            if ritem.get("params"):
+                ritem["params"][-1]["lst"] = True
             try:
                 ritems[cat].append(ritem)
             except KeyError:

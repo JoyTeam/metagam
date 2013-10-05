@@ -31,6 +31,9 @@ class TokenRequire(Parsing.Token):
 class TokenCall(Parsing.Token):
     "%token call"
 
+class TokenShow(Parsing.Token):
+    "%token show"
+
 class TokenGive(Parsing.Token):
     "%token give"
 
@@ -105,6 +108,9 @@ class TokenClass(Parsing.Token):
 
 class TokenSelected(Parsing.Token):
     "%token selected"
+
+class TokenSelectItem(Parsing.Token):
+    "%token selectitem"
 
 class TokenShop(Parsing.Token):
     "%token shop"
@@ -195,6 +201,21 @@ class TokenChanged(Parsing.Token):
 
 class TokenJoin(Parsing.Token):
     "%token join"
+
+class TokenField(Parsing.Token):
+    "%token field"
+
+class TokenFields(Parsing.Token):
+    "%token fields"
+
+class TokenAction(Parsing.Token):
+    "%token action"
+
+class TokenActions(Parsing.Token):
+    "%token actions"
+
+class TokenOnCancel(Parsing.Token):
+    "%token oncancel"
 
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm [pAttrKey]"
@@ -600,6 +621,12 @@ class QuestAction(Parsing.Nonterm):
         validate_attrs(cmd, "modifier", attrs, ["id"])
         self.val = ["modremove", mid]
 
+    def reduceSelectItem(self, cmd, curlyleft, content, curlyright):
+        "%reduce selectitem curlyleft SelectItemContent curlyright"
+        if "actions" not in content.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("'Selectitem' must contain 'fields' part"))
+        self.val = ["selectitem", content.val]
+
     def reduceDialog(self, cmd, curlyleft, content, curlyright):
         "%reduce dialog curlyleft DialogContent curlyright"
         self.val = ["dialog", content.val]
@@ -793,6 +820,106 @@ class CombatMemberType(Parsing.Nonterm):
         "%reduce virtual"
         self.val = ["virtual"]
 
+class SelectItemContent(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = {}
+
+    def reduceTitle(self, content, cmd, title):
+        "%reduce SelectItemContent title scalar"
+        self.val = content.val.copy()
+        if "title" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple '%s' entries") % "title")
+        if type(title.val) != str and type(title.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog title must be a string"))
+        self.val["title"] = cmd.script_parser.parse_text(title.val, cmd.script_parser._("Dialog title"))
+
+    def reduceShow(self, content, cmd, cond):
+        "%reduce SelectItemContent show Expr"
+        self.val = content.val.copy()
+        if "show" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple '%s' entries") % "show")
+        self.val["show"] = cond.val
+
+    def reduceFields(self, content, cmd, curlyleft, fields, curlyright):
+        "%reduce SelectItemContent fields curlyleft FieldsContent curlyright"
+        self.val = content.val.copy()
+        if "fields" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple '%s' entries") % "fields")
+        self.val["fields"] = fields.val
+
+    def reduceActions(self, content, cmd, curlyleft, actions, curlyright):
+        "%reduce SelectItemContent actions curlyleft ActionsContent curlyright"
+        self.val = content.val.copy()
+        if "actions" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple '%s' entries") % "actions")
+        if not actions.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("'Actions' must not be empty"))
+        self.val["actions"] = actions.val
+
+    def reduceOnCancel(self, content, cmd, event):
+        "%reduce SelectItemContent oncancel scalar"
+        self.val = content.val.copy()
+        if "oncancel" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple '%s' entries") % "oncancel")
+        if type(event.val) != str and type(event.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Event name must be a string"))
+        if not re_valid_identifier.match(event.val):
+            raise Parsing.SyntaxError(cmd.script_parser._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
+        self.val["oncancel"] = event.val
+
+    def reduceTemplate(self, content, cmd, tpl):
+        "%reduce SelectItemContent template scalar"
+        self.val = content.val.copy()
+        if "template" in self.val:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple '%s' entries") % "template")
+        if type(tpl.val) != str and type(tpl.val) != unicode:
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog template name must be a string"))
+        if not re_valid_template.match(tpl.val):
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog template name must start with latin letter. Other symbols may be latin letters, digits or '-'. File name extension must be .html"))
+        self.val["template"] = tpl.val
+
+class ActionsContent(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = []
+
+    def reduceAction(self, content, cmd, attrs):
+        "%reduce ActionsContent action ExprAttrs"
+        name = get_str_attr(cmd, "action", attrs, "name", require=True)
+        event = get_str_attr(cmd, "action", attrs, "event", require=True)
+        available = get_attr(cmd, "field", attrs, "available")
+        validate_attrs(cmd, "action", attrs, ["name", "event", "available"])
+        action = {
+            "name": cmd.script_parser.parse_text(name, cmd.script_parser._("Action name")),
+            "event": event,
+        }
+        if available is not None:
+            action["available"] = available
+        self.val = content.val + [action]
+
+class FieldsContent(Parsing.Nonterm):
+    "%nonterm"
+    def reduceEmpty(self):
+        "%reduce"
+        self.val = []
+
+    def reduceField(self, content, cmd, attrs):
+        "%reduce FieldsContent field ExprAttrs"
+        name = get_str_attr(cmd, "field", attrs, "name", require=True)
+        value = get_str_attr(cmd, "field", attrs, "value", require=True)
+        visible = get_attr(cmd, "field", attrs, "visible")
+        validate_attrs(cmd, "field", attrs, ["name", "value", "visible"])
+        field = {
+            "name": cmd.script_parser.parse_text(name, cmd.script_parser._("Field name")),
+            "value": cmd.script_parser.parse_text(value, cmd.script_parser._("Field value")),
+        }
+        if visible is not None:
+            field["visible"] = visible
+        self.val = content.val + [field]
+
 class DialogContent(Parsing.Nonterm):
     "%nonterm"
     def reduceEmpty(self):
@@ -803,7 +930,7 @@ class DialogContent(Parsing.Nonterm):
         "%reduce DialogContent text scalar"
         self.val = content.val.copy()
         if "text" in self.val:
-            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple 'text' entries"))
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple '%s' entries") % "text")
         if type(text.val) != str and type(text.val) != unicode:
             raise Parsing.SyntaxError(cmd.script_parser._("Dialog text must be a string"))
         self.val["text"] = cmd.script_parser.parse_text(text.val, cmd.script_parser._("Dialog text"))
@@ -812,7 +939,7 @@ class DialogContent(Parsing.Nonterm):
         "%reduce DialogContent title scalar"
         self.val = content.val.copy()
         if "title" in self.val:
-            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple 'title' entries"))
+            raise Parsing.SyntaxError(cmd.script_parser._("Dialog can't contain multiple '%s' entries") % "title")
         if type(title.val) != str and type(title.val) != unicode:
             raise Parsing.SyntaxError(cmd.script_parser._("Dialog title must be a string"))
         self.val["title"] = cmd.script_parser.parse_text(title.val, cmd.script_parser._("Dialog title"))
@@ -1019,6 +1146,13 @@ class QuestScriptParser(ScriptParser):
     syms["money"] = TokenMoney
     syms["changed"] = TokenChanged
     syms["join"] = TokenJoin
+    syms["selectitem"] = TokenSelectItem
+    syms["show"] = TokenShow
+    syms["field"] = TokenField
+    syms["fields"] = TokenFields
+    syms["action"] = TokenAction
+    syms["actions"] = TokenActions
+    syms["oncancel"] = TokenOnCancel
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")
