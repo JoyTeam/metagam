@@ -15,3 +15,4 @@ a:hover, a:active, #socio-topmenu a:hover, #socio-topmenu a:active, td.socio-cat
 .socio-post-delim a:link, .socio-post-delim a:visited { color: #7cbff4 }
 .socio-post-delim a:hover, .socio-post-delim a:active { color: #a3d0f4 }
 .socio-category-pinned { background-color: #51728c }
+#page-content .item-description { color: #8080c0 }
