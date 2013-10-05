@@ -7,7 +7,7 @@ from mg.core.safejson import SafeEncoder
 import cStringIO
 
 re_charparam = re.compile(r'^charparam/(.+)$')
-re_char_params = re.compile(r'char\.(p_[a-zA-Z_][a-zA-Z0-9_]*)')
+re_char_params = re.compile(r'char\.p_([a-zA-Z_][a-zA-Z0-9_]*)')
 re_valid_parameter = re.compile('^[a-z][a-z0-9_]*$', re.IGNORECASE)
 re_edit = re.compile('^edit/(.+)$')
 re_show = re.compile('^show/(.+)$')
