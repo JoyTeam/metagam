@@ -930,7 +930,7 @@ class WebForm(object):
         if kwargs.get("desc") or kwargs.get("error") or kwargs.get("element_submit"):
             last_row["show_header"] = True
 
-    def html(self, add_vars={}):
+    def html(self, add_vars={}, renderer=None):
         """
         Return cooked HTML form
         """
@@ -991,6 +991,14 @@ class WebForm(object):
             vars["form_texteditors"] = True
         if self.quantities:
             vars["form_quantities"] = True
+        # Custom form rendering
+        if renderer:
+            if callable(renderer):
+                return renderer(vars)
+            else:
+                res = self.module.call(renderer, vars)
+                if res:
+                    return res
         return self.module.call("web.parse_template", self.template, vars)
 
     def error(self, name, text, overwrite=True):

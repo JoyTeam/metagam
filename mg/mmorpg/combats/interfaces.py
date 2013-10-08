@@ -14,6 +14,20 @@ show_entries_per_page = 100
 
 re_valid_uuid = re.compile(r'^[0-9a-f]{32}$')
 
+class CharacterCombatState(object):
+    def __init__(self, state):
+        self.state = state
+
+    def __str__(self):
+        return "[CharacterCombatState]"
+
+    def script_attr(self, attr, handle_exceptions=True):
+        if (attr == "team" or attr == "name" or attr == "sex" or attr == "team" or attr == "may_turn" or
+                attr == "active" or attr == "image" or attr == "combat"):
+            return self.state.get(attr)
+        else:
+            raise AttributeError(attr)
+
 class Combats(mg.constructor.ConstructorModule):
     def register(self):
         self.rhook("objclasses.list", self.objclasses_list)
@@ -29,6 +43,8 @@ class Combats(mg.constructor.ConstructorModule):
         self.rhook("character.public-info-menu", self.character_public_info_menu)
         self.rhook("ext-character.combats", self.character_combats, priv="public")
         self.rhook("characters.context-menu-available", self.context_menu_available)
+        self.rhook("combat.character-state", self.character_state)
+        self.rhook("combat.character-script-state", self.character_script_state)
 
     def context_menu_available(self, menu):
         menu.append({
@@ -39,6 +55,17 @@ class Combats(mg.constructor.ConstructorModule):
             "default_visible": True,
             "image": "/st-mg/icons/attack.png",
             "visible": ['and', ['and', ['not', ['.', ['glob', 'char'], 'combat']], ['not', ['.', ['glob', 'viewer'], 'combat']]],
+                ['!=', ['.', ['glob', 'char'], 'id'], ['.', ['glob', 'viewer'], 'id']],
+            ],
+        })
+        menu.append({
+            "code": "intervent",
+            "title": self._("contextmenu///Help in combat"),
+            "qevent": "intervent",
+            "order": 21.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/attack.png",
+            "visible": ['and', ['and', ['not', ['.', ['glob', 'viewer'], 'combat']], ['.', ['glob', 'char'], 'combat']],
                 ['!=', ['.', ['glob', 'char'], 'id'], ['.', ['glob', 'viewer'], 'id']],
             ],
         })
@@ -309,3 +336,19 @@ class Combats(mg.constructor.ConstructorModule):
             menu[-1]["lst"] = True
             vars["menu"] = menu
         self.call("game.response_external", "character-combats.html", vars)
+
+    def character_state(self, combat_id, character_uuid):
+        try:
+            combat = CombatInterface(self.app(), combat_id)
+            for member in combat.members:
+                if member.get("character") == character_uuid:
+                    member["combat"] = combat_id
+                    return member
+        except CombatUnavailable as e:
+            return None
+
+    def character_script_state(self, combat_id, character_uuid):
+        state = self.character_state(combat_id, character_uuid)
+        if not state:
+            return None
+        return CharacterCombatState(state)

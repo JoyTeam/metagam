@@ -1,0 +1,34 @@
+combat defeat draw {{
+  equipbreak random < 0.5
+}}
+
+combat victory {{
+  combat syslog 'Total inflicted damage: member=<b>{{member.id}}</b>, char=<b>{{char.name}}</b>, damage=<b>{{member.p_inflicted_damage}}</b>'
+  if member.p_inflicted_damage > 0 {{
+    set local.p_xp = member.p_inflicted_damage set char.{param_xp} = char.{param_xp} + local.p_xp
+    combat log '{log_experience}' cls="combat-log-xp"
+  }}
+}}
+
+clicked "attack" {{
+  require char.id != targetchar.id else error {attack_self}
+  require not char.combat else error {you_are_in_combat}
+  require targetchar.online else error {target_offline}
+  require not targetchar.combat else error {target_is_in_combat}
+  require char.location else error {different_location}
+  require char.location == targetchar.location else error {different_location}
+    combat rules='{combat_code}' ctitle={combat_title} flags="pvp" {{
+    member char team=1 member targetchar team=2
+  }}
+}}
+
+clicked "intervent" {{
+  require char.id != targetchar.id else error {intervent_self}
+  require not char.combat else error {you_are_in_combat}
+  require targetchar.online else error {target_offline}
+  set local.state = targetchar.combat_state
+  require local.state else error {target_is_not_in_combat}
+  require char.location else error {different_location}
+  require char.location == targetchar.location else error {different_location}
+  combat join local.state.combat member char team=local.state.team
+}}

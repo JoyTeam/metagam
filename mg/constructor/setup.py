@@ -71,8 +71,8 @@ class ProjectSetupWizard(Wizard):
 
                 if not title_short:
                     errors["title_short"] = self._("Enter short title")
-                elif len(title_short) > 17:
-                    errors["title_short"] = self._("Maximal length - 17 characters")
+                elif len(title_short) > 30:
+                    errors["title_short"] = self._("Maximal length - 30 characters")
                 elif re_bad_symbols.match(title_short):
                     errors["title_short"] = self._("Bad symbols in the title")
 

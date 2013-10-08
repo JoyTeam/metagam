@@ -4,6 +4,7 @@ import re
 import hashlib
 
 re_param_attr = re.compile(r'^p_(.+)')
+re_html_attr = re.compile(r'^html_(.+)')
 re_dna_parse = re.compile(r'^([a-f0-9]+)(?:|_([0-9a-f]+))$')
 
 class DBItemType(CassandraObject):
@@ -58,6 +59,8 @@ def dna_make(mods):
     tokens.sort(cmp=lambda x, y: cmp(x[0], y[0]))
     new_tokens = []
     for k, v in tokens:
+        if k == ":used" and v == 0:
+            continue
         if type(v) == int or type(v) == float or type(v) == long:
             new_tokens.append((k, str(v)))
         elif type(v) == str or type(v) == unicode:
@@ -66,6 +69,8 @@ def dna_make(mods):
             new_tokens.append((k, urlencode(json.dumps(v, sort_keys=True))))
         else:
             raise RuntimeError("Unknown DNA value type: %s" % type(v))
+    if not new_tokens:
+        return None
     tokens = "&".join('%s=%s' % (k, v) for k, v in new_tokens)
     dna = hashlib.md5(tokens).hexdigest().lower()
     return dna
@@ -221,8 +226,11 @@ class ItemType(Module, ParametrizedObject):
             if m:
                 param = m.group(1)
                 return self.param(param, handle_exceptions)
-            else:
-                raise AttributeError(attr)
+            m = re_html_attr.match(attr)
+            if m:
+                param = m.group(1)
+                return self.param_html(param, handle_exceptions)
+            raise AttributeError(attr)
 
     def __str__(self):
         return "[item %s]" % utf2str(self.name)

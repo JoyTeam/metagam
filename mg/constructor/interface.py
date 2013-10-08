@@ -160,7 +160,7 @@ class Interface(ConstructorModule):
         files.append({"filename": "cabinet.html", "description": self._("Cabinet interface (inside the external interface)"), "doc": "/doc/design/cabinet"})
         files.append({"filename": "error.html", "description": self._("Error message"), "doc": "/doc/design/info"})
         files.append({"filename": "info.html", "description": self._("Informational message"), "doc": "/doc/design/info"})
-        files.append({"filename": "form.html", "description": self._("Web form")})
+        files.append({"filename": "form.html", "description": self._("Multipurpose form"), "doc": "/doc/design/forms"})
         files.append({"filename": "tables.html", "description": self._("Web form"), "doc": "/doc/design/tables"})
 
     def advice_gameinterface(self, hook, args, advice):
@@ -287,14 +287,31 @@ class Interface(ConstructorModule):
             vars = {}
         self.call("game.response_internal", "error.html", vars, msg)
 
+    def game_render_form(self, vars):
+        return self.game_parse_internal("form.html", vars)
+
+    def game_fill_vars(self, vars):
+        req = self.req()
+        vars["domain"] = req.host()
+        vars["base_domain"] = re_remove_www.sub('', req.host())
+
     def game_internal_form(self, form, vars):
-        self.call("game.response_internal", "form.html", vars, form.html(vars))
+        design = self.design("gameinterface")
+        content = form.html(vars, renderer=self.game_render_form)
+        self.game_fill_vars(vars)
+        self.call("design.response", design, "internal.html", content, vars)
 
     def game_external_form(self, form, vars):
-        self.call("game.response_external", "form.html", vars, form.html(vars))
+        design = self.design("gameinterface")
+        content = form.html(vars, renderer=self.game_render_form)
+        self.game_fill_vars(vars)
+        self.call("design.response", design, "external.html", content, vars)
 
     def main_frame_form(self, form, vars):
-        self.call("game.response_internal", "form.html", vars, form.html(vars))
+        design = self.design("gameinterface")
+        content = form.html(vars, renderer=self.game_render_form)
+        self.game_fill_vars(vars)
+        self.call("design.response", design, "internal.html", content, vars)
 
     def game_response(self, template, vars, content=""):
         design = self.design("gameinterface")
@@ -303,18 +320,14 @@ class Interface(ConstructorModule):
     def game_response_external(self, template, vars, content=""):
         design = self.design("gameinterface")
         content = self.call("design.parse", design, template, content, vars)
-        req = self.req()
-        vars["domain"] = req.host()
-        vars["base_domain"] = re_remove_www.sub('', req.host())
+        self.game_fill_vars(vars)
         self.call("design.response", design, "external.html", content, vars)
 
     def game_response_internal(self, template, vars, content=None):
         self.add_common_vars(vars)
         design = self.design("gameinterface")
         content = self.game_parse_internal(template, vars, content)
-        req = self.req()
-        vars["domain"] = req.host()
-        vars["base_domain"] = re_remove_www.sub('', req.host())
+        self.game_fill_vars(vars)
         self.call("design.response", design, "internal.html", content, vars)
 
     def add_common_vars(self, vars):

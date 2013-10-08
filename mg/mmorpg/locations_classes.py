@@ -5,6 +5,7 @@ import re
 default_location_delay = 20
 re_param_attr = re.compile(r'^p_(.+)')
 re_dyn_attr = re.compile(r'^dyn_(.+)')
+re_html_attr = re.compile(r'^html_(.+)')
 
 class DBLocation(CassandraObject):
     clsname = "Location"
@@ -153,6 +154,10 @@ class Location(Module, ParametrizedObject):
             if m:
                 param = m.group(1)
                 return self.param(param, handle_exceptions)
+            m = re_html_attr.match(attr)
+            if m:
+                param = m.group(1)
+                return self.param_html(param, handle_exceptions)
             m = re_dyn_attr.match(attr)
             if m:
                 param = m.group(1)

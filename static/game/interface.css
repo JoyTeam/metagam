@@ -198,6 +198,7 @@ area { border: none }
 .chat-msg-quest-condition { color: #676721 }
 .chat-msg-quest-action { color: #008000 }
 .chat-msg-quest-error { color: #c00000 }
+.chat-msg-quest-comment { color: #808080 }
 .quest-button-td { padding: 20px 40px 20px 0 }
 .quests-noquests { font-size: 18px }
 .quest-performed { margin-right: 30px }
@@ -263,7 +264,9 @@ area { border: none }
 .chat-msg-combat-condition { color: #575710 }
 .chat-msg-combat-action { color: #008020 }
 .chat-msg-combat-error { color: #c00020 }
+.chat-msg-combat-comment { color: #808080 }
 .chat-msg-combat-log { color: #808080 }
 .chat-msg-combat-start { color: red }
 .chat-msg-combat-started { color: #c08080 }
+.chat-msg-combat-joined { color: #c08080 }
 .chat-msg-combat-stopped { color: #c08080 }

@@ -381,6 +381,30 @@ class Character(Module, ParametrizedObject):
             self._settings = self.obj(DBCharacterSettings, self.uuid, silent=True)
             return self._settings
 
+    @property
+    def combat_id(self):
+        try:
+            return self._combat_id
+        except AttributeError:
+            busy = self.busy
+            if busy:
+                self._combat_id = busy.get("combat")
+            else:
+                self._combat_id = None
+            return self._combat_id
+
+    @property
+    def combat_state(self):
+        try:
+            return self._combat_state
+        except AttributeError:
+            combat_id = self.combat_id
+            if not combat_id:
+                self._combat_state = None
+            else:
+                self._combat_state = self.call("combat.character-script-state", combat_id, self.uuid)
+            return self._combat_state
+
     def script_attr(self, attr, handle_exceptions=True):
         if attr == "id":
             return self.uuid
@@ -410,11 +434,9 @@ class Character(Module, ParametrizedObject):
         elif attr == "equip":
             return self.equip
         elif attr == "combat":
-            busy = self.busy
-            if busy:
-                return busy.get("combat")
-            else:
-                return None
+            return self.combat_id
+        elif attr == "combat_state":
+            return self.combat_state
         # parameters
         m = re_param_attr.match(attr)
         if m:

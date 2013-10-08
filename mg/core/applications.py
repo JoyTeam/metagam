@@ -428,6 +428,23 @@ class Module(Loggable):
     def main_host(self):
         return self.app().main_host
 
+    def is_recursive(self, occurences=2):
+        "Returns True if the caller found twice in the stack frame"
+        try:
+            raise ZeroDivisionError
+        except ZeroDivisionError:
+            fr = sys.exc_info()[2].tb_frame.f_back
+        cnt = 0
+        caller = (fr.f_code.co_filename, fr.f_code.co_name)
+        while fr is not None:
+            code = fr.f_code
+            if caller == (code.co_filename, code.co_name):
+                cnt += 1
+                if cnt >= occurences:
+                    return True
+            fr = fr.f_back
+        return False
+
 class ModuleError(Exception):
     "Error during module loading"
     pass

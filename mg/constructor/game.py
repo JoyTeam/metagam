@@ -83,8 +83,8 @@ class Game(Module):
                         errors["title_full"] = self._("You must not have a space before a colon (:) and must have a space after a colon (:)")
                 if not title_short:
                     errors["title_short"] = self._("Enter short title")
-                elif len(title_short) > 17:
-                    errors["title_short"] = self._("Maximal length - 17 characters")
+                elif len(title_short) > 30:
+                    errors["title_short"] = self._("Maximal length - 30 characters")
                 else:
                     m = re_bad_symbols.search(title_short)
                     if m:

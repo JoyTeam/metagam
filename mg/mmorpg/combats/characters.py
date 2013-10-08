@@ -87,6 +87,11 @@ class CombatCharacterMember(CombatMember):
             val = self.call("script.evaluate-dynamic", val)
             self.set_param("p_%s" % param["code"], val)
 
+    def get_short_info(self):
+        info = CombatMember.get_short_info(self)
+        info["character"] = self.char.uuid
+        return info
+
     def started(self):
         CombatMember.started(self)
         self.qevent("oncombat", char=self.char, combat=self.combat, member=self, cevent="start")
