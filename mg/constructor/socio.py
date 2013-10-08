@@ -302,7 +302,7 @@ class Socio(ConstructorModule):
         block = None
         if req.group == "socio" and req.hook == "image":
             pass
-        elif req.group == "forum" or req.group == "socio":
+        elif req.group == "forum" or req.group == "socio" or req.group == "news":
             vars["title_suffix"] = " - %s" % self.app().project.get("title_short")
             block = "forum"
         elif req.group == "library":

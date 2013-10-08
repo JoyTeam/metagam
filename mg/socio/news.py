@@ -2,6 +2,7 @@ from mg import *
 import re
 
 re_news = re.compile('^(\S+)\/(\S+)$')
+re_valid_template = re.compile(r'^[a-zA-Z][a-zA-Z0-9\-]*\.html$')
 
 news_categories_limit = 50
 news_categories_title_limit = 100
@@ -14,6 +15,7 @@ class DBNewsEntry(CassandraObject):
     indexes = {
         "news": [["draft"], "publication_date"],
         "drafts": [["draft"], "modification_date"],
+        "news-category": [["category"], "publication_date"],
     }
 
 class DBNewsEntryList(CassandraObjectList):
@@ -47,6 +49,16 @@ class NewsAdmin(Module):
         self.rhook("news.removing", self.news_removing)
         self.rhook("news.updating", self.news_updating)
         self.rhook("news.category-by-uuid", self.category_by_uuid)
+        self.rhook("admin-sociointerface.design-files", self.design_files)
+        self.rhook("advice-admin-news.index", self.advice_news)
+
+    def advice_news(self, hook, args, advice):
+        advice.append({"title": self._("News documentation"), "content": self._('You can find detailed information on the news system in the <a href="//www.%s/doc/news" target="_blank">news page</a> of the reference manual.') % self.main_host})
+
+    def design_files(self, files):
+        files.append({"filename": "news.html", "description": self._("News tag template"), "doc": "/doc/news"})
+        files.append({"filename": "news-entry.html", "description": self._("News content"), "doc": "/doc/news"})
+        files.append({"filename": "news-list.html", "description": self._("News list"), "doc": "/doc/news"})
         
     def menu_socio_index(self, menu):
         menu.append({ "id": "news.index", "text": self._("News"), "order": 20 })
@@ -86,7 +98,7 @@ class NewsAdmin(Module):
             
         post_forum = self.conf("socio.news.post_forum", False)
         forum_category = self.conf("socio.news.forum_category")
-        on_start_page = self.conf("socio.news.on_start_page")
+        on_start_page = self.conf("socio.news.on_start_page", news_on_start_page)
         
         forum_categories = self.call("forum.categories") or []
         available_categories = []
@@ -94,9 +106,6 @@ class NewsAdmin(Module):
             available_categories.append((cat["id"], cat["title"]))
         if len(forum_categories) and not forum_category:
             forum_category = forum_categories[0]["id"]
-        
-        if on_start_page is None:
-            on_start_page = news_on_start_page
         
         fields = [
             {"type": "checkbox", "name": "post_forum", "label": self._("Create forum topics"), "checked": post_forum},
@@ -176,7 +185,7 @@ class NewsAdmin(Module):
     
     def categories(self):
         cat_lst = self.objlist(DBNewsCategoryList, query_index="all")
-        cat_lst.load()
+        cat_lst.load(silent=True)
         return list({"id": cat.uuid, "title": cat.get("title"), "order": cat.get("order")} for cat in cat_lst)
     
     def news_category_editor(self, obj = None):
@@ -265,8 +274,8 @@ class NewsAdmin(Module):
         else:
             pages = None
             
-        news_lst.load()
-        drafts_lst.load()
+        news_lst.load(silent=True)
+        drafts_lst.load(silent=True)
         
         news = list({
                         "id": entry.uuid,
@@ -311,8 +320,8 @@ class NewsAdmin(Module):
         fields = [
             { "name": "title", "label": self._("News title"), "value": title },
             { "name": "category", "type": "combo", "label": self._("Category"), "value": category, "values": categories },
-            { "name": "announce", "type": "textarea", "label": self._("News announce(shows on the start page)"), "value": announce },
-            { "name": "content", "type": "textarea", "label": self._("News content"), "value": content },
+            { "name": "announce", "type": "textarea", "label": self._("News announce(shows on the start page)"), "value": announce, "height": 300 },
+            { "name": "content", "type": "textarea", "label": self._("News content"), "value": content, "height": 300 },
             { "name": "uuid", "type": "hidden", "value": uuid },
         ]
         self.call("admin.form", fields=fields)
@@ -332,7 +341,11 @@ class NewsAdmin(Module):
         
     
     def preview(self, obj):
-        self.call("admin.response", self.call("socio.format_text", obj.get("content")) + u'<hr /><hook:admin.link href="news/publish" title="%s" />' % self._("Back"), {})
+        response = self.call("socio.format_text", obj.get("announce"))
+        response += '<hr />'
+        response += self.call("socio.format_text", obj.get("content"))
+        response += u'<hr /><hook:admin.link href="news/publish" title="%s" />' % self._("Back")
+        self.call("admin.response", response, {})
         
     def publish(self, obj):
         if not obj.get("draft"):
@@ -420,6 +433,20 @@ class NewsAdmin(Module):
         return self._("News configuration")
         
     def headmenu_publish(self, args):
+        if args == "new":
+            return [self._("New news"), "news/publish"]
+        m = re_news.match(args)
+        if m:
+            cmd, uuid = m.group(1, 2)
+            try:
+                obj = self.obj(DBNewsEntry, uuid)
+            except ObjectNotFoundException:
+                pass
+            else:
+                if cmd == "edit":
+                    return [htmlescape(obj.get("title")), "news/publish"]
+                elif cmd == "preview":
+                    return [htmlescape(obj.get("title")), "news/publish"]
         return self._("News publishing")
     
 class News(Module):
@@ -429,6 +456,7 @@ class News(Module):
         self.rhook("ext-news.index", self.news_index, priv="public")
         self.rhook("ext-news.view", self.view, priv="public")
         self.rhook("news.paginate", self.paginate)
+        self.rhook("hook-news.last", self.hook_news_last)
         
     def objclasses_list(self, objclasses):
         objclasses["NewsEntry"] = (DBNewsEntry, DBNewsEntryList)
@@ -440,11 +468,11 @@ class News(Module):
     def indexpage_render(self, vars):
         limit = self.conf("socio.news.on_start_page", news_on_start_page)
         news_lst = self.objlist(DBNewsEntryList, query_index="news", query_equal=0, query_limit=limit, query_reversed=True)
-        news_lst.load()
+        news_lst.load(silent=True)
         news = []
         for entry in news_lst:
             news.append({
-                "created": entry.get("publication_date"),
+                "created": self.call("l10n.time_local", entry.get("publication_date")),
                 "subject": htmlescape(entry.get("title")),
                 "announce": self.call("socio.format_text", entry.get("announce")),
                 "more": 'news/view/%s' % entry.uuid
@@ -464,7 +492,7 @@ class News(Module):
         else:
             pages = None
             
-        news_lst.load()
+        news_lst.load(silent=True)
         news = []
         categories = {}
         for n in news_lst:
@@ -499,21 +527,10 @@ class News(Module):
                 "pages": self._("Pages"),
                 "news_archive": self._("News archive")
             },
-            "title": "%s - %s" % (self._("News archive"), self.call("project.title")),
-            "topmenu": [
-                {   "id": "left",
-                    "items": [
-                        {
-                            "html": self._("Game"),
-                            "href": "//%s/" % self.app().canonical_domain,
-                            "lst": True
-                        }
-                    ]
-                }
-            ]
+            "title": self._("News archive"),
         }
-        
-        self.call("socio.response_template", "news_list.html", vars)
+        self.call("web.setup_design", vars)
+        self.call("socio.response_template", "news-list.html", vars)
     
     def view(self):
         req = self.req()
@@ -540,11 +557,14 @@ class News(Module):
             "translation": {
                 "comments": self._("Comments")
             },
-            "title": "%s - %s - %s" % (htmlescape(news.get("title")), self._("News"), self.call("project.title")),
-            "menu_left": [{ "html": self._("News"), "href": "//%s/news" % self.app().canonical_domain}, { "html": htmlescape(news.get("title")) }]
+            "title": htmlescape(news.get("title")),
+            "menu_left": [
+                { "html": self._("News"), "href": "//%s/news" % self.app().canonical_domain},
+                { "html": htmlescape(news.get("title")), "lst": True },
+            ]
         }
-        
-        self.call("socio.response_template", "news_entry.html", vars)
+        self.call("web.setup_design", vars)
+        self.call("socio.response_template", "news-entry.html", vars)
     
     def paginate(self, lst, page, npp=news_per_page):
         pages = (len(lst) - 1) / npp + 1
@@ -559,3 +579,33 @@ class News(Module):
         del lst[page * npp:]
         del lst[0:(page - 1) * npp]
         return pages
+
+    def hook_news_last(self, vars, limit=5, template="news.html"):
+        if not re_valid_template.match(template):
+            return ""
+        news_lst = self.objlist(DBNewsEntryList, query_index="news", query_equal=0, query_reversed=True, query_limit=intz(limit))
+        news_lst.load(silent=True)
+        # preparing output
+        rnews = []
+        for news in news_lst:
+            actions = [
+                {
+                    "href": "/news/view/%s" % news.uuid,
+                    "text": self._("Read more"),
+                }
+            ]
+            if news.get("forum_topic"):
+                actions.append({
+                    "href": "/forum/topic/%s" % news.get("forum_topic"),
+                    "text": self._("Comments"),
+                })
+            actions[-1]["lst"] = True
+            rnews.append({
+                "uuid": news.uuid,
+                "subject": news.get("title"),
+                "announce": self.call("socio.format_text", news.get("announce")),
+                "publication_date": self.call("l10n.time_local", news.get("publication_date")),
+                "actions": actions,
+            })
+        vars["news"] = rnews
+        return self.call("socio.parse", template, vars)

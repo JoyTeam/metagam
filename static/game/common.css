@@ -66,3 +66,8 @@
 .combat-syslog-stage { background-color: #404080; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }
 .combat-syslog-end { background-color: #408040; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }
 .combat-syslog-watchdog { background-color: #804040; padding: 2px; color: #ffffff; margin: 2px 0 2px 0; font-weight: bold }
+
+/* NEWS */
+.news { margin: 20px 0 20px 0 }
+.news-head { font-weight: bold }
+.news-content { padding: 10px 0 10px 0 }

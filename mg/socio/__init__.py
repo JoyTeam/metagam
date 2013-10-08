@@ -936,7 +936,6 @@ class Forum(Module):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("queue-gen.schedule", self.schedule)
-        self.rhook("hook-forum.news", self.news)
         self.rhook("forum.may_read", self.may_read)
         self.rhook("forum.may_write", self.may_write)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
@@ -3134,40 +3133,6 @@ class Forum(Module):
         }
         self.call("forum.vars-tags", vars)
         self.call("socio.response_template", "tags.html", vars)
-
-    def news(self, vars, category, limit=5, template=None):
-        req = self.req()
-        user_uuid = self.call("socio.user")
-        cat = self.call("forum.category-by-tag", category)
-        if not cat:
-            return ""
-        topics, page, pages = self.topics(cat, 1, limit)
-        # loading content
-        topics_content_list = self.objlist(ForumTopicContentList, topics.uuids())
-        topics_content_list.load(silent=True)
-        topics_content = dict([(obj.uuid, obj.data) for obj in topics_content_list])
-        # preparing output
-        topics = topics.data()
-        self.topics_htmlencode(topics)
-        if len(topics):
-            topics[-1]["lst"] = True
-        for topic in topics:
-            content = topics_content.get(topic["uuid"])
-            if content:
-                content = content.get("content")
-                if content:
-                    m = re_cut.search(content)
-                    if m:
-                        topic["more"] = True
-                        content = content[0:m.start()]
-                topic["content"] = self.call("socio.format_text", content)
-        vars["news"] = topics
-        vars["ReadMore"] = self._("Read more")
-        vars["Comment"] = self._("Comment")
-        if template is None:
-            template = self.call("socio.template", "news", "news.html")
-        if template:
-            return self.call("web.parse_template", 'socio/%s' % template, vars)
 
 class SocioAdmin(Module):
     def register(self):
