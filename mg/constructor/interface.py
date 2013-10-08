@@ -249,6 +249,7 @@ class Interface(ConstructorModule):
             "protocol": self.app().protocol,
             "game_domain": self.app().canonical_domain
         }
+        self.call("indexpage.render", vars)
         links = []
         self.call("indexpage.links", links)
         if len(links):

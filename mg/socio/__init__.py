@@ -428,6 +428,8 @@ class Socio(Module):
             lst.extend(["mg.constructor.socialnets.SocialNets"])
         if self.conf("module.forum-rules"):
             lst.extend(["mg.socio.rules.ForumRules"])
+        if self.conf("module.news"):
+            lst.extend(["mg.socio.news.News"])
         return lst
 
     def modules_list(self, modules):
@@ -456,6 +458,11 @@ class Socio(Module):
                 "id": "forum-rules",
                 "name": self._("Interactive forum rules"),
                 "description": self._("Administator enters list of rules and they are shown to users in the form of exam"),
+                "parent": "socio",
+            }, {
+                "id": "news",
+                "name": self._("News"),
+                "description": self._("Creation, modification and publication of news"),
                 "parent": "socio",
             }
         ])
@@ -901,6 +908,8 @@ class Forum(Module):
         self.rhook("forum.categories", self.categories)                 # get list of forum categories
         self.rhook("forum.newtopic", self.newtopic)                     # create new topic
         self.rhook("forum.reply", self.reply)                           # reply in the topic
+        self.rhook("forum.topic-delete", self.topic_delete)             # delete topic
+        self.rhook("forum.topic-update", self.topic_update)
         self.rhook("forum.notify-newtopic", self.notify_newtopic)
         self.rhook("forum.notify-reply", self.notify_reply)
         self.rhook("socio.setup-interface", self.setup_interface)
@@ -1179,6 +1188,8 @@ class Forum(Module):
     def may_edit(self, cat, topic=None, post=None, rules=None, roles=None):
         req = self.req()
         user = self.call("socio.user")
+        if topic.get("news_entry") and post is None:
+            return False
         if user is None:
             return False
         if self.silence(user):
@@ -2024,22 +2035,49 @@ class Forum(Module):
             catstat.store()
             self.call("web.redirect", "/forum/topic/%s?page=%d%s" % (topic.uuid, page, prev))
         else:
-            posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
-            posts.remove()
-            lastread = self.objlist(ForumLastReadList, query_index="topic", query_equal=topic.uuid)
-            lastread.remove()
-            topic.remove()
-            topic_content = self.obj(ForumTopicContent, topic.uuid, {})
-            topic_content.remove()
-            self.call("forum.topic-form", topic, None, "delete")
-            catstat = self.catstat(cat["id"])
-            catstat.decr("topics")
-            catstat.decr("replies", len(posts))
-            if catstat.get("last") and catstat.get("last").get("topic") == topic.uuid:
-                self.update_last(cat, catstat)
-            catstat.store()
+            try:
+                self.call("forum.topic-delete", topic.uuid)
+            except ObjectNotFoundException: 
+                self.call("web.not_found")
             self.call("web.redirect", "/forum/cat/%s" % cat["id"])
-
+    
+    def topic_delete(self, uuid):
+        topic_obj = self.obj(ForumTopic, uuid)
+        posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic_obj.uuid)
+        posts.remove()
+        lastread = self.objlist(ForumLastReadList, query_index="topic", query_equal=topic_obj.uuid)
+        lastread.remove()
+        topic_obj.remove()
+        topic_content = self.obj(ForumTopicContent, topic_obj.uuid, {})
+        topic_content.remove()
+        self.call("forum.topic-form", topic_obj, None, "delete")
+        cat = self.call("forum.category", topic_obj.get("category"))
+        catstat = self.catstat(cat["id"])
+        catstat.decr("topics")
+        catstat.decr("replies", len(posts))
+        if catstat.get("last") and catstat.get("last").get("topic") == topic_obj.uuid:
+            self.update_last(cat, catstat)
+        catstat.store()
+    
+    def topic_update(self, uuid, content = None, subject=None, tags=None):
+        #self.debug("topic_update %s %s %s %s", uuid, content, subject, tags)
+        topic_obj = self.obj(ForumTopic, uuid)
+        topic_content = self.obj(ForumTopicContent, topic_obj.uuid, {})
+        if not tags:
+            tags = topic_obj.get("tags")
+        with self.lock(["ForumTopic-" + topic_obj.uuid]):
+            topic_obj.set("subject", subject)
+            topic_content.set("content", content)
+            topic_content.set("content_html", self.call("socio.format_text", content))
+            self.tags_remove(topic_obj.uuid, topic_content.get("tags"))
+            tags = self.tags_store(topic_obj.uuid, tags)
+            topic_content.set("tags", tags)
+            topic_obj.store()
+            topic_content.store()
+            self.call("forum.topic-form", topic_obj, None, "store")
+            self.call("socio.fulltext_remove", "ForumSearch", topic_obj.uuid)
+            self.call("socio.fulltext_store", "ForumSearch", topic_obj.uuid, list(chain(self.call("socio.word_extractor", subject), self.call("socio.word_extractor", content))))
+    
     def ext_edit(self):
         cat, topic, post = self.category_or_topic_args()
         if not self.may_edit(cat, topic, post):

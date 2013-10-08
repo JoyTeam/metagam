@@ -1,0 +1,42 @@
+<p class="admin-submenu"><hook:admin.link href="news/publish/new" title="[%translation.submit_news%]" /></p>
+
+[%if drafts%]
+<h1>[%translation.drafts%]</h1>
+<table class="list">
+    <tr class="header"><td>[%translation.modified%]</td><td>[%translation.title%]</td><td>[%translation.actions%]</td></tr>
+    [%foreach entry in drafts%]
+    <tr>
+        <td>[%entry.modification_date%]</td>
+        <td><strong>[%entry.title%]</strong></td>
+        <td>
+            <hook:admin.link href="news/publish/edit/[%entry.id%]" title="[%translation.edit%]" />&nbsp;
+            <hook:admin.link href="news/publish/delete/[%entry.id%]" title="[%translation.delete%]" confirm="[%translation.confirm_delete%]" />&nbsp;
+            <hook:admin.link href="news/publish/preview/[%entry.id%]" title="[%translation.preview%]" />&nbsp;
+            <hook:admin.link href="news/publish/publish/[%entry.id%]" title="[%translation.publish%]" confirm="[%translation.confirm_publish%]" />&nbsp;
+        </td>
+    </tr>
+    [%end%]
+</table>
+[%end%]
+
+[%if news%]
+<h1>[%translation.published_news%]</h1>
+[%if pages %]<span class="socio-pages-list">[%for p in pages%][%if page == p%]<strong>[%end%]<hook:admin.link href="news/publish/?page=[%p%]" title="[%p%]" />[%if page == p%]</strong>[%end%]&nbsp;[%end%]</span>[%end%]
+<table class="list">
+    <tr class="header"><td>[%translation.publication_date%]</td><td>[%translation.title%]</td><td>[%translation.actions%]</td></tr>
+    [%foreach entry in news%]
+    <tr>
+        <td>
+            [%entry.publication_date%]
+            [%if entry.modified_date%]<div>([%translation.modified%] [%entry.modified_date%])</div>[%end%]
+        </td>
+        <td><strong>[%entry.title%]</strong></td>
+        <td>
+            <div><hook:admin.link href="news/publish/edit/[%entry.id%]" title="[%translation.edit%]" /></div>
+            <div><hook:admin.link href="news/publish/delete/[%entry.id%]" title="[%translation.delete%]" confirm="[%translation.confirm_delete%]" /></div>
+        </td>
+    </tr>
+    [%end%]
+</table>
+[%if pages %]<span class="socio-pages-list">[%for p in pages%][%if page == p%]<strong>[%end%]<hook:admin.link href="news/publish/?page=[%p%]" title="[%p%]" />[%if page == p%]</strong>[%end%]&nbsp;[%end%]</span>[%end%]
+[%end%]

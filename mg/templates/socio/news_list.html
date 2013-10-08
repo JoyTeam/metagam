@@ -1,0 +1,11 @@
+<h1>[%translation.news_archive%]</h1>
+[%if pages %]<div class="socio-topic-pages socio-pages-list">[%translation.pages%]:[%for p in pages%][%if page == p%]<strong>[%end%]<a href="/news/?page=[%p%]">[%p%]</a>[%if page == p%]</strong>[%end%]&nbsp;[%end%]</div>[%end%]
+[%for n in news%]
+<div class="socio-news">
+	<div class="socio-news-head"><span class="socio-news-date">[%n.publication_date%]:</span> <a href="/news/view/[%n.uuid%]"><span class="socio-news-subject">[%n.subject%]</span></a></div>
+	<div class="socio-news-content">[%n.announce%]</div>
+	<div class="socio-news-actions"><a href="/news/view/[%n.uuid%]">[%translation.read_more%]</a>[%if n.forum_topic%]&nbsp;&nbsp;<a href="/forum/topic/[%n.forum_topic%]">[%translation.comments%]</a>[%end%]</div>
+</div>
+<hr />
+[%end%]
+[%if pages %]<div class="socio-topic-pages socio-pages-list">[%translation.pages%]:[%for p in pages%][%if page == p%]<strong>[%end%]<a href="/news/?page=[%p%]">[%p%]</a>[%if page == p%]</strong>[%end%]&nbsp;[%end%]</div>[%end%]
