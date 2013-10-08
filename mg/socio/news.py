@@ -533,18 +533,18 @@ class News(Module):
         vars = {
             "subject": htmlescape(news.get("title")),
             "announce": self.call("socio.format_text", news.get("announce")),
-            "content": self.call("socio.format_text", news.get("content")),
+            "news_content": self.call("socio.format_text", news.get("content")),
             "category": category,
             "publication_date": self.call("l10n.time_local", news.get("publication_date")),
             "forum_topic": news.get("forum_topic"),
-             "translation": {
+            "translation": {
                 "comments": self._("Comments")
             },
             "title": "%s - %s - %s" % (htmlescape(news.get("title")), self._("News"), self.call("project.title")),
-            "menu_left": [{ "html": self._("News"), "href": "//%s/news" % self.app().canonical_domain}, { "html": vars["subject"]}]
+            "menu_left": [{ "html": self._("News"), "href": "//%s/news" % self.app().canonical_domain}, { "html": htmlescape(news.get("title")) }]
         }
         
-        self.call("socio.response_template", "socio/news_entry.html", vars)
+        self.call("socio.response_template", "news_entry.html", vars)
     
     def paginate(self, lst, page, npp=news_per_page):
         pages = (len(lst) - 1) / npp + 1
