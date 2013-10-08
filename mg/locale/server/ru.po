@@ -810,6 +810,9 @@ msgstr "Вы уверены, что хотите удалить этот эле�
 msgid "Are you sure want to delete this modifier?"
 msgstr "Вы уверены, что хотите удалить этот модификатор?"
 
+msgid "Are you sure want to delete this news?"
+msgstr "Вы уверены, что хотите удалить эту новость?"
+
 msgid "Are you sure want to delete this object?"
 msgstr "Вы уверены, что хотите удалить этот объект?"
 
@@ -857,6 +860,9 @@ msgstr "Вы уверены, что хотите удалить этот шаб�
 
 msgid "Are you sure want to delete this track from the playlist?"
 msgstr "Вы уверены, что хотите удалить этот трек из плейлиста?"
+
+msgid "Are you sure want to publish this news?"
+msgstr "Вы уверены, что хотите опубликовать эту новость?"
 
 msgid "Are you sure want to reject this request?"
 msgstr "Вы уверены, что хотите отклонить этот запрос?"
@@ -1048,6 +1054,9 @@ msgstr "Аватар"
 
 msgid "Avatar has to be at least 100x100 pixels"
 msgstr "Аватар должен быть, как минимум, 100x100 пикселей"
+
+msgid "Back"
+msgstr "Назад"
 
 msgid "Background dark color"
 msgstr "Цвет тёмных частей фона"
@@ -2243,11 +2252,11 @@ msgstr "Статистика по боям"
 msgid "Combats without character members are forbidden"
 msgstr "Бои без участников-персонажей запрещены"
 
-msgid "Comment"
-msgstr "Комментировать"
-
 msgid "Comment for the user (can be empty)"
 msgstr "Комментарий для пользователя (может быть пустым)"
+
+msgid "Comments"
+msgstr "Комментарии"
 
 msgid ""
 "Common game CSS (styles for character icons, level [5] markers etc). This "
@@ -2465,6 +2474,9 @@ msgstr "Создать нового персонажа"
 msgid "Create a new game"
 msgstr "Создать новую игру"
 
+msgid "Create forum topics"
+msgstr "Создавать темы на форуме"
+
 msgid "Create new category"
 msgstr "Создать новый раздел"
 
@@ -2482,6 +2494,9 @@ msgstr "Создано"
 
 msgid "Creating highly customizable combats"
 msgstr "Создание настраиваемой боевой системы"
+
+msgid "Creation, modification and publication of news"
+msgstr "Создание, изменение и публикация новостей"
 
 msgid "Cult of the dead cow"
 msgstr "Культ мёртвой коровы"
@@ -3075,6 +3090,9 @@ msgstr "Досье"
 #, python-format
 msgid "Download error: %s"
 msgstr "Ошибка при скачивании: %s"
+
+msgid "Drafts"
+msgstr "Черновики"
 
 msgid "Duration"
 msgstr "Время действия"
@@ -4727,6 +4745,9 @@ msgstr "Структура дохода"
 msgid "Incorrect answers (semicolon separated)"
 msgstr "Неверные ответы (разделённые точками с запятой)"
 
+msgid "Incorrect category"
+msgstr "Некорректный раздел"
+
 msgid "Incorrect number"
 msgstr "Неверное число"
 
@@ -5809,6 +5830,10 @@ msgstr "Максимальная длина - 50 символов"
 msgid "Maximal length is 5 letters"
 msgstr "Максимальная длина - 5 символов"
 
+#, python-format
+msgid "Maximal length of this field is %d characters"
+msgstr "Максимальная длина этого поля - %d символов"
+
 msgid "Maximal message length - {max} characters ({sent} sent)"
 msgstr "Максимальная длина сообщения - {max} символов (отправлено: {sent})"
 
@@ -6109,6 +6134,9 @@ msgstr "Отказ в модерации: %s"
 msgid "Moderation required"
 msgstr "Требуется модерация"
 
+msgid "Modification date"
+msgstr "Дата изменения"
+
 msgid "Modifier id must be a string"
 msgstr "Идентификатор модификатора должен быть строкой"
 
@@ -6147,6 +6175,9 @@ msgstr "Месячный влив"
 
 msgid "Monthly income of my games"
 msgstr "Месячный доход моих игр"
+
+msgid "More news..."
+msgstr "Больше новостей..."
 
 msgid "Move"
 msgstr "Перенести"
@@ -6402,6 +6433,9 @@ msgstr "Новое сообщение"
 msgid "New name"
 msgstr "Новое имя"
 
+msgid "New news"
+msgstr "Новая новость"
+
 msgid "New object"
 msgstr "Новый объект"
 
@@ -6506,8 +6540,38 @@ msgstr "Позже &gt;&gt;&gt;"
 msgid "News"
 msgstr "Новости"
 
+msgid "News announce(shows on the start page)"
+msgstr "Анонс новости(показывается на титульной странице)"
+
+msgid "News archive"
+msgstr "Архив новостей"
+
+msgid "News categories"
+msgstr "Разделы новостей"
+
+msgid "News configuration"
+msgstr "Конфигурация новостей"
+
+msgid "News content"
+msgstr "Текст новости"
+
+msgid "News documentation"
+msgstr "Документация на новости"
+
+msgid "News list"
+msgstr "Список новостей"
+
+msgid "News publishing"
+msgstr "Публикация новостей"
+
 msgid "News related to the Constructor"
 msgstr "Новости Конструктора"
+
+msgid "News tag template"
+msgstr "Шаблон новостного тега"
+
+msgid "News title"
+msgstr "Заголовок новости"
 
 msgid "Next"
 msgstr "Далее"
@@ -7368,6 +7432,9 @@ msgstr "Загрузите картинку для смайлика"
 msgid "Public character info"
 msgstr "Публичная страница информации о персонаже"
 
+msgid "Publication date"
+msgstr "Дата публикации"
+
 msgid "Publish"
 msgstr "Опубликовать"
 
@@ -7382,6 +7449,12 @@ msgstr "Публиковать описание параметра в библи
 
 msgid "Publish this class variant in the library"
 msgstr "Публиковать информацию об этом варианте класса в библиотеке"
+
+msgid "Published news"
+msgstr "Опубликованные новости"
+
+msgid "Publishing"
+msgstr "Публикация"
 
 msgid "Purpose"
 msgstr "Назначение"
@@ -7582,6 +7655,9 @@ msgstr ""
 
 msgid "Read more"
 msgstr "Читать далее"
+
+msgid "Read more..."
+msgstr "Читать далее..."
 
 msgid "Read security note"
 msgstr "Прочитайте информацию о безопасности"
@@ -8216,6 +8292,9 @@ msgstr "Выберите верный режим"
 msgid "Select delivery mode"
 msgstr "Выберите режим доставки"
 
+msgid "Select forum category"
+msgstr "Выберите раздел форума"
+
 msgid "Select from the list of templates"
 msgstr "Выбрать из списка шаблонов"
 
@@ -8495,6 +8574,9 @@ msgstr "Показывать при регистрации"
 
 msgid "Show on the left side"
 msgstr "Показать с левой стороны"
+
+msgid "Show on the start page"
+msgstr "Показывать на титульной странице"
 
 msgid "Show parameters of the character"
 msgstr "Показать параметры персонажа"
@@ -9118,6 +9200,9 @@ msgstr "Тема"
 msgid "Submarine"
 msgstr "Подводная лодка"
 
+msgid "Submit news"
+msgstr "Создать новость"
+
 msgid "Subscribed topics"
 msgstr "Подписанные темы"
 
@@ -9336,6 +9421,9 @@ msgstr ""
 "можете сделать это самостоятельно, попросите кого-нибудь на форуме. "
 "Пожалуйста, подождите до %s, пока вы сможете отправить вашу игру на "
 "модерацию в следующий раз."
+
+msgid "The number of news on the start page"
+msgstr "Число новостей на титульной странице"
 
 msgid "The query is empty"
 msgstr "Запрос пустой"
@@ -9590,6 +9678,9 @@ msgstr ""
 
 msgid "This is not a ZIP file"
 msgstr "Это не ZIP-архив"
+
+msgid "This is not a draft"
+msgstr "Это не черновик"
 
 msgid "This is not a number"
 msgstr "Это не число"
@@ -10970,6 +11061,14 @@ msgstr ""
 
 #, python-format
 msgid ""
+"You can find detailed information on the news system in the <a href=\"//www."
+"%s/doc/news\" target=\"_blank\">news page</a> of the reference manual."
+msgstr ""
+"Подробную информацию о системе новостей вы можете найти в <a href=\"//www.%s/"
+"doc/news\" target=\"_blank\">документации на новости</a>"
+
+#, python-format
+msgid ""
 "You can find detailed information on the parameters system in the <a href="
 "\"//www.%s/doc/parameters\" target=\"_blank\">parameters page</a> in the "
 "reference manual."
@@ -11165,6 +11264,10 @@ msgstr "Вы не можете изменять точность реально�
 msgid "You can't change real money exchange rate after game publication"
 msgstr ""
 "Вы не можете изменять курс обмена реальной валюты после публикации игры"
+
+#, python-format
+msgid "You can't create more categories. Limit is %d"
+msgstr "Вы не можете создать больше разделов. Лимит - %d шт."
 
 msgid "You can't create more characters"
 msgstr "Вы больше не можете создавать персонажей"
@@ -12328,6 +12431,9 @@ msgstr "продление модификатора \"{modifier}\"={modval} на
 msgid "public offer, terms and conditions"
 msgstr "публичная оферта, условия использования"
 
+msgid "publish"
+msgstr "опубликовать"
+
 msgid "quest failed"
 msgstr "квест не пройден"
 
@@ -13036,135 +13142,29 @@ msgstr ""
 "{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : "
 "\"одержал\"} победу</a> над {loosers_list}"
 
-msgid "Are you sure want to delete this news?"
-msgstr "Вы уверены, что хотите удалить эту новость?"
+#~ msgid "Comment"
+#~ msgstr "Комментировать"
 
-msgid "Are you sure want to publish this news?"
-msgstr "Вы уверены, что хотите опубликовать эту новость?"
+#~ msgid "Button can't contain multiple 'event' entries"
+#~ msgstr "У кнопки не может быть несколько записей \"event\""
 
-msgid "Back"
-msgstr "Назад"
+#~ msgid "Button can't contain multiple 'text' entries"
+#~ msgstr "У кнопки не может быть несколько записей \"text\""
 
-msgid "Button can't contain multiple 'event' entries"
-msgstr "У кнопки не может быть несколько записей \"event\""
+#~ msgid "Dialog can't contain more than 1 default button"
+#~ msgstr "В диалоге не может быть более одной кнопки по умолчанию"
 
-msgid "Button can't contain multiple 'text' entries"
-msgstr "У кнопки не может быть несколько записей \"text\""
+#~ msgid "Dialog can't contain multiple 'text' entries"
+#~ msgstr "У диалога не может быть несколько записей \"text\""
 
-msgid "Comments"
-msgstr "Комментарии"
+#~ msgid "Dialog can't contain multiple 'title' entries"
+#~ msgstr "У диалога не может быть несколько записей \"title\""
 
-msgid "Create forum topics"
-msgstr "Создавать темы на форуме"
+#~ msgid "Maximal length - 17 characters"
+#~ msgstr "Максимальная длина - 17 символов"
 
-msgid "Creation, modification and publication of news"
-msgstr "Создание, изменение и публикация новостей"
-
-msgid "Dialog can't contain more than 1 default button"
-msgstr "В диалоге не может быть более одной кнопки по умолчанию"
-
-msgid "Dialog can't contain multiple 'text' entries"
-msgstr "У диалога не может быть несколько записей \"text\""
-
-msgid "Dialog can't contain multiple 'title' entries"
-msgstr "У диалога не может быть несколько записей \"title\""
-
-msgid "Drafts"
-msgstr "Черновики"
-
-msgid "Incorrect category"
-msgstr "Некорректный раздел"
-
-msgid "Maximal length - 17 characters"
-msgstr "Максимальная длина - 17 символов"
-
-#, python-format
-msgid "Maximal length of this field is %d characters"
-msgstr "Максимальная длина этого поля - %d символов"
-
-msgid "Modification date"
-msgstr "Дата изменения"
-
-msgid "More news..."
-msgstr "Больше новостей..."
-
-msgid "New news"
-msgstr "Новая новость"
-
-msgid "News announce(shows on the start page)"
-msgstr "Анонс новости(показывается на титульной странице)"
-
-msgid "News archive"
-msgstr "Архив новостей"
-
-msgid "News categories"
-msgstr "Разделы новостей"
-
-msgid "News configuration"
-msgstr "Конфигурация новостей"
-
-msgid "News content"
-msgstr "Текст новости"
-
-msgid "News documentation"
-msgstr "Документация на новости"
-
-msgid "News list"
-msgstr "Список новостей"
-
-msgid "News publishing"
-msgstr "Публикация новостей"
-
-msgid "News tag template"
-msgstr "Шаблон новостного тега"
-
-msgid "News title"
-msgstr "Заголовок новости"
-
-msgid "Publication date"
-msgstr "Дата публикации"
-
-msgid "Published news"
-msgstr "Опубликованные новости"
-
-msgid "Publishing"
-msgstr "Публикация"
-
-msgid "Read more..."
-msgstr "Читать далее..."
-
-msgid "Select forum category"
-msgstr "Выберите раздел форума"
-
-msgid "Show on the start page"
-msgstr "Показывать на титульной странице"
-
-msgid "Submit news"
-msgstr "Создать новость"
-
-msgid "The number of news on the start page"
-msgstr "Число новостей на титульной странице"
-
-msgid "This is not a draft"
-msgstr "Это не черновик"
-
-#, python-format
-msgid ""
-"You can find detailed information on the news system in the <a href=\"//www."
-"%s/doc/news\" target=\"_blank\">news page</a> of the reference manual."
-msgstr ""
-"Подробную информацию о системе новостей вы можете найти в <a href=\"//www.%s/"
-"doc/news\" target=\"_blank\">документации на новости</a>"
-
-#, python-format
-msgid "You can't create more categories. Limit is %d"
-msgstr "Вы не можете создать больше разделов. Лимит - %d шт."
-
-msgid "publish"
-msgstr "опубликовать"
-
-msgid "taking money, amount={amount}, currency={currency} ({result})"
-msgstr "забираем деньги, количество={amount}, валюта={currency} ({result})"
+#~ msgid "taking money, amount={amount}, currency={currency} ({result})"
+#~ msgstr "забираем деньги, количество={amount}, валюта={currency} ({result})"
 
 #~ msgid "Item %s action text"
 #~ msgstr "Текст действия на предмете %s"
