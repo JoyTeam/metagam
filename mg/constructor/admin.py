@@ -75,6 +75,7 @@ class Constructor(Module):
             "mg.core.ssl.RedirectSSLModule", "mg.constructor.money.AdminDonate",
             "mg.core.money.XsollaActivation",
             "mg.core.tasks.TasksAdmin",
+            "mg.constructor.custommodules.CustomModulesModule",
         ])
         self.rhook("web.setup_design", self.web_setup_design)
         self.rhook("ext-index.index", self.index, priv="public")

@@ -93,6 +93,7 @@ class ConstructorProject(Module):
                 lst.extend(["mg.constructor.sound.Sound"])
             if self.conf("module.locobjects"):
                 lst.extend(["mg.mmorpg.locobjects.LocationObjects"])
+        lst.extend(self.conf("modules.custom", []))
         return lst
 
     def modules_list(self, modules):
