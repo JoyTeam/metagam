@@ -474,6 +474,9 @@ class Auth(ConstructorModule):
             # names validation
             validate_names = True if req.param("validate_names") else False
             config.set("auth.validate_names", validate_names)
+            # allow login via email
+            allow_email_login = req.param("allow_email_login")
+            config.set("auth.allow_email_login", allow_email_login)
             # processing
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -490,6 +493,7 @@ class Auth(ConstructorModule):
 #            activate_email_level = self.conf("auth.activate_email_level", 0)
             activate_email_days = self.conf("auth.activate_email_days", 7)
             validate_names = self.conf("auth.validate_names", False)
+            allow_email_login = self.conf("auth.allow_email_login", False)
         fields = [
             {"name": "multicharing", "type": "combo", "label": self._("Are players allowed to play more than 1 character"), "value": multicharing, "values": [(0, self._("No")), (1, self._("Yes, but play them by turn")), (2, self._("Yes, play them simultaneously"))] },
             {"name": "free_chars", "label": self._("Number of characters per player allowed for free"), "value": free_chars, "condition": "[multicharing]>0" },
@@ -501,6 +505,7 @@ class Auth(ConstructorModule):
 #            {"name": "activate_email_level", "label": self._("Activation is required after this character level ('0' if require on registration)"), "value": activate_email_level, "condition": "[activate_email]"},
             {"name": "activate_email_days", "label": self._("Activation is required after this number of days ('0' if require on registration)"), "value": activate_email_days, "condition": "[activate_email]"},
             {"name": "validate_names", "type": "checkbox", "label": self._("Manual validation of every character name"), "checked": validate_names},
+            {"name": "allow_email_login", "type": "checkbox", "label": self._("Allow players to login via email address"), "checked": allow_email_login},
         ]
         self.call("admin.form", fields=fields)
 
@@ -733,7 +738,7 @@ class Auth(ConstructorModule):
         self.call("auth.messages", msg)
         if not name:
             self.call("web.response_json", {"error": msg["name_empty"]})
-        user = self.call("session.find_user", name)
+        user = self.call("session.find_user", name, allow_email=self.conf("auth.allow_email_login", False))
         if user is None:
             self.call("web.response_json", {"error": msg["name_unknown"]})
         if user.get("name"):
