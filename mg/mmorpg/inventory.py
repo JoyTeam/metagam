@@ -492,7 +492,7 @@ class InventoryAdmin(ConstructorModule):
                     else:
                         fractions = int(fractions)
                         if fractions < 2:
-                            errors["max_fractions"] = self._("Minimal value is %d") % fractions
+                            errors["max_fractions"] = self._("Minimal value is %d") % 2
                         elif fractions > 1000000:
                             errors["max_fractions"] = self._("Maximal value is %d") % 1000000
                         else:
