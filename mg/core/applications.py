@@ -550,7 +550,7 @@ class Modules(object):
                 for name, mod in self.loaded_modules.items():
                     if name not in complete:
                         children = mod.child_modules()
-                        self._load(children, auto_loaded=True)
+                        self._load(children, auto_loaded=True, silent=True)
                         complete.add(name)
                         repeat = True
             t.modules_locked = False

@@ -93,6 +93,8 @@ class ConstructorProject(Module):
                 lst.extend(["mg.constructor.sound.Sound"])
             if self.conf("module.locobjects"):
                 lst.extend(["mg.mmorpg.locobjects.LocationObjects"])
+            if self.conf("module.peaceful"):
+                lst.extend(["mg.mmorpg.peaceful.Peaceful"])
         lst.extend(self.conf("modules.custom", []))
         return lst
 
@@ -161,6 +163,11 @@ class ConstructorProject(Module):
             "id": "locobjects",
             "name": self._("Static objects on the locations"),
             "description": self._("Ability to place static visual objects to the locations"),
+        })
+        modules.append({
+            "id": "peaceful",
+            "name": self._("Peaceful activities"),
+            "description": self._("Mining, crafting, mini-games, etc"),
         })
 
     def project_title(self):
