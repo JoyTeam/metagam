@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-10-14 11:41+0300\n"
+"PO-Revision-Date: 2013-10-25 18:33+0300\n"
 "Last-Translator: Mikhail Khvastunov <spark@joyteam.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -937,6 +937,12 @@ msgstr "Начало исполнения на цель \"target\""
 msgid "Birthday"
 msgstr "День рождения"
 
+msgid "Blacklist checker"
+msgstr "Проверка имени персонажа"
+
+msgid "Blacklist saved"
+msgstr "Черный список сохранен"
+
 #, python-format
 msgid "Block %s"
 msgstr "Блок %s"
@@ -1512,6 +1518,9 @@ msgstr "Молчанка в чате"
 
 msgid "Chat width"
 msgstr "Ширина чата"
+
+msgid "Check"
+msgstr "Проверить"
 
 msgid "Check domain and assign it to the game"
 msgstr "Проверить домен и назначить его вашей игре"
@@ -2816,6 +2825,9 @@ msgstr "Ширина аватара врага"
 
 msgid "English"
 msgstr "Английский"
+
+msgid "Enter a name to check"
+msgstr "Введите имя для проверки"
 
 msgid "Enter a number (6 digits) from the picture"
 msgstr "Введите число (6 цифр) с картинки"
@@ -4141,6 +4153,14 @@ msgstr "Неверный старый пароль"
 msgid "Incorrect password"
 msgstr "Неверный пароль"
 
+#, python-format
+msgid "Incorrect pattern '%s'. Maximal length of pattern is %d characters."
+msgstr "Неправильный шаблон '%s'. Максимальная длина шаблона - %d символов."
+
+#, python-format
+msgid "Incorrect pattern '%s'. Patterns must contain only latin and russian letters, numbers, spaces, symbols '_', '-', '+' and '*'"
+msgstr "Неправильный шаблон '%s'. Можно использовать только цифры, латинские и русские буквы, цифры, пробелы, а также символы '_', '-', '+' и '*'."
+
 msgid "Index page"
 msgstr "Титульная страница"
 
@@ -4763,6 +4783,10 @@ msgstr "Ссылки"
 msgid "List is empty"
 msgstr "Список пуст"
 
+#, python-format
+msgid "List is too big. Maximal number of entries is %d."
+msgstr "Список слишком большой. Максимальное число строк - %d"
+
 msgid "List of categories"
 msgstr "Список разделов"
 
@@ -4801,6 +4825,12 @@ msgstr "Список денежных счетов"
 
 msgid "List of pending domains"
 msgstr "Список ожидающих доменов"
+
+msgid "List of restricted character names"
+msgstr "Список запрещенных имен персонажей"
+
+msgid "List of restricted character names, one per line"
+msgstr "Список запрещенных имен персонажей, по одному на строку."
 
 msgid "List of transitions in the location"
 msgstr "Список переходов в локации"
@@ -7077,6 +7107,9 @@ msgstr "Время наказания"
 msgid "Restraints"
 msgstr "Наказания"
 
+msgid "Restricted character names"
+msgstr "Запрещенные имена персонажей"
+
 msgid "Retrying activation"
 msgstr "Повторная активация"
 
@@ -8368,6 +8401,9 @@ msgstr "В данный момент товар на продажу отсутс
 msgid "There are some very important points in the contract. At least read information in the red panel."
 msgstr "В договоре есть некоторые очень важные пункты. Как минимум, прочтите информацию в красной панели."
 
+msgid "There are special symbols that can be used in this list: <strong>+</strong>(any character) and <strong>*</strong>(any characters). I.e. \"adm+n\" will block \"admin\", \"adm1n\", \"adman\", \"admen\", etc. and \"admin*\" will block \"admin\", \"admin12345\", \"adminabcdef\", etc."
+msgstr "Существуют специальные символы, которые можно использовать при заполнении списка: <strong>+</strong>(любой символ) и <strong>*</strong>(любые символы). Например, строка \"adm+n\" заблокирует имена \"admin\", \"adm1n\", \"adman\", \"admen\", и т.д., а \"admin*\" заблокирует  \"admin\", \"admin12345\", \"adminabcdef\", и т.д."
+
 msgid "There is a page group with the same code already"
 msgstr "Группа страниц с таким кодом уже существует"
 
@@ -8583,8 +8619,20 @@ msgstr "Предмет надеваемый"
 msgid "This list cannot be empty"
 msgstr "Этот список не может быть пустым"
 
+msgid "This list contain names(one per line) which could not be used when creating character."
+msgstr "В этом списке перечислены имена(по одному на строку), которые нельзя использовать при создании персонажей."
+
 msgid "This location has 'Exit' direction pointing to this location"
 msgstr "У этой локации есть направление \"Выход\", и оно ведёт в локацию"
+
+msgid "This name is NOT allowed"
+msgstr "Это имя ЗАПРЕЩЕНО"
+
+msgid "This name is allowed"
+msgstr "Это имя разрешено"
+
+msgid "This name is not allowed"
+msgstr "Это имя запрещено"
 
 msgid "This name is taken already"
 msgstr "Это имя уже занято"
@@ -9373,6 +9421,9 @@ msgstr "Ширина"
 msgid "Width in pixels"
 msgstr "Ширина в пикселях"
 
+msgid "Wildcards"
+msgstr "Подстановочные символы"
+
 msgid "Wishlist"
 msgstr "Вишлист"
 
@@ -9503,6 +9554,9 @@ msgstr "Вы не произвели вход. Пожалуйста, <a href=\"/
 
 msgid "You are not logged on"
 msgstr "Вы не вошли в систему"
+
+msgid "You can check any name for matching blacklist patterns on <hook:admin.link href=\"characters/blacklist-check\" title=\"special page\" />."
+msgstr "Вы можете проверить любое имя на прохождение черного списка  на <hook:admin.link href=\"characters/blacklist-check\" title=\"специальной странице\" />."
 
 msgid "You can destroy your game while not created"
 msgstr "Вы можете уничтожить свою игру до момента, пока она не создана окончательно"
@@ -11396,10 +11450,6 @@ msgstr "{targetchar.name} в другой локации"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
-#~ msgid "Comment"
-#~ msgstr "Комментировать"
-#~ msgid "Configuration saved"
-#~ msgstr "Конфигурация сохранена"
 #~ msgid "item///wear"
 #~ msgstr "надеть"
 #~ msgid "Project uuid"
