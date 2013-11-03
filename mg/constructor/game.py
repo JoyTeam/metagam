@@ -1,5 +1,6 @@
 from mg import *
 import re
+import random
 
 re_bad_symbols = re.compile(r'([^\w\- \.,:])', re.UNICODE)
 re_bad_english_symbols = re.compile(r'([^a-z0-9A-Z\-_ \.,:])')
@@ -18,6 +19,8 @@ class Game(Module):
         self.rhook("ext-admin-game.logo", self.ext_logo, priv="game.logo")
         self.rhook("headmenu-admin-game.modules", self.headmenu_modules)
         self.rhook("ext-admin-game.modules", self.ext_modules, priv="project.admin")
+        self.rhook("ext-admin-game.lang", self.ext_lang, priv="game.lang")
+        self.rhook("headmenu-admin-game.lang", self.headmenu_lang)
 
     def recommended_actions(self, recommended_actions):
         req = self.req()
@@ -29,18 +32,21 @@ class Game(Module):
         menu.append({"id": "game.index", "text": self._("Game"), "order": 20})
         req = self.req()
         if req.has_access("project.admin"):
-            menu.append({"id": "game/modules", "text": self._("Game system modules"), "leaf": True, "order": 1, "icon": "/st-mg/menu/modules.png"})
+            menu.append({"id": "game/modules", "text": self._("Game system modules"), "leaf": True, "order": 1, "icon": "/st-mg/menu/modules.png?3"})
 
     def permissions_list(self, perms):
+        perms.append({"id": "game.lang", "name": self._("Game language editor")})
         perms.append({"id": "game.profile", "name": self._("Game profile editor")})
         perms.append({"id": "game.logo", "name": self._("Game logo editor")})
 
     def menu_game_index(self, menu):
         req = self.req()
+        if req.has_access("game.lang"):
+            menu.append({"id": "game/lang", "text": self._("Language"), "leaf": True, "order": 0, "icon": "/st-mg/menu/language.png"})
         if req.has_access("game.profile"):
-            menu.append({"id": "game/profile", "text": self._("Profile"), "leaf": True, "order": 10, "even_unpublished": True})
+            menu.append({"id": "game/profile", "text": self._("Profile"), "leaf": True, "order": 10, "even_unpublished": True, "icon": "/st-mg/menu/profile.png"})
         if req.has_access("game.logo"):
-            menu.append({"id": "game/logo", "text": self._("Logo"), "leaf": True, "order": 20, "even_unpublished": True})
+            menu.append({"id": "game/logo", "text": self._("Logo"), "leaf": True, "order": 20, "even_unpublished": True, "icon": "/st-mg/menu/icon.png?1"})
 
     def headmenu_profile(self, args):
         return self._("Game profile")
@@ -72,20 +78,20 @@ class Game(Module):
                         sym = m.group(1)
                         errors["title_full"] = self._("Bad symbols in the title: %s") % htmlescape(sym)
                     elif title_full.endswith("."):
-                        errors["title_full"] = self._("Title must not be ended with a dot")
+                        errors["title_full"] = self._("Title must not end with a dot")
                     elif re_invalid_colon.search(title_full):
                         errors["title_full"] = self._("You must not have a space before a colon (:) and must have a space after a colon (:)")
                 if not title_short:
                     errors["title_short"] = self._("Enter short title")
-                elif len(title_short) > 17:
-                    errors["title_short"] = self._("Maximal length - 17 characters")
+                elif len(title_short) > 30:
+                    errors["title_short"] = self._("Maximal length - 30 characters")
                 else:
                     m = re_bad_symbols.search(title_short)
                     if m:
                         sym = m.group(1)
                         errors["title_short"] = self._("Bad symbols in the title: %s") % htmlescape(sym)
                     elif title_short.endswith("."):
-                        errors["title_short"] = self._("Title must not be ended with a dot")
+                        errors["title_short"] = self._("Title must not end with a dot")
                     elif re_invalid_colon.search(title_short):
                         errors["title_short"] = self._("You must not have a space before a colon (:) and must have a space after a colon (:)")
                 if not title_code:
@@ -97,15 +103,15 @@ class Game(Module):
                 if lang != "en":
                     if not title_en:
                         errors["title_en"] = self._("Enter game title in English")
-                    elif len(title_en) > 17:
-                        errors["title_en"] = self._("Maximal length - 17 characters")
+                    elif len(title_en) > 50:
+                        errors["title_en"] = self._("Maximal length - 50 characters")
                     else:
                         m = re_bad_english_symbols.search(title_en)
                         if m:
                             sym = m.group(1)
                             errors["title_en"] = self._("Bad symbols in the title: %s") % htmlescape(sym)
                         elif title_en.endswith("."):
-                            errors["title_en"] = self._("Title must not be ended with a dot")
+                            errors["title_en"] = self._("Title must not end with a dot")
                         elif re_invalid_colon.search(title_en):
                             errors["title_en"] = self._("You must not have a space before a colon (:) and must have a space after a colon (:)")
             if not description:
@@ -141,16 +147,48 @@ class Game(Module):
                 title_en = project.get("title_en")
         fields = []
         if not project.get("published") and not project.get("moderation"):
-            fields.append({"name": "title_full", "label": self._("Full game title"), "value": title_full})
-            fields.append({"name": "title_short", "label": self._("Short game title"), "value": title_short})
-            fields.append({"name": "title_code", "label": self._("Game code"), "value": title_code})
+            fields.append({"name": "title_full", "label": self._("Full official game title (must start from capital letter, must not be in caps letter, must not be an abbreviation)"), "value": title_full})
+            fields.append({"name": "title_short", "label": self._("Short game title for displaying in the games catalog (must start from capital letter, must not be in caps letter, must not be an abbreviation)"), "value": title_short})
+            fields.append({"name": "title_code", "label": self._("Game code (should be an abbreviation)"), "value": title_code})
             if lang != "en":
-                fields.append({"name": "title_en", "label": self._("Short game title in English"), "value": title_en})
+                fields.append({"name": "title_en", "label": self._("Short game title in English for displaying in the payment system interface (must start from capital letter, must not be in caps letter, must not be an abbreviation)"), "value": title_en})
         fields.append({"name": "author_name", "label": self._("Game author name"), "value": author_name})
         fields.append({"type": "textarea", "name": "description", "label": self._("Game description"), "value": description})
         fields.append({"name": "indexpage_description", "label": self._("SEO HTML description for the index page"), "value": indexpage_description})
         fields.append({"name": "indexpage_keywords", "label": self._("SEO HELP keywords for the index page"), "value": indexpage_keywords})
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Brief description of this form you can find in the <a href="//www.%s/doc/newgame#profile" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Brief description of this form you can find in the <a href="//www.%s/doc/newgame#profile" target="_blank">reference manual</a>.') % self.main_host})
+        self.call("admin.form", fields=fields)
+
+    def headmenu_lang(self, args):
+        return self._("Game language")
+
+    def ext_lang(self):
+        req = self.req()
+        project = self.app().project
+        if req.param("ok"):
+            errors = {}
+            # lang
+            lang = req.param("v_lang")
+            if lang != "en" and lang != "ru":
+                errors["v_lang"] = self._("Invalid language")
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # store
+            with self.lock(["project.%s" % project.uuid]):
+                project.load()
+                project.set("lang", lang);
+                project.store();
+            self.call("cluster.appconfig_changed")
+            self.call("config.changed")
+            self.call("admin.redirect_top", "/admin?_rand=%s#game/lang" % random.random())
+        # show form
+        lang = self.call("l10n.lang")
+        fields = []
+        languages = []
+        languages.append(("en", self._("English")))
+        languages.append(("ru", self._("Russian")))
+        fields.append({"name": "lang", "type": "combo", "label": self._("Game language"), "value": lang, "values": languages})
         self.call("admin.form", fields=fields)
 
     def ext_logo(self):
@@ -183,7 +221,7 @@ class Game(Module):
             "logo": project.get("logo"),
             "change": change
         }
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Brief description of the logo uploading you can find in the <a href="//www.%s/doc/newgame#logo" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Brief description of the logo uploading you can find in the <a href="//www.%s/doc/newgame#logo" target="_blank">reference manual</a>.') % self.main_host})
         self.call("admin.response_template", "admin/game/logo.html", vars)
 
     def headmenu_logo(self, args):
@@ -229,7 +267,7 @@ class Game(Module):
                 }
             ]
         }
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Module structure of the constructor is described in the <a href="//www.%s/doc/modules" target="_blank">modules documentation</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Module structure of the constructor is described in the <a href="//www.%s/doc/modules" target="_blank">modules documentation</a>.') % self.main_host})
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def headmenu_modules(self, args):

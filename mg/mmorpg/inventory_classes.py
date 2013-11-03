@@ -1,8 +1,10 @@
 from mg import *
+from mg.constructor.paramobj import ParametrizedObject
 import re
 import hashlib
 
 re_param_attr = re.compile(r'^p_(.+)')
+re_html_attr = re.compile(r'^html_(.+)')
 re_dna_parse = re.compile(r'^([a-f0-9]+)(?:|_([0-9a-f]+))$')
 
 class DBItemType(CassandraObject):
@@ -57,12 +59,18 @@ def dna_make(mods):
     tokens.sort(cmp=lambda x, y: cmp(x[0], y[0]))
     new_tokens = []
     for k, v in tokens:
+        if k == ":used" and v == 0:
+            continue
         if type(v) == int or type(v) == float or type(v) == long:
             new_tokens.append((k, str(v)))
         elif type(v) == str or type(v) == unicode:
             new_tokens.append((k, urlencode(v)))
+        elif type(v) == list:
+            new_tokens.append((k, urlencode(json.dumps(v, sort_keys=True))))
         else:
             raise RuntimeError("Unknown DNA value type: %s" % type(v))
+    if not new_tokens:
+        return None
     tokens = "&".join('%s=%s' % (k, v) for k, v in new_tokens)
     dna = hashlib.md5(tokens).hexdigest().lower()
     return dna
@@ -76,9 +84,10 @@ def dna_parse(dna):
     else:
         return m.group(1, 2)
 
-class ItemType(Module):
+class ItemType(Module, ParametrizedObject):
     def __init__(self, app, uuid, dna_suffix=None, mods=None, db_item_type=None, db_params=None, fqn="mg.mmorpg.inventory.ItemType"):
         Module.__init__(self, app, fqn)
+        ParametrizedObject.__init__(self, "item-types")
         self.uuid = uuid
         self._dna_suffix = dna_suffix
         self.mods = mods
@@ -115,7 +124,10 @@ class ItemType(Module):
         try:
             req = self.req()
         except AttributeError:
-            self._db_item_type = self.obj(DBItemType, self.uuid)
+            try:
+                self._db_item_type = self.obj(DBItemType, self.uuid)
+            except ObjectNotFoundException:
+                self._db_item_type = self.obj(DBItemType, self.uuid, data={})
             return self._db_item_type
         try:
             cache = req._db_item_type_cache
@@ -214,8 +226,11 @@ class ItemType(Module):
             if m:
                 param = m.group(1)
                 return self.param(param, handle_exceptions)
-            else:
-                raise AttributeError(attr)
+            m = re_html_attr.match(attr)
+            if m:
+                param = m.group(1)
+                return self.param_html(param, handle_exceptions)
+            raise AttributeError(attr)
 
     def __str__(self):
         return "[item %s]" % utf2str(self.name)
@@ -250,18 +265,6 @@ class ItemType(Module):
         cache[self.uuid] = obj
         self._db_params = obj
         return obj
-
-    def param(self, key, handle_exceptions=True):
-        try:
-            cache = self._param_cache
-        except AttributeError:
-            cache = {}
-            self._param_cache = cache
-        try:
-            return cache[key]
-        except KeyError:
-            # 'param-value' handles cache storing automatically
-            return self.call("item-types.param-value", self, key, handle_exceptions)
 
     def script_params(self):
         return {"item": self}

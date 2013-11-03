@@ -1,3 +1,0 @@
-#!/bin/sh
-dir=`dirname $0`
-valgrind --suppressions=$dir/valgrind.supp --undef-value-errors=no $dir/mg_worker $@

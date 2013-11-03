@@ -27,7 +27,7 @@ class IconsAdmin(Module):
     def menu_gameinterface_index(self, menu):
         req = self.req()
         if req.has_access("icons.editor"):
-            menu.append({"id": "icons/editor", "text": self._("Icons editor"), "leaf": True, "order": 50})
+            menu.append({"id": "icons/editor", "text": self._("Icons editor"), "leaf": True, "order": 50, "icon": "/st-mg/menu/icon.png?1"})
 
     def headmenu_icons_editor(self, args):
         if args:

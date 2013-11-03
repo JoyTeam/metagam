@@ -1,7 +1,9 @@
 from mg.constructor import *
 from mg.mmorpg.inventory import MemberInventory, Item
-from mg.mmorpg.inventory_classes import dna_parse, dna_join
+from mg.mmorpg.inventory_classes import dna_parse, dna_join, DBItemTransfer
 import re
+import cStringIO
+from PIL import Image
 
 class EquipError(ScriptRuntimeError):
     pass
@@ -197,6 +199,9 @@ class CharacterEquip(ConstructorModule):
     def equipped_items(self):
         return self.inv._equipped().values()
 
+    def equipped_slots(self):
+        return self.inv._equipped().items()
+
     def equipped(self, slot_id):
         return self.inv._equipped().get(str(slot_id))
 
@@ -234,6 +239,71 @@ class CharacterEquip(ConstructorModule):
         self._invalidate()
         self.inv._invalidate()
         self.character._invalidate()
+
+    def break_item(self, slot, fractions, description=None, **kwargs):
+        """
+        Breaks item in the given slot for the specified number of fractions.
+        Doesn't store/validate inventory. Need to do equip.validate(), inv.store()
+        manually.
+        """
+        equip_data = self.inv._equip_data()
+        dna = equip_data["slots"].get(slot)
+        if dna is None:
+            return None, None
+        # 1. unequip the item
+        del equip_data["slots"][slot]
+        self.inv._update_equip_data()
+        # 2. take DNA
+        item, quantity = self.inv._take_dna(dna, 1)
+        if not quantity or not item:
+            return None, None
+        # 3. increase "used"
+        new_item_type = item.item_type.copy()
+        if not new_item_type.mods:
+            new_item_type.mods = {}
+        used = new_item_type.mods.get(":used", 0)
+        max_fractions = new_item_type.get("fractions", 1)
+        if used + fractions >= max_fractions:
+            # discard item
+            spent = max_fractions - used
+            destroyed = True
+            new_item_type = None
+        else:
+            spent = fractions
+            destroyed = False
+            # 4. give new DNA
+            new_item_type.mods[":used"] = used + fractions
+            new_item_type.update_dna()
+            self.inv._give(new_item_type.uuid, 1, mod=new_item_type.mods)
+            # 5. equip the item
+            equip_data["slots"][slot] = new_item_type.dna
+            self.inv._update_equip_data()
+        # log the operation
+        if description:
+            performed = kwargs.get("performed") or self.now()
+            trans = self.obj(DBItemTransfer)
+            trans.set("owner", self.inv.uuid)
+            if self.inv.owtype != "char":
+                trans.set("owtype", self.inv.owtype)
+            trans.set("type", item.item_type.uuid)
+            if item.item_type.dna_suffix:
+                trans.set("dna", item.item_type.dna_suffix)
+                trans.set("mod", item.item_type.mods)
+            trans.set("quantity", -1)
+            trans.set("description", description)
+            for k, v in kwargs.iteritems():
+                trans.set(k, v)
+            trans.set("performed", performed)
+            self.inv.trans.append(trans)
+            if new_item_type:
+                data = trans.data
+                trans = self.obj(DBItemTransfer)
+                trans.data = data.copy()
+                trans.set("dna", new_item_type.dna_suffix)
+                trans.set("mod", new_item_type.mods)
+                trans.set("quantity", 1)
+                self.inv.trans.append(trans)
+        return spent, destroyed
 
     @property
     def char_params(self):
@@ -408,7 +478,7 @@ class EquipAdmin(ConstructorModule):
         files.append({"filename": "item-hint.html", "description": self._("Item mouse over hint"), "doc": "/doc/equip"})
 
     def advice_equip(self, hook, args, advice):
-        advice.append({"title": self._("Equipment documentation"), "content": self._('You can find detailed information on the characters equipment system in the <a href="//www.%s/doc/equip" target="_blank">equipment page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 20})
+        advice.append({"title": self._("Equipment documentation"), "content": self._('You can find detailed information on the characters equipment system in the <a href="//www.%s/doc/equip" target="_blank">equipment page</a> in the reference manual.') % self.main_host, "order": 20})
 
     def nondeletable(self, uuids):
         interfaces = self.call("equip.interfaces")
@@ -480,8 +550,11 @@ class EquipAdmin(ConstructorModule):
                 if not slot:
                     self.call("admin.redirect", "equip/slots")
             if req.ok():
+                self.call("web.upload_handler")
                 slot = slot.copy()
                 errors = {}
+                upload = []
+                delete_images = []
                 # id
                 sid = req.param("id").strip()
                 if not sid:
@@ -532,6 +605,43 @@ class EquipAdmin(ConstructorModule):
                                 errors[key_size] = self._("Maximal size is 128x128")
                             else:
                                 slot[key_size] = [width, height]
+
+                            # Image should be parsed only if dimensions are defined
+                            key_empty = "ifempty-%s" % iface["id"]
+                            if req.param("ifdelempty-%s" % iface["id"]):
+                                if key_empty in slot:
+                                    delete_images.append(slot[key_empty])
+                                    del slot[key_empty]
+                            else:
+                                image_data = req.param_raw(key_empty)
+                                if image_data:
+                                    try:
+                                        image = Image.open(cStringIO.StringIO(image_data))
+                                        if image.load() is None:
+                                            raise IOError
+                                    except IOError:
+                                        errors[key_empty] = self._("Image format not recognized")
+                                    else:
+                                        ext, content_type = self.image_format(image)
+                                        form = image.format
+                                        trans = image.info.get("transparency")
+                                        w, h = image.size
+                                        if ext is None:
+                                            errors[key_empty] = self._("Valid formats are: PNG, GIF, JPEG")
+                                        elif w != width or h != height:
+                                            errors[key_empty] = self._("Dimensions of the image must match slot dimensions ({width}x{height} uploaded, {ewidth}x{eheight} expected)").format(width=w, height=h, ewidth=width, eheight=height)
+                                        else:
+                                            data = cStringIO.StringIO()
+                                            if form == "JPEG":
+                                                image.save(data, form, quality=95)
+                                            elif form == "GIF":
+                                                if trans:
+                                                    image.save(data, form, transparency=trans)
+                                                else:
+                                                    image.save(data, form)
+                                            else:
+                                                image.save(data, form)
+                                            upload.append((slot, key_empty, image, ext, content_type, data))
                     else:
                         slot[key] = False
                 # visible
@@ -539,9 +649,14 @@ class EquipAdmin(ConstructorModule):
                 slot["visible"] = self.call("script.admin-expression", "visible", errors, globs={"char": char})
                 # enabled
                 slot["available"] = self.call("script.admin-expression", "available", errors, globs={"char": char})
-                # handling errors
+                # handle errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
+                # upload images
+                for slot, key, image, ext, content_type, data in upload:
+                    uri = self.call("cluster.static_upload", "item", ext, content_type, data.getvalue())
+                    delete_images.append(slot.get(key))
+                    slot[key] = uri
                 # storing
                 slots = [s for s in slots if s["id"] != slot["id"]]
                 slot["id"] = sid
@@ -552,6 +667,10 @@ class EquipAdmin(ConstructorModule):
                     config.set("equip.max-slot", sid)
                 config.set("equip.slots", slots)
                 config.store()
+                # delete old images
+                for uri in delete_images:
+                    if uri:
+                        self.call("cluster.static_delete", uri)
                 self.call("admin.redirect", "equip/slots")
             fields = [
                 {"label": self._("Slot ID (integer number)"), "name": "id", "value": slot.get("id")},
@@ -567,8 +686,14 @@ class EquipAdmin(ConstructorModule):
                 fields.append({"name": key, "label": iface["title"], "type": "checkbox", "checked": slot.get(key)})
                 key_size = "ifsize-%s" % iface["id"]
                 size = slot.get(key_size, [60, 60])
-                fields.append({"name": key_size, "label": self._("Slot dimensions (ex: 60x60)"), "value": "%dx%d" % (size[0], size[1]), "condition": "[%s]" % key, "inline": True})
-            self.call("admin.form", fields=fields)
+                fields.append({"name": key_size, "label": self._("Slot dimensions (ex: 60x60)"), "value": "%dx%d" % (size[0], size[1]), "condition": "[%s]" % key})
+                key_empty = "ifempty-%s" % iface["id"]
+                if slot.get(key_empty):
+                    fields.append({"type": "checkbox", "name": "ifdelempty-%s" % iface["id"], "label": self._("Delete empty slot image")})
+                    fields.append({"name": key_empty, "label": (u'<p><img src="%s" alt="" /></p>' % slot[key_empty]) + self._("Replace empty slot image"), "type": "fileuploadfield", "condition": "[%s] && ![ifdelempty-%s]" % (key, iface["id"])})
+                else:
+                    fields.append({"name": key_empty, "label": self._("Empty slot image"), "type": "fileuploadfield", "condition": "[%s]" % key})
+            self.call("admin.form", fields=fields, modules=["FileUploadField"])
         rows = []
         for slot in slots:
             rows.append([
@@ -612,6 +737,10 @@ class EquipAdmin(ConstructorModule):
         fields.insert(pos, {"label": self._("Script condition whether this item has 'wear' button") + self.call("script.help-icon-expressions"), "name": "equip_wear", "value": self.call("script.unparse-expression", obj.get("equip_wear", 1)), "condition": "[equip]"})
         pos += 1
         fields.insert(pos, {"type": "empty", "inline": True})
+        pos += 1
+        fields.insert(pos, {"label": self._("'Wear' button title"), "name": "equip_wear_title", "value": obj.get("equip_wear_title", self._("wear")), "condition": "[equip]"})
+        pos += 1
+        fields.insert(pos, {"label": self._("'Unwear' prompt"), "name": "equip_unwear_title", "value": obj.get("equip_unwear_title", self._("Click to unequip")), "condition": "[equip]", "inline": True})
         pos += 1
         # checkboxes
         slots = self.call("equip.slots")
@@ -667,11 +796,22 @@ class EquipAdmin(ConstructorModule):
                         obj.set(key, nn(val))
                 else:
                     obj.delkey(key)
-            req = self.req()
             char = self.character(req.user())
             obj.set("equip_wear", self.call("script.admin-expression", "equip_wear", errors, globs={"char": char}))
             obj.set("wear_cond", self.call("script.admin-expression", "wear_cond", errors, globs={"char": char}))
             obj.set("unwear_cond", self.call("script.admin-expression", "unwear_cond", errors, globs={"char": char}))
+            # equip_wear_title
+            equip_wear_title = req.param("equip_wear_title").strip()
+            if not equip_wear_title:
+                errors["equip_wear_title"] = self._("This field is mandatory")
+            else:
+                obj.set("equip_wear_title", equip_wear_title)
+            # equip_unwear_title
+            equip_unwear_title = req.param("equip_unwear_title").strip()
+            if not equip_unwear_title:
+                errors["equip_unwear_title"] = self._("This field is mandatory")
+            else:
+                obj.set("equip_unwear_title", equip_unwear_title)
         else:
             obj.delkey("equip")
 
@@ -1047,7 +1187,7 @@ class Equip(ConstructorModule):
                                 params[-1]["lst"] = True
                                 hint_vars["item"]["params"] = params
                             if iface.get("show_actions"):
-                                hint_vars["hint"] = self._("Click to unequip")
+                                hint_vars["hint"] = item_type.get("equip_unwear_title", self._("Click to unequip"))
                             ritem["hint"] = {
                                 "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
                                 "html": jsencode(self.call("design.parse", design, "item-hint.html", None, hint_vars)),
@@ -1057,6 +1197,11 @@ class Equip(ConstructorModule):
                             ritem["hint"] = {
                                 "cls": "equip-%s-%s" % (character.uuid, slot["id"]),
                             }
+                            img = slot.get("ifempty-%s" % iface_id)
+                            if img:
+                                ritem["image"] = {
+                                    "src": img
+                                }
                             if description:
                                 ritem["hint"]["html"] = jsencode(description)
                             if self.call("script.evaluate-expression", slot.get("available", 1), {"char": character}, description=self._("Availability of slot '%s'") % slot["name"]):
@@ -1123,7 +1268,7 @@ class Equip(ConstructorModule):
                         return item_type.get("equip") and item_type.get("equip-%s" % slot_id) and not equip.cannot_equip(item_type)
                     def render(item_type, ritem):
                         menu = []
-                        menu.append({"href": "/equip/slot/%s/%s" % (slot["id"], item_type.dna), "html": self._("item///wear"), "order": 10})
+                        menu.append({"href": "/equip/slot/%s/%s" % (slot["id"], item_type.dna), "html": item_type.get("equip_wear_title", self._("wear")), "order": 10})
                         if menu:
                             menu[-1]["lst"] = True
                             ritem["menu"] = menu
@@ -1226,7 +1371,7 @@ class Equip(ConstructorModule):
     def items_menu(self, character, item_type, menu):
         if item_type.get("equip"):
             if self.call("script.evaluate-expression", item_type.get("equip_wear", 1), globs={"char": character, "item": item_type}, description=lambda: self._("Whether 'wear' button is available on the item {item} ({name})").format(item=item_type.uuid, name=item_type.name)):
-                menu.append({"href": "/equip/item/%s/%s" % (item_type.cat("inventory"), item_type.dna), "html": htmlescape(self._("wear")), "order": 80})
+                menu.append({"href": "/equip/item/%s/%s" % (item_type.cat("inventory"), item_type.dna), "html": htmlescape(item_type.get("equip_wear_title", self._("wear"))), "order": 80})
 
     def equip_item(self):
         self.call("quest.check-dialogs")

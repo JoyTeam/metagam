@@ -23,7 +23,7 @@ class CharClassesAdmin(ConstructorModule):
         files.append({"filename": "charclass-select-layout.html", "description": self._("Character class selector layout"), "doc": "/doc/design/character-classes"})
 
     def advice_charclasses(self, args, advice):
-        advice.append({"title": self._("Character classes documentation"), "content": self._('You can find detailed information on the character classes system in the <a href="//www.%s/doc/character-classes" target="_blank">character classes page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Character classes documentation"), "content": self._('You can find detailed information on the character classes system in the <a href="//www.%s/doc/character-classes" target="_blank">character classes page</a> in the reference manual.') % self.main_host})
 
     def params_form_render(self, param, fields):
         i = 0

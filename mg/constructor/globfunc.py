@@ -89,7 +89,7 @@ class GlobalFunctionsAdmin(ConstructorModule):
         self.rhook("advice-admin-globfunc.index", self.advice_globfunc)
 
     def advice_globfunc(self, hook, args, advice):
-        advice.append({"title": self._("Global interfaces documentation"), "content": self._('You can find detailed information on the global interfaces system in the <a href="//www.%s/doc/globfunc" target="_blank">global interfaces page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Global interfaces documentation"), "content": self._('You can find detailed information on the global interfaces system in the <a href="//www.%s/doc/globfunc" target="_blank">global interfaces page</a> in the reference manual.') % self.main_host})
 
     def permissions_list(self, perms):
         perms.append({"id": "interface.globfunc", "name": self._("Global interfaces")})
@@ -97,7 +97,7 @@ class GlobalFunctionsAdmin(ConstructorModule):
     def menu_gameinterface_index(self, menu):
         req = self.req()
         if req.has_access("interface.globfunc"):
-            menu.append({"id": "globfunc/editor", "text": self._("Global interfaces"), "leaf": True, "order": 60})
+            menu.append({"id": "globfunc/editor", "text": self._("Global interfaces"), "leaf": True, "order": 60, "icon": "/st-mg/menu/interface.png"})
 
     def headmenu_globfunc_editor(self, args):
         cmd = args
@@ -165,6 +165,8 @@ class GlobalFunctionsAdmin(ConstructorModule):
                     if fn["id"] == fn_id:
                         func = fn.copy()
                         break
+                if func is None:
+                    self.call("admin.redirect", "globfunc/editor")
             # Available interfaces
             if func.get("custom"):
                 function_types = []

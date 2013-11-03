@@ -1,6 +1,6 @@
 from mg import *
 from mg.constructor import *
-from mg.core.cluster import StaticUploadError
+from mg.core.common import StaticUploadError
 import re
 import zipfile
 import cStringIO
@@ -11,6 +11,7 @@ import mg
 import cssutils
 from cssutils import *
 import mg
+from concurrence import Tasklet
 
 max_design_size = 10000000
 max_design_files = 100
@@ -45,6 +46,7 @@ re_templates_editor = re.compile(r'^templates/([a-f0-9]{32})(?:|/(.+))$')
 re_edit_template = re.compile(r'^(edit|reset)/([a-z0-9_\-]+\.(html|css|js))$')
 re_del_template = re.compile(r'^del/([a-z0-9_\-]+\.html)$')
 re_valid_filename_html = re.compile(r'^[a-z0-9_\-]+\.(?:html|css|js)$')
+re_remove_suffix = re.compile('-.*')
 
 cssutils.ser.prefs.lineSeparator = u' '
 cssutils.ser.prefs.indent = u''
@@ -59,6 +61,9 @@ class Design(CassandraObject):
 
 class DesignList(CassandraObjectList):
     objcls = Design
+
+class TemplateNotFound(TemplateException):
+    pass
 
 class DesignHTMLParser(HTMLParser.HTMLParser, Module):
     "HTML parser validating HTML file received from the user and modifying it adding [%design_root%] prefixes"
@@ -236,14 +241,14 @@ class DesignHTMLUnparser(HTMLParser.HTMLParser, Module):
                     href = m.group(1)
                     for i in range(0, len(attrs)):
                         if attrs[i][0] == att:
-                            attrs[i] = (att, "//www.%s/st-mg%s" % (str(self.app().inst.config["main_host"]), href))
+                            attrs[i] = (att, "//www.%s/st-mg%s" % (str(self.main_host), href))
                 else:
                     m = re_dyn_mg.match(href)
                     if m:
                         href = m.group(1)
                         for i in range(0, len(attrs)):
                             if attrs[i][0] == att:
-                                attrs[i] = (att, "//www.%s/dyn-mg%s" % (str(self.app().inst.config["main_host"]), href))
+                                attrs[i] = (att, "//www.%s/dyn-mg%s" % (str(self.main_host), href))
                     else:
                         m = re_design_root_prefix.match(href)
                         if m:
@@ -259,11 +264,11 @@ class DesignTemplateValidator(Module):
         self.errors = errors
         self.parsed_html = parsed_html
 
-    def validate(self, fn, data, file_obj=None):
+    def validate(self, group, fn, data, file_obj=None, fragment=False):
         if fn != "blocks.html" and fn != "index.html" and fn != "global.html":
             return
         try:
-            if fn == "blocks.html":
+            if fn == "blocks.html" or (fn == "index.html" and group == "sociointerface"):
                 fragment = True
             else:
                 fragment = False
@@ -323,12 +328,15 @@ class DesignZip(Module):
             m = re_valid_filename.match(zip_filename)
             if not m:
                 try:
-                    zip_filename = zip_filename.decode("utf-8")
+                    try:
+                        zip_filename = zip_filename.decode("utf-8")
+                    except UnicodeEncodeError:
+                        zip_filename = zip_filename.decode("cp1251")
+                    except UnicodeDecodeError:
+                        zip_filename = zip_filename.decode("cp1251")
+                    list_errors.append(self._("Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted. Filename must have an extention (a-z, 0-9 symbols)") % htmlescape(zip_filename))
                 except UnicodeEncodeError:
-                    zip_filename = zip_filename.decode("cp1251")
-                except UnicodeDecodeError:
-                    zip_filename = zip_filename.decode("cp1251")
-                list_errors.append(self._("Filename '%s' is invalid. Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted. Filename must have an extention (a-z, 0-9 symbols)") % htmlescape(zip_filename))
+                    list_errors.append(self._("Only small latin letters (a-z), digits (0-9), underscore (_) and minus(-) are permitted in file names. Filename must have an extention (a-z, 0-9 symbols)"))
                 continue
             basename, ext = m.group(1, 2)
             filename = "%s.%s" % (basename, ext)
@@ -352,8 +360,9 @@ class DesignZip(Module):
         if not len(errors):
             for file in upload_list:
                 if file["content-type"] == "text/html":
+                    Tasklet.yield_()
                     data = self.zip.read(file["zipname"])
-                    validator.validate(file["filename"], data, file_obj=file)
+                    validator.validate(group, file["filename"], data, file_obj=file)
         design = self.obj(Design)
         design.set("group", group)
         design.set("uploaded", self.now())
@@ -366,7 +375,7 @@ class DesignZip(Module):
         if len(errors):
             return errors
         try:
-            uri = self.call("cluster.static_upload_zip", "design-%s" % group, self.zip, upload_list)
+            uri = self.call("cluster.static_upload_zip", "design-%s" % re_remove_suffix.sub('', group), self.zip, upload_list)
         except StaticUploadError as e:
             errors.append(unicode(e))
         if len(errors):
@@ -416,6 +425,7 @@ class DesignGenerator(Module):
         pass
 
     def upload_image(self, param, errors):
+        Tasklet.yield_()
         req = self.req()
         image = req.param_raw(param)
         if image is None or not len(image):
@@ -506,7 +516,7 @@ class DesignGenerator(Module):
                 except KeyError:
                     with open(file["path"], "r") as f:
                         data = f.read()
-                    stackless.schedule()
+                    Tasklet.yield_()
                 try:
                     if file["filename"] == "blocks.html":
                         fragment = True
@@ -532,7 +542,7 @@ class DesignGenerator(Module):
                     if e.offset is not None:
                         msg += self._(", column %d") % (e.offset + 1)
                     errors.append(self._("Error parsing {0}: {1}").format(file["filename"], msg))
-                stackless.schedule()
+                Tasklet.yield_()
         if len(errors):
             raise RuntimeError(", ".join(errors))
         self.puzzle = Puzzle(1280, 1024)
@@ -546,12 +556,13 @@ class DesignGenerator(Module):
     def edit_css(self, filename):
         parser = CSSParser()
         css = parser.parseFile("%s/data/design/%s/%s" % (mg.__path__[0], self.id(), filename), "utf-8")
+        Tasklet.yield_()
         self.css[filename] = css
         return css
 
     def load_image(self, filename):
         image = Image.open("%s/data/design/%s/%s" % (mg.__path__[0], self.id(), filename)).convert("RGBA")
-        stackless.schedule()
+        Tasklet.yield_()
         return image
 
     def store_image(self, image, filename, format):
@@ -609,12 +620,12 @@ class DesignGenerator(Module):
                 image, format = el
                 stream = cStringIO.StringIO()
                 image.save(stream, format, quality=95)
-                stackless.schedule()
+                Tasklet.yield_()
                 ent["data"] = stream.getvalue()
             css = self.css.get(ent["filename"])
             if css:
                 ent["data"] = ("".join(["%s\n" % rule.cssText for rule in css.cssRules])).encode("utf-8")
-        uri = self.call("cluster.static_upload_zip", "design-%s" % self.group(), None, self.upload_list)
+        uri = self.call("cluster.static_upload_zip", "design-%s" % re_remove_suffix.sub('', self.group()), None, self.upload_list)
         self.design.set("uri", uri)
         self.design.set("title", self.name())
         self.design.store()
@@ -891,7 +902,7 @@ class DesignIndexCommonBlocks(DesignGenerator):
             "Description": self._("Description"),
             "Links": self._("Links"),
             "Ratings": self._("Ratings"),
-            "main_host": self.app().inst.config.get("main_host"),
+            "main_host": self.main_host,
             "EnterTheGame": self._("Enter the game"),
             "MMOConstructor": self._("Browser based online games constructor"),
         }
@@ -1161,7 +1172,9 @@ class DesignMod(Module):
                 try:
                     return self.call("web.parse_layout", "%s/%s" % (design_type, template), vars)
                 except TemplateException as e:
-                    raise e
+                    if not re_not_found.search(str(e)):
+                        raise e
+                    raise TemplateNotFound("NotFound", e.info())
 
     def response(self, design, template, content, vars, design_type="game"):
         self.call("web.setup_design", vars)
@@ -1566,7 +1579,7 @@ class DesignAdmin(Module):
                     errors = []
                     parsed_html = {}
                     validator = DesignTemplateValidator(self.app(), group, errors, parsed_html)
-                    validator.validate(fn, content)
+                    validator.validate(group, fn, content)
                     self.call("admin-%s.validate" % group, design, parsed_html, errors)
                     if errors:
                         self.call("web.response_json", {"success": False, "errormsg": "\n".join(errors)})
@@ -1591,12 +1604,14 @@ class DesignAdmin(Module):
                     try:
                         content = self.download(template_uri)
                     except DownloadError:
-                        self.call("admin.response", self._("Error downloading template"))
+                        self.call("admin.response", self._("Error downloading template"), {})
                 else:
-                    subdir = {
+                    subdirs = {
                         "gameinterface": "game",
                         "sociointerface": "socio",
-                    }.get(group)
+                    }
+                    self.call("admin-designs.subdirs", subdirs)
+                    subdir = subdirs.get(group)
                     try:
                         with open("%s/templates/%s/%s" % (mg.__path__[0], subdir, fn), "r") as f:
                             content = f.read()
@@ -1608,8 +1623,10 @@ class DesignAdmin(Module):
                     fields.append({"type": "html", "html": '<div class="admin-description">%s</div>' % fl["description"]})
                     doc = fl.get("doc")
                     if doc:
-                        fields.append({"type": "html", "html": '<div class="admin-doc-link"><a href="http://www.%s%s" target="_blank">%s</a></div>' % (self.app().inst.config["main_host"], doc, self._("Open documentation page")), "inline": True})
+                        fields.append({"type": "html", "html": '<div class="admin-doc-link"><a href="%s://www.%s%s" target="_blank">%s</a></div>' % (self.main_app().protocol, self.main_host, doc, self._("Open documentation page")), "inline": True})
                 fields.append({"type": "textarea", "name": "content", "value": content, "height": 600, "nowrap": True})
+                if fn == "form.html":
+                    self.call("admin.advice", {"title": self._("Forms documentation"), "content": self._('Detailed description of the forms template is provided in the <a href="//www.%s/doc/design/forms" target="_blank">forms documentation</a>') % self.main_host, "order": -40})
                 try:
                     self.call("admin.form", fields=fields)
                 except UnicodeDecodeError:
@@ -1627,7 +1644,7 @@ class DesignAdmin(Module):
                         label = u"<strong>%s</strong> &mdash; %s" % (fl["filename"], fl["description"])
                         doc = fl.get("doc")
                         if doc:
-                            label = u'%s &mdash; <a href="http://www.%s%s" target="_blank">%s</a>' % (label, self.app().inst.config["main_host"], doc, self._("documentation"))
+                            label = u'%s &mdash; <a href="%s://www.%s%s" target="_blank">%s</a>' % (label, self.main_app().protocol, self.main_host, doc, self._("documentation"))
                         fields.append({"id": "filename-%s" % fl["filename"], "type": "radio", "name": "filename", "value": fl["filename"], "boxLabel": label})
                 buttons = [
                     {"text": self._("Edit")},
@@ -1711,7 +1728,7 @@ class IndexPageAdmin(Module):
             menu.append({"id": "indexpage/design", "text": self._("Design template"), "leaf": True, "order": 1, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/indexpage" target="_blank">the indexpage design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/indexpage" target="_blank">the indexpage design reference manual</a> to create your own template or edit generated one') % self.main_host, "order": 30})
         self.call("design-admin.editor", "indexpage")
 
     def validate(self, design, parsed_html, errors):
@@ -1735,11 +1752,11 @@ class IndexPageAdmin(Module):
                 for form in parser.forms:
                     if form.get("name") == "loginform" and form.get("id") == "loginform":
                         loginform_ok = True
-                        if form["onsubmit"] != "return auth_login();":
+                        if form.get("onsubmit") != "return auth_login();":
                             errors.append(self._('Your loginform must contain onsubmit="return auth_login();"'))
                         name_ok = False
                         password_ok = False
-                        for inp in form["inputs"]:
+                        for inp in form.get("inputs", []):
                             if inp.get("name") == "name":
                                 name_ok = True
                                 if inp.get("id") != "name":
@@ -1834,7 +1851,7 @@ class IndexPageAdmin(Module):
                     })
                     lst[-1]["lst"] = True
             vars["ratings"][-1]["lst"] = True
-        vars["main_host"] = self.app().inst.config["main_host"]
+        vars["main_host"] = self.main_host
 
     def generators(self, gens):
 #        gens.append(DesignIndexBrokenStones)
@@ -1952,7 +1969,7 @@ class SocioInterfaceAdmin(Module):
             menu.append({"id": "sociointerface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/sociointerface" target="_blank">the socio interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/sociointerface" target="_blank">the socio interface design reference manual</a> to create your own template or edit generated one') % self.main_host, "order": 30})
         self.call("design-admin.editor", "sociointerface")
 
     def validate(self, design, parsed_html, errors):
@@ -2042,7 +2059,7 @@ class SocioInterfaceAdmin(Module):
                 "subject_html": random.choice(demo_subjects),
                 "subscribed": random.random() < 0.5,
                 "literal_created": random.choice(demo_dates),
-                "avatar": "//%s/st/constructor/design/av%d.gif" % (self.app().inst.config["main_host"], random.randrange(0, 6)),
+                "avatar": "//%s/st/constructor/design/av%d.gif" % (self.main_host, random.randrange(0, 6)),
                 "author_html": random.choice(demo_authors),
                 "content_html": random.choice(demo_contents),
             }
@@ -2073,7 +2090,7 @@ class SocioInterfaceAdmin(Module):
                 for i in range(0, random.choice([1, 5, 20])):
                     post = {
                         "literal_created": random.choice(demo_dates),
-                        "avatar": "//%s/st/constructor/design/av%d.gif" % (self.app().inst.config["main_host"], random.randrange(0, 6)),
+                        "avatar": "//%s/st/constructor/design/av%d.gif" % (self.main_host, random.randrange(0, 6)),
                         "author_html": random.choice(demo_authors),
                         "content_html": random.choice(demo_contents),
                     }
@@ -2154,7 +2171,7 @@ class SocioInterfaceAdmin(Module):
             lst.append({
                 "html": random.choice([self._("Login"), self._("Logout"), self._("Settings"), self._("Friends")]),
                 "href": "#" if random.random() < 0.8 else None,
-                "image": "//%s/st/constructor/cabinet/%s" % (self.app().inst.config["main_host"], random.choice(["settings.gif", "constructor.gif"])) if random.random() < 0.7 else None,
+                "image": "//%s/st/constructor/cabinet/%s" % (self.main_host, random.choice(["settings.gif", "constructor.gif"])) if random.random() < 0.7 else None,
             })
         if random.random() < 0.8:
             lst.insert(0, {"search": True, "html": self._("Search")})
@@ -2220,7 +2237,7 @@ class GameInterfaceAdmin(ConstructorModule):
             menu.append({"id": "gameinterface/design", "text": self._("Design template"), "leaf": True, "order": 2, "icon": "/st-mg/menu/design.png"})
 
     def ext_design(self):
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/gameinterface" target="_blank">the game interface design reference manual</a> to create your own template or edit generated one') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('Read <a href="//www.%s/doc/design/gameinterface" target="_blank">the game interface design reference manual</a> to create your own template or edit generated one') % self.main_host, "order": 30})
         self.call("design-admin.editor", "gameinterface")
 
     def validate(self, design, parsed_html, errors):
@@ -2243,7 +2260,7 @@ class GameInterfaceAdmin(ConstructorModule):
             fn = f.get("filename")
             doc = f.get("doc")
             if doc:
-                fn = u'<a href="http://www.%s%s" target="_blank">%s</a>' % (self.app().inst.config["main_host"], doc, fn)
+                fn = u'<a href="%s://www.%s%s" target="_blank">%s</a>' % (self.main_app().protocol, self.main_host, doc, fn)
             html.append("<li><strong>%s</strong>&nbsp;&mdash; %s</li>" % (fn, f.get("description")))
         files = "".join(html)
         advice.append({"title": self._("Required design files"), "content": self._("Here is a list of required files in your design with short descriptions: <ul>%s</ul>") % files, "order": 50})

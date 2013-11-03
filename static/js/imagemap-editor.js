@@ -34,9 +34,10 @@ ImageMapZone.prototype.render = function(form) {
 						xtype: 'textfield',
 						allowBlank: true,
 						msgTarget: 'side',
+                                                readOnly: true,
 						anchor: '-30',
 						autoHeight: true
-					},
+					}
 				},
 				{
 					id: 'elem_action-' + this.id,
@@ -470,7 +471,7 @@ ImageMapEditor.paint = function(force) {
 		var zone = this.zones[i];
 		this.ctx.save();
 		this.ctx.beginPath();
-		this.ctx.moveTo(zone.poly[0].x, zone.poly[0].y);
+		this.ctx.moveTo(zone.poly[0].x + 0.5, zone.poly[0].y + 0.5);
 		for (var j = 1; j < zone.poly.length; j++) {
 			this.ctx.lineTo(zone.poly[j].x + 0.5, zone.poly[j].y + 0.5);
 		}

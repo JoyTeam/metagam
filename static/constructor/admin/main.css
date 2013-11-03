@@ -4,6 +4,7 @@ strong { font-weight: bold }
 a:link, a:visited { color: #dd6419 }
 a:hover, a:active { color: #ed9439 }
 table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
+.x-form-field { font-size: 14px }
 #admin-project-title { font-weight: bold; padding: 3px 5px 0px 15px; font-size: 16px; color: #6a7274 }
 .x-border-layout-ct .x-splitbar-h { background-color: #d8d8d8 }
 #admin-topmenu { background: #ffffff; padding: 0px 35px 0px 50px; border: none }
@@ -26,10 +27,13 @@ table { border-spacing: 0px; padding: 0px; border-collapse: collapse }
 .admin-advice-title { font-size: 18px; color: #0078ac; padding-top: 20px; display: none; }
 .admin-advice-body { font-size: 12px; color: #535c5f; line-height: 1.6em; padding: 20px 0px 20px 0px; border-bottom: solid 2px #eff6fa }
 .admin-advice-body-last { font-size: 12px; color: #535c5f; line-height: 1.6em; padding: 20px 0px 10px 0px; }
+.admin-advice-body-warning { color: #ff0000 !important; font-weight: bold }
 .admin-headmenu { font-size: 18px; color: #0078ac; margin-bottom: 20px }
 .admin-headmenu a:link, .admin-headmenu a:visited { color: #0078ac }
 .admin-headmenu a:hover, .admin-headmenu a:active { color: #0098ec }
 .text h1.admin-form-header { font-size: 18px; color: #0078ac; font-weight: normal }
+.text h2.admin-form-header2 { font-size: 16px; color: #0078ac; font-weight: normal }
+h1.admin-submenu { font-size: 18px; color: #0078ac; font-weight: normal }
 .admin-submenu { padding-bottom: 10px }
 .admin-description { padding-bottom: 20px }
 .admin-doc-link { padding-bottom: 20px }
@@ -89,12 +93,13 @@ table.menu td.subheader { font-weight: bold; font-size: 16px }
 .moderated { border: solid 1px #c00000; padding: 3px; font-weight: bold }
 .admin-message-green { border: solid 1px #008000; color: #00c000; padding: 10px; margin: 10px 0 10px 0 }
 .admin-message-red { border: solid 1px #e00000; color: #ff0000; padding: 10px; margin: 10px 0 10px 0 }
-.admin-united { border-left: solid 2px #c0c0e0; }
+.admin-united { border-left: solid 2px #c0c0e0 }
 .admin-delim { margin-top: 15px; padding-top: 15px; border-top: solid 1px #dd6419 }
 .admin-w50 { width: 50% }
 .admin-column-padding { padding-left: 20px }
 .admin-column { padding-right: 60px; vertical-align: top }
 .admin-valign-top { vertical-align: top }
+.moderate-hint { color: #808080; font-size: 10px; padding-bottom: 10px }
 /* DESIGN TEMPLATES */
 .design-template { width: 180px; float: left }
 .design-template-name { padding: 10px 0px 30px 0px }

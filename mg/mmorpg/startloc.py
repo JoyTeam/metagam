@@ -23,7 +23,7 @@ class StartLocAdmin(ConstructorModule):
         self.rhook("advice-admin-locations.start", self.advice_locations_start)
 
     def advice_locations_start(self, args, advice):
-        advice.append({"title": self._("Starting locations documentation"), "content": self._('You can find detailed information on the starting locations system in the <a href="//www.%s/doc/startloc" target="_blank">starting locations page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 10})
+        advice.append({"title": self._("Starting locations documentation"), "content": self._('You can find detailed information on the starting locations system in the <a href="//www.%s/doc/startloc" target="_blank">starting locations page</a> in the reference manual.') % self.main_host, "order": 10})
 
     def permissions_list(self, perms):
         perms.append({"id": "locations.start", "name": self._("Starting locations")})

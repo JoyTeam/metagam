@@ -3,7 +3,7 @@
 
 import unittest
 from concurrence import dispatch, Tasklet
-from mg.core import *
+from mg import *
 from mg.admin.wizards import Wizard
 from mg.core.cass import CassandraPool
 from mg.core.memcached import MemcachedPool
@@ -25,9 +25,9 @@ class Test2Wizard(Wizard):
 
 class TestWizards(unittest.TestCase):
     def setUp(self):
-        self.inst = Instance()
-        self.inst.dbpool = CassandraPool((("director-db", 9160),))
-        self.inst.mcpool = MemcachedPool(("director-mc", 11211))
+        self.inst = Instance("test", "test")
+        self.inst._dbpool = CassandraPool((("localhost", 9160),))
+        self.inst._mcpool = MemcachedPool()
         self.app = Application(self.inst, "mgtest")
         self.app.modules.load(["mg.admin.wizards.Wizards"])
         mc = Memcached(self.inst.mcpool, "mgtest-")

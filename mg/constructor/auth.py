@@ -7,7 +7,13 @@ from mg.constructor.players import DBCharacter, DBCharacterList, DBPlayer, DBPla
 import hashlib
 import copy
 import random
-import time
+import re
+
+re_newline = re.compile(r'\n')
+
+name_blacklist_limit = 200
+name_blacklist_pattern_limit = 30
+re_name_blacklist_pattern = re.compile(ur'^[A-Za-z0-9_\-\*\?абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ]+$')
 
 class AppSession(CassandraObject):
     clsname = "AppSession"
@@ -153,6 +159,7 @@ class Auth(ConstructorModule):
         self.rhook("auth.cleanup-inactive-users", self.cleanup_inactive_users, priority=10)
         self.rhook("auth.characters-tech-online", self.characters_tech_online)
         self.rhook("stream.character", self.stream_character)
+        self.rhook("stream.character-list", self.stream_character_list)
         self.rhook("auth.user-auth-table", self.user_auth_table)
         self.rhook("auth.user-tables", self.user_tables, priority=-100)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
@@ -175,18 +182,28 @@ class Auth(ConstructorModule):
         self.rhook("auth.name-changed", self.name_changed)
         self.rhook("user.email", self.user_email, priority=10)
         self.rhook("advice-admin-auth.index", self.advice_auth)
+        self.rhook("menu-admin-characters.index", self.menu_characters_index)
+        self.rhook("ext-admin-characters.name-blacklist", self.ext_name_blacklist, priv="characters.name-blacklist")
+        self.rhook("headmenu-admin-characters.name-blacklist", self.headmenu_name_blacklist)
+        self.rhook("ext-admin-characters.blacklist-check", self.ext_blacklist_check, priv="characters.name-blacklist")
+        self.rhook("headmenu-admin-characters.blacklist-check", self.headmenu_blacklist_check)
+        self.rhook("characters.check-name-blacklist", self.check_name_blacklist)
+        self.rhook("advice-admin-characters.name-blacklist", self.advice_name_blacklist)
 
     def advice_auth(self, hook, args, advice):
-        advice.append({"title": self._("Authentication documentation"), "content": self._('You can find detailed information on the authentication system in the <a href="//www.%s/doc/auth" target="_blank">authentication page</a> in the reference manual.') % self.app().inst.config["main_host"]})
-        advice.append({"title": self._("Permissions documentation"), "content": self._('You can find detailed information on the permissions system in the <a href="//www.%s/doc/permissions" target="_blank">permissions page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Authentication documentation"), "content": self._('You can find detailed information on the authentication system in the <a href="//www.%s/doc/auth" target="_blank">authentication page</a> in the reference manual.') % self.main_host})
+        advice.append({"title": self._("Permissions documentation"), "content": self._('You can find detailed information on the permissions system in the <a href="//www.%s/doc/permissions" target="_blank">permissions page</a> in the reference manual.') % self.main_host})
 
     def user_email(self, user_obj):
         email = user_obj.get("email")
         if email:
             raise Hooks.Return(email)
-        char = self.character(user_obj.uuid)
-        if char.player and char.player.valid:
-            raise Hooks.Return(char.player.email)
+        try:
+            char = self.character(user_obj.uuid)
+            if char.player and char.player.valid:
+                raise Hooks.Return(char.player.email)
+        except ObjectNotFoundException:
+            pass
 
     def name_changed(self, user, old_name, new_name):
         character = self.character(user.uuid)
@@ -249,7 +266,7 @@ class Auth(ConstructorModule):
     def menu_game_index(self, menu):
         req = self.req()
         if req.has_access("auth.close-project"):
-            menu.append({"id": "auth/close-project", "text": self._("Close project login"), "leaf": True, "order": 30, "even_unpublished": True})
+            menu.append({"id": "auth/close-project", "text": self._("Close project login"), "leaf": True, "order": 30, "even_unpublished": True, "icon": "/st-mg/menu/lock.png"})
 
     def close_project(self):
         req = self.req()
@@ -393,6 +410,7 @@ class Auth(ConstructorModule):
         perms.append({"id": "users.authorized", "name": self._("Viewing list of authorized users")})
         perms.append({"id": "auth.close-project", "name": self._("Game login closing")})
         perms.append({"id": "auth.enter-closed", "name": self._("May enter even closed game")})
+        perms.append({"id": "characters.name-blacklist", "name": self._("List of restricted character names")})
 
     def menu_auth_index(self, menu):
         req = self.req()
@@ -400,13 +418,13 @@ class Auth(ConstructorModule):
             menu.append({"id": "players/auth", "text": self._("Authentication configuration"), "leaf": True, "order": 1})
         if req.has_access("users.authorized"):
             menu.append({"id": "characters/online", "text": self._("List of characters online"), "leaf": True, "order": 5})
-
+    
     def headmenu_players_auth(self, args):
         return self._("Players authentication settings")
 
     def admin_players_auth(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on authentication setup in your game in the <a href="//www.%s/doc/auth" target="_blank">authentication manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on authentication setup in your game in the <a href="//www.%s/doc/auth" target="_blank">authentication manual</a>.') % self.main_host})
         currencies = {}
         self.call("currencies.list", currencies)
         if req.param("ok"):
@@ -468,6 +486,9 @@ class Auth(ConstructorModule):
             # names validation
             validate_names = True if req.param("validate_names") else False
             config.set("auth.validate_names", validate_names)
+            # allow login via email
+            allow_email_login = req.param("allow_email_login")
+            config.set("auth.allow_email_login", allow_email_login)
             # processing
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -484,6 +505,7 @@ class Auth(ConstructorModule):
 #            activate_email_level = self.conf("auth.activate_email_level", 0)
             activate_email_days = self.conf("auth.activate_email_days", 7)
             validate_names = self.conf("auth.validate_names", False)
+            allow_email_login = self.conf("auth.allow_email_login", False)
         fields = [
             {"name": "multicharing", "type": "combo", "label": self._("Are players allowed to play more than 1 character"), "value": multicharing, "values": [(0, self._("No")), (1, self._("Yes, but play them by turn")), (2, self._("Yes, play them simultaneously"))] },
             {"name": "free_chars", "label": self._("Number of characters per player allowed for free"), "value": free_chars, "condition": "[multicharing]>0" },
@@ -495,6 +517,7 @@ class Auth(ConstructorModule):
 #            {"name": "activate_email_level", "label": self._("Activation is required after this character level ('0' if require on registration)"), "value": activate_email_level, "condition": "[activate_email]"},
             {"name": "activate_email_days", "label": self._("Activation is required after this number of days ('0' if require on registration)"), "value": activate_email_days, "condition": "[activate_email]"},
             {"name": "validate_names", "type": "checkbox", "label": self._("Manual validation of every character name"), "checked": validate_names},
+            {"name": "allow_email_login", "type": "checkbox", "label": self._("Allow players to login via email address"), "checked": allow_email_login},
         ]
         self.call("admin.form", fields=fields)
 
@@ -512,9 +535,9 @@ class Auth(ConstructorModule):
         fields = self.conf("auth.char_form", [])
         if not len(fields):
             fields.append({"std": 1, "code": "name", "name": self._("Name"), "order": 10.0, "reg": True, "description": self._("Character's name"), "prompt": self._("Enter your character name")})
-            fields.append({"std": 2, "code": "sex", "name": self._("Sex"), "type": 1, "values": [["0", self._("Male")], ["1", self._("Female")]], "order": 20.0, "reg": True, "description": self._("Character sex"), "prompt": self._("sex///Who is your character")})
-            fields.append({"code": "motto", "name": self._("Motto"), "order": 30, "reg": True, "description": self._("Character's motto"), "prompt": self._("Enter your character's motto")})
-            fields.append({"code": "legend", "name": self._("Legend"), "order": 40, "reg": True, "description": self._("Character's legend"), "prompt": self._("Enter your character's legend"), "type": 2})
+            fields.append({"std": 2, "code": "sex", "name": self._("Sex"), "type": 1, "values": [["0", self._("Man")], ["1", self._("Woman")]], "order": 20.0, "reg": True, "description": self._("Character sex"), "prompt": self._("sex///Who is your character")})
+            #fields.append({"code": "motto", "name": self._("Motto"), "order": 30, "reg": True, "description": self._("Character's motto"), "prompt": self._("Enter your character's motto")})
+            #fields.append({"code": "legend", "name": self._("Legend"), "order": 40, "reg": True, "description": self._("Character's legend"), "prompt": self._("Enter your character's legend"), "type": 2})
         return copy.deepcopy(fields)
 
     def jsencode_character_form(self, lst):
@@ -543,9 +566,15 @@ class Auth(ConstructorModule):
         if self.conf("auth.closed"):
             self.call("web.response_json", {"success": False, "error": htmlescape(self.conf("auth.close-message") or self._("Game is closed for non-authorized users"))})
         # checking IP ban
-        till = self.call("restraints.ip-banned", req.remote_addr())
-        if till:
-            self.call("web.response_json", {"success": False, "error": self._("You are banned till %s") % self.call("l10n.time_local", till)})
+        ban = self.call("restraints.ip-banned", req.remote_addr())
+        if ban:
+            message = self._("You are banned till %s") % self.call("l10n.time_local", ban["till"])
+            reason_user = ban.get("reason_user")
+            if reason_user:
+                message += u'\n%s' % ban.get("reason_user")
+                message = htmlescape(message)
+                message = re_newline.sub('<br />', message)
+            self.call("web.response_json", {"success": False, "error": message})
         session = req.session(True)
         # registragion form
         fields = self.character_form()
@@ -567,6 +596,8 @@ class Auth(ConstructorModule):
                     errors[code] = params["name_invalid_re"]
                 elif self.call("session.find_user", val):
                     errors[code] = self._("This name is taken already")
+                elif self.call("characters.check-name-blacklist", val):
+                    errors[code] = self._("This name is not allowed")
             elif fld.get("type") == 1:
                 if not val and not fld.get("std") and not fld.get("mandatory_level"):
                     # empty value is ok
@@ -610,7 +641,7 @@ class Auth(ConstructorModule):
             self.call("web.response_json", {"success": False, "errors": errors})
         # Registering player and character
         now = self.now()
-        now_ts = "%020d" % time.time()
+        now_ts = "%020d" % self.time()
         # Creating player
         player = self.obj(DBPlayer)
         player.set("created", now)
@@ -670,10 +701,10 @@ class Auth(ConstructorModule):
         if activation_code:
             params = {
                 "subject": self._("Account activation"),
-                "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+                "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\n{protocol}://{host}/auth/activate/{user}?code={code}"),
             }
             self.call("auth.activation_email", params)
-            self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid))
+            self.call("email.send", email, values["name"], params["subject"], params["content"].format(code=activation_code, host=req.host(), user=player_user.uuid, protocol=self.app().protocol))
         self.call("session.log", act="register", session=session.uuid, ip=req.remote_addr(), user=player.uuid)
         self.call("session.log", act="register", session=session.uuid, ip=req.remote_addr(), user=character_user.uuid)
         if activation_code and (not self.conf("auth.activate_email_days", 7)):
@@ -703,11 +734,17 @@ class Auth(ConstructorModule):
 
     def player_login(self):
         req = self.req()
-        # checking IP ban
+        # check IP ban
         if False:
-            till = self.call("restraints.ip-banned", req.remote_addr())
-            if till:
-                self.call("web.response_json", {"error": self._("You are banned till %s") % self.call("l10n.time_local", till)})
+            ban = self.call("restraints.ip-banned", req.remote_addr())
+            if ban:
+                message = self._("You are banned till %s") % self.call("l10n.time_local", ban["till"])
+                reason_user = ban.get("reason_user")
+                if reason_user:
+                    message += u'\n%s' % ban.get("reason_user")
+                    message = htmlescape(message)
+                    message = re_newline.sub('<br />', message)
+                self.call("web.response_json", {"success": False, "error": message})
         # logging in
         name = req.param("name") or req.param("email")
         password = req.param("password")
@@ -715,7 +752,7 @@ class Auth(ConstructorModule):
         self.call("auth.messages", msg)
         if not name:
             self.call("web.response_json", {"error": msg["name_empty"]})
-        user = self.call("session.find_user", name)
+        user = self.call("session.find_user", name, allow_email=self.conf("auth.allow_email_login", False))
         if user is None:
             self.call("web.response_json", {"error": msg["name_unknown"]})
         if user.get("name"):
@@ -746,7 +783,7 @@ class Auth(ConstructorModule):
             require_activation = False
             activate_days = self.conf("auth.activate_email_days", 7)
             if activate_days:
-                days_since_reg = (time.time() - int(user.get("created"))) / 86400
+                days_since_reg = (self.time() - int(user.get("created"))) / 86400
                 if days_since_reg >= activate_days:
                     require_activation = True
             if require_activation:
@@ -765,8 +802,15 @@ class Auth(ConstructorModule):
             if len(chars):
                 restraints = {}
                 self.call("restraints.check", chars[0].uuid, restraints)
-                if restraints.get("ban"):
-                    self.call("web.response_json", {"error": self._("You are banned till %s") % self.call("l10n.time_local", restraints["ban"]["till"])})
+                ban = restraints.get("ban")
+                if ban:
+                    message = self._("You are banned till %s") % self.call("l10n.time_local", restraints["ban"]["till"])
+                    reason_user = ban.get("reason_user")
+                    if reason_user:
+                        message += u'\n%s' % ban.get("reason_user")
+                        message = htmlescape(message)
+                        message = re_newline.sub('<br />', message)
+                    self.call("web.response_json", {"error": message})
                 session = req.session(True)
                 self.call("stream.login", session.uuid, chars[0].uuid)
                 self.call("web.response_json", {"ok": 1, "session": session.uuid})
@@ -1056,7 +1100,7 @@ class Auth(ConstructorModule):
         session = req.session()
         # initializing stream
         stream_marker = uuid4().hex
-        vars["js_init"].append("Stream.run_realplexor('%s', %d);" % (stream_marker, time.time() - 3))
+        vars["js_init"].append("Stream.run_realplexor('%s', %d);" % (stream_marker, self.time() - 3))
         self.call("stream.send", "id_%s" % session.uuid, {"marker": stream_marker})
         vars["js_modules"].add("realplexor-stream")
         self.call("session.character-init", session.uuid, character)
@@ -1156,7 +1200,7 @@ class Auth(ConstructorModule):
                         form.error("payer", self._("Select a valid payer"))
             if not form.errors:
                 now = self.now()
-                now_ts = "%020d" % time.time()
+                now_ts = "%020d" % self.time()
                 # Creating new character
                 character = self.obj(DBCharacter)
                 character.set("created", now)
@@ -1270,6 +1314,12 @@ class Auth(ConstructorModule):
         if ids:
             self.call("stream.packet", ids, method_cls, method, **kwargs)
 
+    def stream_character_list(self, character, pkt_list):
+        "pkt_list is an array of kwargs for stream.character. Every entry must have method_cls and method"
+        ids = ["id_%s" % sess_uuid for sess_uuid in character.sessions]
+        if ids:
+            self.call("stream.packet-list", ids, pkt_list)
+
     def user_auth_table(self, user, table):
         req = self.req()
         if user.get("name"):
@@ -1357,3 +1407,101 @@ class Auth(ConstructorModule):
             "condition": [".", ["glob", "char"], "anyperm"],
             "order": 90,
         })
+    
+    def headmenu_name_blacklist(self, args):
+        return self._("List of restricted character names")
+        
+    def parse_blacklist(self, data):
+        if len(data):
+            lst = data.split("\n")
+            lst = map(lambda pattern: pattern.strip(), filter(lambda pattern: True if len(pattern) > 0 else False, lst))
+            return lst
+        else:
+            return []
+            
+    def unparse_blacklist(self, lst):
+        if len(lst):
+            return "\n".join(lst)
+    
+    def ext_name_blacklist(self):
+        req = self.req()
+        if req.ok():
+            blacklist_raw = req.param("blacklist")
+            config = self.app().config_updater()
+            errors = {}
+            blacklist = self.parse_blacklist(blacklist_raw)
+            err = self.validate_name_blacklist(blacklist)
+            if err:
+                errors["blacklist"] = err
+            if len(blacklist) > name_blacklist_limit:
+                errors["blacklist"] = self._("The list is too big. Maximal number of entries is %d") %  name_blacklist_limit
+            if len(errors) == 0:
+                config.set("characters.names-blacklist", blacklist)
+                config.store()
+                self.call("admin.response", self._("Blacklist saved"), {})
+            else:
+                self.call("web.response_json", {"success": False, "errors": errors})
+        blacklist = self.unparse_blacklist(self.conf("characters.names-blacklist", []))
+        
+        fields =[
+            {"name": "blacklist", "label": '%s<br/><h2>%s</h2><ul><li>%s</li><li>%s</li><li>%s</li></ul><br /><h2>%s</h2><ul><li>%s</li><li>%s</li></ul>' % (
+                self._("List of restricted character names, one per line"),
+                self._("Special symbols"),
+                self._("'?' - matches any symbol"),
+                self._("'*' - matches any number of symbols"),
+                self._("'_' - matches whitespace"),
+                self._("Examples"),
+                self._("*admin*"),
+                self._("*anybadword*"),
+            ), "type": "textarea", "height": 350, "value": blacklist, "value": blacklist, "remove_label_separator": True},
+        ]
+        self.call("admin.form", fields=fields)
+    
+    def menu_characters_index(self, menu):
+        req = self.req()
+        if req.has_access("characters.name-blacklist"):
+            menu.append({"id": "characters/name-blacklist", "text": self._("List of restricted character names"), "leaf": True, "order": 21})
+
+
+    def headmenu_blacklist_check(self, args):
+        return [self._("Blacklist checker"), "characters/name-blacklist"]
+        
+    def validate_name_blacklist(self, blacklist):
+        for pattern in blacklist:
+            if len(pattern) > name_blacklist_pattern_limit:
+                return self._("Incorrect pattern '%s'. Maximal length of pattern is %d characters.") % (pattern, name_blacklist_pattern_limit)
+            elif not re_name_blacklist_pattern.match(pattern):
+                return self._("Incorrect pattern '%s'. Patterns must contain only latin and russian letters, numbers, spaces, symbols '_', '-', '+' and '*'") % pattern
+        
+    def ext_blacklist_check(self):
+        req = self.req()
+        name = req.param("name")
+        fields = [{"name": "name", "label": self._("Enter a name to check"), "value": name}]
+        if req.ok():
+            errors = {}
+            if not name:    
+                errors["name"] = self._('This field is mandatory')
+            if len(errors) == 0:
+                if self.call("characters.check-name-blacklist", name):
+                    msg = self._("This name is NOT allowed")
+                else:
+                    msg = self._("This name is allowed")
+                fields.append({"type": "html", "html": "<strong>%s</strong>" % msg })
+            else:
+                self.call("web.response_json", {"success": False, "errors": errors})
+        buttons = [{"text": self._("Check")}]
+        self.call("admin.form", fields=fields, buttons=buttons)
+        
+    def check_name_blacklist(self, name):
+        "Returns True if 'name' matches any blacklist pattern(case insensitive)"
+        blacklist = self.conf("characters.names-blacklist", [])
+        for pattern in blacklist:
+            pattern = pattern.replace("?", ".").replace("*", ".*").replace("_", "\\s+")
+            reg = ur'^' + pattern + ur'$'
+            if re.match(reg, name, re.UNICODE | re.IGNORECASE):
+                return True
+    
+    def advice_name_blacklist(self, args, advice):
+        advice.append({"title": self._("Restricted character names"), "content": self._("This list contain names(one per line) which could not be used when creating character.")})
+        advice.append({"title": self._("Wildcards"), "content": self._('There are special symbols that can be used in this list: <strong>+</strong>(any character) and <strong>*</strong>(any characters). I.e. "adm+n" will block "admin", "adm1n", "adman", "admen", etc. and "admin*" will block "admin", "admin12345", "adminabcdef", etc.')})
+        advice.append({"title": self._("Blacklist checker"), "content": self._('You can check any name for matching blacklist patterns on <hook:admin.link href="characters/blacklist-check" title="special page" />.')})

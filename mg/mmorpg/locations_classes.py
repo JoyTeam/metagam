@@ -1,8 +1,11 @@
 from mg import *
+from mg.constructor.paramobj import ParametrizedObject
 import re
 
 default_location_delay = 20
 re_param_attr = re.compile(r'^p_(.+)')
+re_dyn_attr = re.compile(r'^dyn_(.+)')
+re_html_attr = re.compile(r'^html_(.+)')
 
 class DBLocation(CassandraObject):
     clsname = "Location"
@@ -30,9 +33,15 @@ class DBLocParams(CassandraObject):
 class DBLocParamsList(CassandraObjectList):
     objcls = DBLocParams
 
-class Location(Module):
+class FakeLocation(object):
+    "Simulate real location when parsing expressions"
+    def script_attr(self, attr, handle_exceptions=True):
+        return None
+
+class Location(Module, ParametrizedObject):
     def __init__(self, app, uuid, fqn="mg.mmorpg.locations.Location"):
         Module.__init__(self, app, fqn)
+        ParametrizedObject.__init__(self, "locations")
         self.uuid = uuid
 
     @property
@@ -145,8 +154,27 @@ class Location(Module):
             if m:
                 param = m.group(1)
                 return self.param(param, handle_exceptions)
-            else:
-                raise AttributeError(attr)
+            m = re_html_attr.match(attr)
+            if m:
+                param = m.group(1)
+                return self.param_html(param, handle_exceptions)
+            m = re_dyn_attr.match(attr)
+            if m:
+                param = m.group(1)
+                return self.param_dyn(param, handle_exceptions)
+            raise AttributeError(attr)
+
+    def script_set_attr(self, attr, val, env):
+        # parameters
+        m = re_param_attr.match(attr)
+        if m:
+            param = m.group(1)
+            return self.set_param(param, val)
+        raise AttributeError(attr)
+
+    def store(self):
+        if self.db_params.dirty:
+            self.db_params.store()
 
     @property
     def db_params(self):
@@ -155,18 +183,6 @@ class Location(Module):
         except AttributeError:
             self._db_params = self.obj(DBLocParams, self.uuid, silent=True)
             return self._db_params
-
-    def param(self, key, handle_exceptions=True):
-        try:
-            cache = self._param_cache
-        except AttributeError:
-            cache = {}
-            self._param_cache = cache
-        try:
-            return cache[key]
-        except KeyError:
-            # 'param-value' handles cache storing automatically
-            return self.call("locations.param-value", self, key, handle_exceptions)
 
     def script_params(self):
         return {"loc": self}

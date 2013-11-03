@@ -1,0 +1,15 @@
+<p class="admin-submenu"><hook:admin.link href="news/categories/new" title="[%translation.new_category%]" /></p>
+
+[%if categories%]
+<table class="list">
+    <tr class="header"><td>[%translation.title%]</td><td>[%translation.order%]</td><td>[%translation.editing%]</td><td>[%translation.deletion%]</td></tr>
+    [%foreach cat in categories%]
+    <tr>
+        <td><strong>[%cat.title%]</strong></td>
+        <td>[%cat.order%]</td>
+        <td><hook:admin.link href="news/categories/edit/[%cat.id%]" title="[%translation.edit%]" /></td>
+        <td><hook:admin.link href="news/categories/delete/[%cat.id%]" title="[%translation.delete%]" confirm="[%translation.confirm_delete%]" /></td>
+    </tr>
+    [%end%]
+</table>
+[%end%]

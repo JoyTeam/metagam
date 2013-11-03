@@ -1,5 +1,9 @@
+<div class="advanced-search-form">[%advanced_search_form%]</div>
 <table id="socio-topic-head"><tr>
-<td id="socio-topic-title"><div>[%topic.subject_html%][%if topic.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%][%if googleplus_plusone%]&nbsp;&nbsp;[%googleplus_plusone%][%end%]</div></td>
+        <td id="socio-topic-title"><div>[%topic.subject_html%]
+                [%if topic.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]
+                [%if topic.closed%]&nbsp;<img src="/st-mg/[%ver%]/socio/closed.gif" alt="" class="close-mark" />[%end%]
+                [%if googleplus_plusone%]&nbsp;&nbsp;[%googleplus_plusone%][%end%]</div></td>
 [%if pages%]<td class="socio-topic-pages">
 [%to_page%]: <span class="socio-pages-list">[%foreach ent in pages%][%if ent.entry%][%if ent.entry.a%]<a href="[%ent.entry.a.href%]">[%end%][%ent.entry.text%][%if ent.entry.a%]</a>[%end%][%end%][%unless ent.lst%], [%end%][%end%]</span>
 </td>[%end%]</tr></table>
@@ -15,6 +19,7 @@
 <td class="socio-avatar-row" rowspan="2">
 [%if topic.avatar%]<div class="socio-avatar"><img src="[%topic.avatar%]" alt="" /></div>[%end%]
 <div class="socio-member-name">[%topic.author_html%]</div>
+[%if topic.author%]<div class="socio-member-online">[%if topic.author.tech_online%][%author_online_text%][%else%][%author_offline_text%][%end%]</div>[%end%]
 [%if topic.status%]<div class="socio-member-status">[%topic.status%]</div>[%end%]
 [%if topic.author_menu%]<div class="socio-member-menu">[%foreach ent in topic.author_menu%]<div><a href="[%ent.href%]">[%ent.title%]</a></div>[%end%]</div>[%end%]
 </td>
@@ -40,18 +45,22 @@
 [%end%]
 
 [%foreach post in posts%]
-<tr><td class="socio-catdelim" colspan="3"><a name="[%post.uuid%]"></a><div class="socio-post-head"><table class="socio-post-delim"><tr><td class="socio-delim-left"><a href="/forum/topic/[%topic.uuid%]?post=[%post.uuid%]">[%written_at +%] [%+ post.literal_created%]</a></td><td class="socio-delim-right">[%if to_the_top%]<img src="/st-mg/socio/up.gif" alt="" class="socio-up" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a>[%end%]</td></tr></table></div></td></tr>
+<tr><td class="socio-catdelim" colspan="3"><a name="[%post.uuid%]"></a><div class="socio-post-head"><table class="socio-post-delim"><tr><td class="socio-delim-left"><a href="/forum/topic/[%post.topic%][%if post.uuid%]?post=[%post.uuid%][%end%]">[%written_at +%] [%+ post.literal_created%]</a></td><td class="socio-delim-right">[%if to_the_top%]<img src="/st-mg/socio/up.gif" alt="" class="socio-up" /> <a href="/forum/topic/[%topic.uuid%]#top">[%to_the_top%]</a>[%end%]</td></tr></table></div></td></tr>
 
 <tr class="socio-category">
 
 <td class="socio-avatar-row" rowspan="2">
 [%if post.avatar%]<div class="socio-avatar"><img src="[%post.avatar%]" alt="" /></div>[%end%]
 <div class="socio-member-name">[%post.author_html%]</div>
+[%if post.author%]<div class="socio-member-online">[%if post.author.tech_online%][%author_online_text%][%else%][%author_offline_text%][%end%]</div>[%end%]
 [%if post.status%]<div class="socio-member-status">[%post.status%]</div>[%end%]
 [%if post.author_menu%]<div class="socio-member-menu">[%foreach ent in post.author_menu%]<div><a href="[%ent.href%]">[%ent.title%]</a></div>[%end%]</div>[%end%]
 </td>
 
-<td class="socio-post-content" colspan="2">[%if post.post_title%]<div class="socio-post-title">[%post.post_title%][%if post.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]</div>[%end%]
+<td class="socio-post-content" colspan="2">[%if post.post_title%]<div class="socio-post-title">[%post.post_title%]
+    [%if post.subscribed%]&nbsp;<img src="/st-mg/[%ver%]/socio/subscribed.gif" alt="" class="socio-mark" />[%end%]
+    [%if post.closed%]&nbsp;<img src="/st-mg/[%ver%]/socio/closed.gif" alt="" class="close-mark" />[%end%]
+</div>[%end%]
 [%post.content_html%]
 [%if post.tags_html%]<div class="socio-tags">[%Tags%]: <span class="socio-tags-list">[%post.tags_html%]</span></div>[%end%]
 </td>

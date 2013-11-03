@@ -19,6 +19,7 @@ re_invalid_symbol = re.compile(r'([^\w \-\.,:/])', re.UNICODE)
 re_invalid_english_symbol = re.compile(r'([^a-zA-Z_ \-\.,:/])', re.UNICODE)
 re_valid_real_price = re.compile(r'[1-9]\d*(?:\.\d\d?|)$')
 re_decimal_comma = re.compile(',')
+re_valid_project_id = re.compile(r'^[a-z0-9]+$')
 
 default_rates = {
     "RUB": 1,
@@ -29,6 +30,16 @@ default_rates = {
     "BYR": 56 / 10000,
     "UAH": 34.7092 / 10,
 }
+
+class DBXsollaActivationRequest(CassandraObject):
+    clsname = "XsollaActivationRequest"
+    indexes = {
+        "all": [[], "created"],
+        "project": [["project"]],
+    }
+
+class DBXsollaActivationRequestList(CassandraObjectList):
+    objcls = DBXsollaActivationRequest
 
 def getText(nodelist):
     rc = ""
@@ -154,15 +165,16 @@ class MoneyAdmin(Module):
                             errors["name_en"] = self._("Currency name is mandatory")
                     if len(errors):
                         self.call("web.response_json", {"success": False, "errors": errors})
+                    name_en_s = re.sub(r's$', '', name_en)
                     self.call("admin.redirect", "money/currencies/new", {
                         "name_local": self.call("l10n.literal_values_sample", name_local),
-                        "name_plural": u"%s???" % self.stem(name_local),
-                        "name_en": u"{0}???/{0}???".format(name_en),
+                        "name_plural": name_local,
+                        "name_en": u"{1}/{0}".format(name_en, name_en_s),
                     })
                 fields = []
-                fields.append({"name": "name_local", "label": self._('Currency name')})
+                fields.append({"name": "name_local", "label": self._('Currency name (ex: Gold, Diamonds, Roubles, Dollars, Coins)')})
                 if lang != "en":
-                    fields.append({"name": "name_en", "label": self._('Currency name in English')})
+                    fields.append({"name": "name_en", "label": self._('Currency name in English (ex: Gold, Diamonds, Roubles, Dollars, Coins)')})
                 self.call("admin.form", fields=fields)
             elif req.args:
                 if req.ok():
@@ -195,7 +207,13 @@ class MoneyAdmin(Module):
                         currencies[code] = info
                     else:
                         info = currencies.get(req.args)
-                    if not name_local:
+                    # allow not changed name_local when the project is published
+                    if name_local and project and (project.get("moderation") or project.get("published")) and info.get("real"):
+                        if name_local != info.get("name_local"):
+                            errors["name_local"] = self._("You can't change real money currency name after game publication")
+                        else:
+                            pass
+                    elif not name_local:
                         errors["name_local"] = self._("Currency name is mandatory")
                     elif not self.call("l10n.literal_values_valid", name_local):
                         errors["name_local"] = self._("Invalid field format")
@@ -385,10 +403,10 @@ class MoneyAdmin(Module):
                 if req.args == "new":
                     fields.append({"name": "code", "label": self._('Currency code (for example, GLD for gold, SLVR for silver, DMND for diamonds and so on).<br /><span class="no">You won\'t have an ability to change the code later. Think twice before saving</span>')})
                 fields.append({"name": "order", "label": self._("Sorting order"), "value": order, "inline": True})
-                fields.append({"name": "name_local", "label": self._('Currency name: singular and plural forms delimited by "/". For example: "Dollar/Dollars"'), "value": name_local})
-                fields.append({"name": "name_plural", "label": self._('Currency name: plural form. For example: "Dollars"'), "value": name_plural})
+                fields.append({"name": "name_local", "label": self._('Currency name: singular and plural forms delimited by "/". For example: "Dollar/Dollars", "Gold/Gold", "Coin/Coins", "Diamond/Diamonds", "Rouble/Roubles"'), "value": name_local})
+                fields.append({"name": "name_plural", "label": self._('Currency name: plural form. For example: "Dollars", "Gold", "Coins", "Diamonds", "Roubles"'), "value": name_plural})
                 if lang != "en":
-                    fields.append({"name": "name_en", "label": self._('Currency name in English: singular and plural forms delimited by "/". For example: "Dollar/Dollars"'), "value": name_en})
+                    fields.append({"name": "name_en", "label": self._('Currency name in English: singular and plural forms delimited by "/". For example: "Dollar/Dollars", "Gold/Gold", "Coin/Coins", "Diamond/Diamonds", "Rouble/Roubles"'), "value": name_en})
                 fields.append({"name": "precision", "label": self._("Values precision (number of digits after decimal point)"), "value": precision})
                 fields.append({"name": "description", "label": self._("Currency description"), "type": "textarea", "value": description})
                 fields.append({"name": "real", "label": self._("Real money. Set this checkbox if this currency is sold for real money. Your game must have one real money currency"), "type": "checkbox", "checked": real})
@@ -402,8 +420,8 @@ class MoneyAdmin(Module):
                 for code, info in sorted(currencies.iteritems(), cmp=lambda x, y: cmp(x[1].get("order", 0.0), y[1].get("order", 0.0)) or cmp(x[0], y[0])):
                     real = '<center>%s</center>' % ('<img src="/st/img/coins-16x16.png" alt="" /><br />%s %s' % (info.get("real_price"), info.get("real_currency")) if info.get("real") else '-')
                     declensions = []
-                    for i in (0, 1, 2, 5, 10, 21):
-                        declensions.append("<nobr>%d %s</nobr>" % (i, self.call("l10n.literal_value", i, info.get("name_local"))))
+                    for i in (0, 1, 2, 5, 10, 21, 0.1):
+                        declensions.append("<nobr>%s %s</nobr>" % (i, self.call("l10n.literal_value", i, info.get("name_local"))))
                     code = '<hook:admin.link href="money/currencies/{0}" title="{0}" />'.format(code)
                     if info.get("icon"):
                         code += ' <img src="%s" alt="" class="inline-icon" />' % info["icon"]
@@ -682,6 +700,7 @@ class MoneyAdmin(Module):
 class Xsolla(Module):
     def register(self):
         self.rhook("ext-ext-payment.2pay", self.payment_xsolla, priv="public")
+        self.rhook("ext-ext-payment.xsolla", self.payment_xsolla, priv="public")
         self.rhook("money-description.xsolla-pay", self.money_description_xsolla_pay)
         self.rhook("money-description.xsolla-chargeback", self.money_description_xsolla_chargeback)
         self.rhook("objclasses.list", self.objclasses_list)
@@ -691,7 +710,10 @@ class Xsolla(Module):
         self.rhook("gameinterface.render", self.gameinterface_render)
         self.rhook("money.not-enough-funds", self.not_enough_funds, priority=10)
         self.rhook("money.donate-message", self.donate_message)
+        self.rhook("money.donate-url", self.donate_url)
         self.rhook("constructor.project-options", self.project_options)
+        self.rhook("xsolla.check-activation", self.check)
+        self.rhook("xsolla.send-activation-request", self.send_activation_request)
 
     def project_options(self, options):
         if self.req().has_access("constructor.projects-xsolla"):
@@ -700,10 +722,15 @@ class Xsolla(Module):
     def append_args(self, options):
         args = {}
         self.call("xsolla.payment-args", args, options)
+        for key in ["v1", "email", "amount"]:
+            if key not in args and key in options:
+                args[key] = options[key]
         append = ""
         for key, val in args.iteritems():
             if type(val) == unicode:
                 val = val.encode("cp1251")
+            elif type(val) != str:
+                val = str(val)
             append += '&%s=%s' % (key, urlencode(val))
         return append
 
@@ -713,6 +740,13 @@ class Xsolla(Module):
             cinfo = self.call("money.currency-info", currency)
             if cinfo and cinfo.get("real"):
                 return '<a href="//2pay.ru/oplata/?id=%d%s" target="_blank" onclick="try { parent.Xsolla.paystation(); return false; } catch (e) { return true; }">%s</a>' % (project_id, self.append_args(kwargs), self._("Open payment interface"))
+
+    def donate_url(self, currency, **kwargs):
+        project_id = intz(self.conf("xsolla.project-id"))
+        if project_id:
+            cinfo = self.call("money.currency-info", currency)
+            if cinfo and cinfo.get("real"):
+                return '//2pay.ru/oplata/?id=%d%s' % (project_id, self.append_args(kwargs))
 
     def not_enough_funds(self, currency, **kwargs):
         project_id = intz(self.conf("xsolla.project-id"))
@@ -738,6 +772,15 @@ class Xsolla(Module):
 
     def payment_xsolla(self):
         req = self.req()
+        if req.args:
+            if re_valid_project_id.match(req.args):
+                app = self.inst.appfactory.get_by_tag(req.args)
+                if not app:
+                    self.call("web.not_found")
+            else:
+                self.call("web.not_found")
+        else:
+            app = self.app()
         command = req.param_raw("command")
         sign = req.param_raw("md5")
         result = None
@@ -747,7 +790,7 @@ class Xsolla(Module):
         sum = None
         self.debug("Xsolla Request: %s", [req.param_dict()])
         try:
-            secret = self.conf("xsolla.secret")
+            secret = app.config.get("xsolla.secret")
             if type(secret) == unicode:
                 secret = secret.encode("windows-1251")
             if secret is None or secret == "":
@@ -761,7 +804,7 @@ class Xsolla(Module):
                 else:
                     v1 = v1.decode("windows-1251")
                     self.debug("Xsolla Request: command=check, v1=%s", v1)
-                    if self.call("session.find_user", v1):
+                    if app.call("session.find_user", v1):
                         result = 0
                     else:
                         result = 2
@@ -777,30 +820,30 @@ class Xsolla(Module):
                     v1 = v1.decode("windows-1251")
                     sum_v = float(sum)
                     self.debug("Xsolla Request: command=pay, id=%s, v1=%s, sum=%s, date=%s", id, v1, sum, date)
-                    user = self.call("session.find_user", v1)
+                    user = app.call("session.find_user", v1)
                     if user:
-                        with self.lock(["PaymentXsolla.%s" % id]):
+                        with app.lock(["PaymentXsolla.%s" % id]):
                             try:
-                                existing = self.obj(PaymentXsolla, id)
+                                existing = app.obj(PaymentXsolla, id)
                                 result = 0
                                 id_shop = id
                                 sum = str(existing.get("sum"))
                             except ObjectNotFoundException:
-                                currency = self.call("money.real-currency")
-                                cinfo = self.call("money.currency-info", currency)
+                                currency = app.call("money.real-currency")
+                                cinfo = app.call("money.currency-info", currency)
                                 amount_rub = floatz(req.param("transfer_sum"))
 #                               amount_rub = cinfo.get("real_roubles", 1) * sum_v * 0.9
-                                payment = self.obj(PaymentXsolla, id, data={})
+                                payment = app.obj(PaymentXsolla, id, data={})
                                 payment.set("v1", v1)
                                 payment.set("user", user.uuid)
                                 payment.set("sum", sum_v)
                                 payment.set("date", date)
                                 payment.set("performed", self.now())
                                 payment.set("amount_rub", amount_rub)
-                                member = MemberMoney(self.app(), "user", user.uuid)
+                                member = MemberMoney(app, "user", user.uuid)
                                 member.credit(sum_v, currency, "xsolla-pay", payment_id=id, payment_performed=date)
                                 payment.store()
-                                self.call("dbexport.add", "donate", user=user.uuid, amount=amount_rub)
+                                app.call("dbexport.add", "donate", user=user.uuid, amount=amount_rub)
                                 result = 0
                                 id_shop = id
                     else:
@@ -812,17 +855,17 @@ class Xsolla(Module):
                     comment = "Invalid MD5 signature"
                 else:
                     self.debug("Xsolla Request: command=cancel, id=%s", id)
-                    with self.lock(["PaymentXsolla.%s" % id]):
+                    with app.lock(["PaymentXsolla.%s" % id]):
                         try:
-                            payment = self.obj(PaymentXsolla, id)
+                            payment = app.obj(PaymentXsolla, id)
                             if payment.get("cancelled"):
                                 result = 0
                             else:
                                 payment.set("cancelled", self.now())
-                                member = MemberMoney(self.app(), "user", payment.get("user"))
-                                member.force_debit(payment.get("sum"), self.call("money.real-currency"), "xsolla-chargeback", payment_id=id)
+                                member = MemberMoney(app, "user", payment.get("user"))
+                                member.force_debit(payment.get("sum"), app.call("money.real-currency"), "xsolla-chargeback", payment_id=id)
                                 payment.store()
-                                self.call("dbexport.add", "chargeback", user=payment.get("user"), amount=payment.get("amount_rub", 0))
+                                app.call("dbexport.add", "chargeback", user=payment.get("user"), amount=payment.get("amount_rub", 0))
                                 result = 0
                         except ObjectNotFoundException:
                             result = 2
@@ -995,12 +1038,12 @@ class Xsolla(Module):
         request.appendChild(elt)
         # payURL
         elt = doc.createElement("payUrl")
-        elt.appendChild(doc.createTextNode("http://%s/ext-payment/2pay" % self.app().canonical_domain))
+        elt.appendChild(doc.createTextNode("http://www.%s/ext-payment/xsolla/%s" % (self.main_host, self.app().tag)))
         request.appendChild(elt)
-        # Description
-        elt = doc.createElement("desc")
-        elt.appendChild(doc.createTextNode(self.conf("gameprofile.description")))
-        request.appendChild(elt)
+        ## Description
+        #elt = doc.createElement("desc")
+        #elt.appendChild(doc.createTextNode(self.conf("gameprofile.description")))
+        #request.appendChild(elt)
         xmldata = request.toxml("utf-8")
         self.debug(u"Xsolla request: %s", xmldata)
         # Signature
@@ -1012,12 +1055,12 @@ class Xsolla(Module):
         try:
             with Timeout.push(90):
                 cnn = HTTPConnection()
-                cnn.connect(("2pay.ru", 80))
+                cnn.connect(("api.xsolla.com", 80))
                 try:
                     request = HTTPRequest()
                     request.method = "POST"
-                    request.path = "/api/game/index.php"
-                    request.host = "2pay.ru"
+                    request.path = "/game/index.php"
+                    request.host = "api.xsolla.com"
                     request.body = query
                     request.add_header("Content-type", "application/x-www-form-urlencoded; charset=utf-8")
                     request.add_header("Connection", "close")
@@ -1037,6 +1080,8 @@ class Xsolla(Module):
                                     config.set("xsolla.secret", secret)
                                     config.set("xsolla.project-id", game_id)
                                     config.store()
+                                    self.call("xsolla.check-activation")
+                                    self.call("xsolla.send-activation-request")
                 finally:
                     cnn.close()
         except IOError as e:
@@ -1050,6 +1095,84 @@ class Xsolla(Module):
             vars["js_init"].append("Xsolla.project = %d;" % self.conf("xsolla.project-id"))
             vars["js_init"].append("Xsolla.name = '%s';" % jsencode(urlencode(character.name)))
             vars["js_init"].append("Xsolla.lang = '%s';" % self.call("l10n.lang"))
+
+    def check(self):
+        # get xsolla id
+        xsolla_id = self.conf("xsolla.project-id")
+        if not xsolla_id:
+            return
+        if self.conf("xsolla.project-rejected"):
+            return
+        self.debug("Project %s has Xsolla project id %s", self.app().tag, xsolla_id)
+        # query xsolla
+        xsolla_gate = self.clconf("xsolla_gate", "localhost:88").split(":")
+        host = str(xsolla_gate[0])
+        port = int(xsolla_gate[1])
+        try:
+            with Timeout.push(30):
+                cnn = HTTPConnection()
+                cnn.connect((host, port))
+                try:
+                    request = HTTPRequest()
+                    request.method = "GET"
+                    request.path = "/paystation/?projectid=%s" % xsolla_id
+                    request.host = "secure.xsolla.com"
+                    request.add_header("Connection", "close")
+                    response = cnn.perform(request)
+                    if response.status_code == 200:
+                        reqs = self.main_app().objlist(DBXsollaActivationRequestList, query_index="project", query_equal=self.app().tag)
+                        if response.body.find('"WebMoney"') >= 0 or xsolla_id == 10531:
+                            # project is active
+                            self.debug("Project is active")
+                            if not self.conf("xsolla.project-active"):
+                                config = self.app().config_updater()
+                                config.set("xsolla.project-active", 1)
+                                config.store()
+                                # notify admin
+                                admin = self.main_app().obj(User, self.app().project.get("owner"))
+                                admin_name = admin.get("name")
+                                admin_email = admin.get("email")
+                                self.main_app().call("email.send", admin_email, admin_name, self._("Xsolla activation"), self._("Hello, {name}.\n\nXsolla has activated your game '{title}'. Now you can accept payments in your game. If you need to accept Yandex Money and Beeline Mobile Payments, you need to make manual request to the operator of the MMO Constructor project.\n\nPlease, check payments in your game, and notify us if something goes wrong.").format(title=self.app().project.get("title_short"), name=admin_name))
+                            reqs.remove()
+                            return 1
+                        else:
+                            # project is inactive
+                            self.debug("Project is inactive")
+                            config = self.app().config_updater()
+                            config.set("xsolla.project-active", 0)
+                            config.store()
+                            reqs.load(silent=True)
+                            if not len(reqs):
+                                req = self.main_app().obj(DBXsollaActivationRequest)
+                                req.set("project", self.app().tag)
+                                req.set("created", self.now())
+                                req.set("xsolla_id", xsolla_id)
+                                req.set("title", self.app().project.get("title_short"))
+                                req.store()
+                            return 0
+                    self.debug("Project status unknown")
+                    return None
+                finally:
+                    cnn.close()
+        except IOError as e:
+            self.error("Error checking Xsolla activation: %s", e)
+        except TimeoutError:
+            self.error("Error checking Xsolla activation: Timed out")
+
+    def send_activation_request(self):
+        xsolla_id = self.conf("xsolla.project-id")
+        if not xsolla_id:
+            return
+        main = self.main_app()
+        main_conf = main.config
+        title = self.app().project.get("title_short")
+        content = main_conf.get("xsolla.act-request-email").format(xsolla_id=xsolla_id, title=title)
+        manager_email = main_conf.get("xsolla.manager-email")
+        manager_name = main_conf.get("xsolla.manager-name")
+        sender_email = main_conf.get("xsolla.sender-email")
+        sender_name = main_conf.get("xsolla.sender-name")
+        if manager_email and manager_name:
+            main.call("email.send", manager_email, manager_name, self._("Activation: %s") % title, content, from_email=sender_email, from_name=sender_name)
 
 class XsollaAdmin(Module):
     def register(self):
@@ -1105,7 +1228,7 @@ class XsollaAdmin(Module):
                 "secret_addgame": htmlescape(app.config.get("xsolla.secret-addgame")),
                 "project_id": htmlescape(app.config.get("xsolla.project-id")),
                 "contragent_id": htmlescape(app.config.get("xsolla.contragent-id")),
-                "payment_url": "http://%s/ext-payment/2pay" % app.canonical_domain,
+                "payment_url": "http://www.%s/ext-payment/2pay/%s" % (self.main_host, app.tag),
             }
             self.call("admin.response_template", "admin/money/xsolla-dashboard.html", vars)
         elif cmd == "settings":
@@ -1321,7 +1444,7 @@ class WebMoney(Module):
             request.appendChild(doc.createElement("urlId")).appendChild(doc.createTextNode(rid))
             request.appendChild(doc.createElement("authType")).appendChild(doc.createTextNode(authtype))
             request.appendChild(doc.createElement("userAddress")).appendChild(doc.createTextNode(remote_addr))
-            response = self.wm_query("wm_login_gate", "login.wmtransfer.com", "/ws/authorize.xiface", request)
+            response = self.wm_query(self.clconf("wm_login_gate", "localhost:86"), "login.wmtransfer.com", "/ws/authorize.xiface", request)
             doc = response.documentElement
             if doc.tagName != "response":
                 raise RuntimeError("Unexpected response from WMLogin")
@@ -1335,10 +1458,10 @@ class WebMoney(Module):
         except HTTPError:
             self.call("web.response_global", self._("Error connecting to the WebMoney server. Try again later"), {})
 
-    def wm_query(self, gate_name, gate_host, url, request):
+    def wm_query(self, gate, real_host, url, request):
         reqdata = request.toxml("utf-8")
         self.debug("WM reqdata: %s", reqdata)
-        wm_gate = self.app().inst.config.get(gate_name, "unknown:0").split(":")
+        wm_gate = gate.split(":")
         host = str(wm_gate[0])
         port = int(wm_gate[1])
         try:
@@ -1350,7 +1473,7 @@ class WebMoney(Module):
                     raise HTTPError("Error connecting to %s:%d" % (host, port))
                 try:
                     request = cnn.post(str(url), reqdata)
-                    request.host = gate_host
+                    request.host = real_host
                     request.add_header("Content-type", "application/xml")
                     request.add_header("Connection", "close")
                     response = cnn.perform(request)
@@ -1376,7 +1499,7 @@ class WebMoney(Module):
         params.appendChild(doc.createElement("dict")).appendChild(doc.createTextNode("0"))
         params.appendChild(doc.createElement("info")).appendChild(doc.createTextNode("0"))
         params.appendChild(doc.createElement("mode")).appendChild(doc.createTextNode("0"))
-        response = self.wm_query("wm_passport_gate", "passport.webmoney.ru", "/asp/XMLGetWMPassport.asp", request)
+        response = self.wm_query(self.clconf("wm_passport_gate", "localhost:87"), "passport.webmoney.ru", "/asp/XMLGetWMPassport.asp", request)
         doc = response.documentElement
         if doc.tagName != "response":
             raise RuntimeError("Unexpected response from WMPassport")
@@ -1397,3 +1520,123 @@ class WebMoney(Module):
         else:
             lang = "en-EN"
         return "https://login.wmtransfer.com/GateKeeper.aspx?RID=%s&lang=%s" % (self.conf("wmlogin.rid"), lang)
+
+class XsollaActivation(Module):
+    def register(self):
+        self.rhook("permissions.list", self.permissions_list)
+        self.rhook("menu-admin-economy.index", self.menu_economy_index)
+        self.rhook("headmenu-admin-xsolla.inactive", self.headmenu_inactive)
+        self.rhook("ext-admin-xsolla.inactive", self.admin_inactive, priv="xsolla.activation")
+        self.rhook("ext-admin-xsolla.actreject", self.admin_actreject, priv="xsolla.activation")
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("admin-xsolla.check-inactive", self.check_inactive)
+        self.rhook("headmenu-admin-xsolla.actsettings", self.headmenu_actsettings)
+        self.rhook("ext-admin-xsolla.actsettings", self.admin_actsettings, priv="xsolla.actsettings")
+
+    def schedule(self, sched):
+        sched.add("admin-xsolla.check-inactive", "30 3 * * *", priority=20)
+
+    def permissions_list(self, perms):
+        perms.append({"id": "xsolla.activation", "name": self._("Xsolla activation management")})
+        perms.append({"id": "xsolla.actsettings", "name": self._("Xsolla activation settings")})
+
+    def menu_economy_index(self, menu):
+        req = self.req()
+        if req.has_access("xsolla.activation"):
+            menu.append({"id": "xsolla/inactive", "text": self._("Xsolla inactive projects"), "leaf": True, "order": 20})
+        if req.has_access("xsolla.actsettings"):
+            menu.append({"id": "xsolla/actsettings", "text": self._("Xsolla activation settings"), "leaf": True, "order": 21})
+
+    def admin_actreject(self):
+        req = self.req()
+        app = self.app().inst.appfactory.get_by_tag(req.args)
+        if app:
+            config = app.config_updater()
+            config.set("xsolla.project-rejected", 1)
+            config.store()
+            reqs = self.objlist(DBXsollaActivationRequestList, query_index="project", query_equal=app.tag)
+            reqs.remove()
+            self.call("admin.redirect", "xsolla/inactive")
+
+    def headmenu_inactive(self, args):
+        return self._("Xsolla inactive projects")
+
+    def admin_inactive(self):
+        rows = []
+        lst = self.objlist(DBXsollaActivationRequestList, query_index="all")
+        lst.load(silent=True)
+        for ent in lst:
+            rows.append([
+                self.call("l10n.time_local", ent.get("created")),
+                ent.get("xsolla_id"),
+                htmlescape(ent.get("title")),
+                u'<a href="%s" target="_blank">%s</a>' % (
+                    "https://secure.xsolla.com/paystation/?projectid=%s" % ent.get("xsolla_id"),
+                    self._("paystation"),
+                ),
+                u'<hook:admin.link href="xsolla/actreject/%s" title="%s" confirm="%s" />' % (
+                    ent.get("project"),
+                    self._("reject"),
+                    self._("Are you sure want to reject this request?")
+                )
+            ])
+        vars = {
+            "tables": [
+                {
+                    "header": [
+                        self._("Record created"),
+                        self._("Xsolla id"),
+                        self._("Game title"),
+                        self._("Paystation"),
+                        self._("Rejection"),
+                    ],
+                    "rows": rows,
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
+
+    def check_inactive(self):
+        lst = self.objlist(DBXsollaActivationRequestList, query_index="all")
+        lst.load(silent=True)
+        for ent in lst:
+            app = self.app().inst.appfactory.get_by_tag(ent.get("project"))
+            app.call("xsolla.check-activation")
+        lst = self.objlist(DBXsollaActivationRequestList, query_index="all")
+        lst.load(silent=True)
+        if len(lst):
+            lines = []
+            for ent in lst:
+                lines.append(u"%s - %s" % (ent.get("xsolla_id"), ent.get("title")))
+            content = self.conf("xsolla.act-reminder-email").format(content="\n".join(lines))
+            manager_email = self.conf("xsolla.manager-email")
+            manager_name = self.conf("xsolla.manager-name")
+            sender_email = self.conf("xsolla.sender-email")
+            sender_name = self.conf("xsolla.sender-name")
+            if manager_email and manager_name:
+                self.call("email.send", manager_email, manager_name, self._("Some projects are still inactive"), content, from_email=sender_email, from_name=sender_name)
+
+    def headmenu_actsettings(self, args):
+        return self._("Xsolla activation settings")
+
+    def admin_actsettings(self):
+        req = self.req()
+        if req.ok():
+            config = self.app().config_updater()
+            config.set("xsolla.manager-email", req.param("email"))
+            config.set("xsolla.manager-name", req.param("name"))
+            config.set("xsolla.sender-email", req.param("from_email"))
+            config.set("xsolla.sender-name", req.param("from_name"))
+            config.set("xsolla.act-reminder-email", req.param("reminder"))
+            config.set("xsolla.act-request-email", req.param("request"))
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        fields = [
+            {"name": "email", "label": self._("Manager's e-mail"), "value": self.conf("xsolla.manager-email")},
+            {"name": "name", "label": self._("Manager's name"), "value": self.conf("xsolla.manager-name")},
+            {"name": "from_email", "label": self._("Sender e-mail"), "value": self.conf("xsolla.sender-email")},
+            {"name": "from_name", "label": self._("Sender name"), "value": self.conf("xsolla.sender-name")},
+            {"name": "reminder", "type": "textarea", "label": self._("Email template for the reminder"), "value": self.conf("xsolla.act-reminder-email"), "height": 300},
+            {"name": "request", "type": "textarea", "label": self._("Email template for the request"), "value": self.conf("xsolla.act-request-email"), "height": 300},
+        ]
+        self.call("admin.form", fields=fields)

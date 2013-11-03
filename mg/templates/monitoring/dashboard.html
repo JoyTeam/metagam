@@ -1,0 +1,100 @@
+<link rel="stylesheet" type="text/css" href="/st/[%ver%]/mon/monitoring.css" />
+<!--HEAD-->
+<table>
+    <tr>
+        <td class="mon-image">
+            <img src="/st/mon/server.png" alt="" />
+        </td>
+        <td class="mon-list">
+            <table class="list">
+                <tr class="header">
+                    <td>Server</td>
+                    <td class="right">CPU load</td>
+                    <td class="right">CPU user</td>
+                    <td class="right">CPU system</td>
+                    <td class="right">CPU iowait</td>
+                    <td class="right">CPU stolen</td>
+                    <td class="right">CPU idle</td>
+                </tr>
+                [%foreach host in servers%]
+                <tr>
+                    <td>[%host.name%]</td>
+                    <td class="right">[%host.cpu_load%]</td>
+                    <td class="right">[%host.cpu_user%]</td>
+                    <td class="right">[%host.cpu_system%]</td>
+                    <td class="right">[%host.cpu_iowait%]</td>
+                    <td class="right">[%host.cpu_stolen%]</td>
+                    <td class="right">[%host.cpu_idle%]</td>
+                </tr>
+                [%end%]
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="mon-image">
+            <img src="/st/mon/database.png" alt="" />
+        </td>
+        <td class="mon-list">
+            <table class="list">
+                <tr class="header">
+                    <td>Database</td>
+                    <td class="right">CPU load</td>
+                    <td class="right">CPU user</td>
+                    <td class="right">CPU system</td>
+                    <td class="right">CPU iowait</td>
+                    <td class="right">CPU stolen</td>
+                    <td class="right">CPU idle</td>
+                </tr>
+                [%foreach host in databases%]
+                <tr>
+                    <td>[%host.name%]</td>
+                    <td class="right">[%host.cpu_load%]</td>
+                    <td class="right">[%host.cpu_user%]</td>
+                    <td class="right">[%host.cpu_system%]</td>
+                    <td class="right">[%host.cpu_iowait%]</td>
+                    <td class="right">[%host.cpu_stolen%]</td>
+                    <td class="right">[%host.cpu_idle%]</td>
+                </tr>
+                [%end%]
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td class="mon-image">
+            <img src="/st/mon/internet.png" alt="" />
+        </td>
+        <td class="mon-list">
+            <table class="list">
+                <tr class="header">
+                    <td>Web Service</td>
+                    <td class="right">Reqs/sec</td>
+                </tr>
+                [%foreach srv in webservices%]
+                <tr>
+                    <td>[%srv.name%]</td>
+                    <td class="right">[%srv.rps%]</td>
+                </tr>
+                [%end%]
+            </table>
+        </td>
+    </tr>
+<!--    <tr>
+        <td class="mon-image">
+            <img src="/st/mon/service.png" alt="" />
+        </td>
+        <td class="mon-list">
+            <table class="list">
+                <tr class="header">
+                    <td>Internal Service</td>
+                    <td class="right">Reqs/sec</td>
+                </tr>
+                [%foreach srv in intservices%]
+                <tr>
+                    <td>[%srv.name%]</td>
+                    <td class="right">[%srv.rps%]</td>
+                </tr>
+                [%end%]
+            </table>
+        </td>
+    </tr>-->
+</table>

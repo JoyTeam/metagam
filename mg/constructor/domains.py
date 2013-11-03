@@ -4,6 +4,7 @@ import re
 from concurrence import Timeout, TimeoutError
 from concurrence.http import HTTPConnection, HTTPError, HTTPRequest
 from mg.constructor.common import Domain, DomainList
+from uuid import uuid4
 
 re_price_value = re.compile(r'^(\d+|\d+\.\d{1,2})$')
 re_person_r = re.compile(r'^\w+( \w+)+$', re.UNICODE)
@@ -13,6 +14,15 @@ re_phone = re.compile(r'^\+\d[ \d]+$')
 re_i7_response = re.compile(r'^<html><body>(\S*):\s*(\d*)\s+(\S*)\s+(\S*)(,\s*in progress|)</body></html>$')
 re_domain = re.compile(r'^[a-z0-9][a-z0-9\-]*(\.[a-z0-9][a-z0-9\-]*)+$')
 re_double_dash = re.compile(r'--')
+re_newline = re.compile(r'\r\n|\r|\n')
+re_response_line = re.compile(r'^(\S+)\s*:\s*(.+)$')
+re_reg_date = re.compile(r'(\d\d)\.(\d\d)\.(\d\d\d\d)')
+re_tld = re.compile(r'\.([a-z]+)$')
+re_del = re.compile(r'^del/(.+)$')
+
+DEBUG_RESOLVER = False
+
+DEBUG_DOMAINS = False
 
 class DNSCheckError(Exception):
     pass
@@ -24,6 +34,15 @@ class Domains(Module):
         self.rhook("domains.assign", self.assign)
         self.rhook("domains.validate_new", self.validate_new)
         self.rhook("admin-game.recommended-actions", self.recommended_actions)
+        self.rhook("domains.blacklisted", self.blacklisted)
+        self.rhook("domains.dns-servers", self.dns_servers)
+
+    def blacklisted(self, domain):
+        domain = domain.strip().lower()
+        for e in self.main_app().config.get("domains.blacklist", []):
+            if e["domain"] == domain or domain.endswith("." + e["domain"]):
+                return True
+        return False
 
     def tlds(self, tlds):
         tlds.extend(['ru', 'su', 'com', 'net', 'org', 'biz', 'info', 'mobi', 'name', 'ws', 'in', 'cc', 'tv', 'mn', 'me', 'tel', 'asia', 'us'])
@@ -116,7 +135,8 @@ class Domains(Module):
             result = engine.asynchronous(checkdomain + ".", adns.rr.NS)
             ips = []
             names = []
-            self.debug("Querying %s about domain %s: %s", configtext, checkdomain, [result])
+            if DEBUG_RESOLVER:
+                self.debug("Querying %s about domain %s: %s", configtext, checkdomain, [result])
             for rr in result[3]:
                 names.append(rr[0])
                 if rr[2]:
@@ -125,10 +145,12 @@ class Domains(Module):
                 elif rr[0]:
                     eng = QueryEngine()
                     result = eng.asynchronous(rr[0] + ".", adns.rr.ADDR)
-                    self.debug("Querying main DNS about domain %s: %s", rr[0], [result])
+                    if DEBUG_RESOLVER:
+                        self.debug("Querying main DNS about domain %s: %s", rr[0], [result])
                     for rr in result[3]:
                         ips.append(rr[1])
-            self.debug("NS query complete. ips=%s", ips)
+            if DEBUG_RESOLVER:
+                self.debug("NS query complete. ips=%s", ips)
             if not len(ips):
                 result = engine.asynchronous(checkdomain + ".", adns.rr.ADDR)
                 if len(result[3]):
@@ -141,7 +163,8 @@ class Domains(Module):
             dnsservers = names
             if ns1 in names or ns2 in names:
                 raise DNSCheckError(self._("{0} is already configured for the project. You may not use its subdomains").format(checkdomain))
-        self.debug("Querying servers '%s' for NSraw %s", configtext, checkdomain)
+        if DEBUG_RESOLVER:
+            self.debug("Querying servers '%s' for NSraw %s", configtext, checkdomain)
         checkdomain = game_domain + "." + checkdomain
         engine = QueryEngine(configtext=configtext)
         result = engine.asynchronous(checkdomain + ".", adns.rr.NSraw)
@@ -362,6 +385,9 @@ class DomainRegWizard(Wizard):
                                         rec.remove()
                         finally:
                             cnn.close()
+                except IOError as e:
+                    self.error("Error querying registrar: %s", e)
+                    error = self._("Request to the registrar failed. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
                 except TimeoutError:
                     self.error("Timeout querying registrar")
                     error = self._("Request to the registrar timed out. We don't know whether your request was processed, so we remain payment for the domain in the locked state. Result of the operation will be checked by the technical support manually.")
@@ -414,6 +440,7 @@ class DomainsAdmin(Module):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("money-description.domain-reg", self.money_description_domain_reg)
+        self.rhook("money-description.domain-prolong", self.money_description_domain_reg)
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-domains.index", self.menu_domains_index)
@@ -425,6 +452,118 @@ class DomainsAdmin(Module):
         self.rhook("domains.money_charge", self.money_charge)
         self.rhook("auth.user-tables", self.user_tables)
         self.rhook("ext-admin-domains.unassign", self.ext_unassign, priv="domains.unassign")
+        self.rhook("admin-domains.prolong", self.prolong)
+        self.rhook("admin-domains.check-dns", self.check_dns)
+        self.rhook("admin-domains.check-single-dns", self.check_single_dns)
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("ext-admin-domains.blacklist", self.ext_blacklist, priv="domains.blacklist")
+        self.rhook("headmenu-admin-domains.blacklist", self.headmenu_blacklist)
+        self.rhook("ext-admin-domains.resume", self.admin_resume, priv="domains.resume")
+
+    def admin_resume(self):
+        req = self.req()
+        try:
+            domain = self.obj(Domain, req.args)
+        except ObjectNotFoundException:
+            self.call("admin.response", self._("No such domain in the database"), {})
+        user = domain.get("user")
+        if domain.get("suspended"):
+            domain.delkey("suspended")
+            domain.delkey("errors")
+            project_uuid = domain.get("project")
+            if project_uuid:
+                project = self.int_app().obj(Project, project_uuid)
+                project.delkey("suspended")
+                project.store()
+            domain.store()
+        if user:
+            self.call("admin.redirect", "auth/user-dashboard/%s?active_tab=domains" % user)
+        else:
+            self.call("admin.response", self._("Domain is resumed"), {})
+
+    def headmenu_blacklist(self, args):
+        if args == "new":
+            return [self._("New domain"), "domains/blacklist"]
+        elif args:
+            for e in self.conf("domains.blacklist", []):
+                if e["uuid"] == args:
+                    return [htmlescape(e["domain"]), "domains/blacklist"]
+        return self._("Domains blacklist")
+
+    def ext_blacklist(self):
+        req = self.req()
+        blacklist = self.conf("domains.blacklist", [])
+        if req.args:
+            m = re_del.match(req.args)
+            if m:
+                uuid = m.group(1)
+                blacklist = [e for e in blacklist if e["uuid"] != uuid]
+                config = self.app().config_updater()
+                config.set("domains.blacklist", blacklist)
+                config.store()
+                self.call("admin.redirect", "domains/blacklist")
+            if req.args == "new":
+                ent = {
+                    "uuid": uuid4().hex
+                }
+            else:
+                ent = None
+                for e in blacklist:
+                    if e["uuid"] == req.args:
+                        ent = e.copy()
+                        break
+                if not ent:
+                    self.call("admin.redirect", "domains/blacklist")
+            if req.ok():
+                errors = {}
+                # domain
+                domain = req.param("domain").strip()
+                if not domain:
+                    errors["domain"] = self._("This field is mandatory")
+                else:
+                    ent["domain"] = domain.lower()
+                # handle errors
+                if errors:
+                    self.call("admin.response_json", {"success": False, "errors": errors})
+                # save data
+                blacklist = [e for e in blacklist if e["uuid"] != ent["uuid"]]
+                blacklist.append(ent)
+                blacklist.sort(cmp=lambda x, y: cmp(x["domain"], y["domain"]))
+                config = self.app().config_updater()
+                config.set("domains.blacklist", blacklist)
+                config.store()
+                self.call("admin.redirect", "domains/blacklist")
+            fields = [
+                {"name": "domain", "label": self._("Domain name"), "value": ent.get("domain")},
+            ]
+            self.call("admin.form", fields=fields)
+        rows = []
+        for ent in blacklist:
+            rows.append([
+                ent.get("domain"),
+                u'<hook:admin.link href="domains/blacklist/%s" title="%s" />' % (ent.get("uuid"), self._("edit")),
+                u'<hook:admin.link href="domains/blacklist/del/%s" title="%s" />' % (ent.get("uuid"), self._("delete")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {
+                            "hook": "domains/blacklist/new",
+                            "text": self._("New domain"),
+                            "lst": True,
+                        }
+                    ],
+                    "header": [
+                        self._("Domain"),
+                        self._("Editing"),
+                        self._("Deletion")
+                    ],
+                    "rows": rows
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def permissions_list(self, perms):
         perms.append({"id": "domains", "name": self._("Domains: administration")})
@@ -432,11 +571,23 @@ class DomainsAdmin(Module):
         perms.append({"id": "domains.prices", "name": self._("Domains: registration prices")})
         perms.append({"id": "domains.personal-data", "name": self._("Domains: administrator's personal data")})
         perms.append({"id": "domains.unassign", "name": self._("Domains: unassigning")})
+        perms.append({"id": "domains.blacklist", "name": self._("Domains: blacklist")})
+        perms.append({"id": "domains.resume", "name": self._("Domains: resuming")})
+
+    def schedule(self, sched):
+        sched.add("admin-domains.prolong", "0 17 * * *", priority=150)
+        sched.add("admin-domains.check-dns", "0 18 * * *", priority=5)
 
     def money_description_domain_reg(self):
         return {
             "args": ["domain"],
             "text": self._("Domain registration: {domain}"),
+        }
+
+    def money_description_domain_prolong(self):
+        return {
+            "args": ["domain"],
+            "text": self._("Domain prolongation: {domain}"),
         }
 
     def objclasses_list(self, objclasses):
@@ -455,6 +606,8 @@ class DomainsAdmin(Module):
             menu.append({"id": "domains/personal-data", "text": self._("Administrator's personal data"), "leaf": True})
         if req.has_access("domains.dns"):
             menu.append({"id": "domains/dns", "text": self._("DNS settings"), "leaf": True})
+        if req.has_access("domains.blacklist"):
+            menu.append({"id": "domains/blacklist", "text": self._("Domains blacklist"), "leaf": True, "order": 10})
 
     def ext_dns(self):
         req = self.req()
@@ -590,7 +743,7 @@ class DomainsAdmin(Module):
                                 try:
                                     cnn.connect(("my.i7.ru", 80))
                                 except IOError as e:
-                                    self.error("Error coonecting to the registrar")
+                                    self.error("Error connecting to the registrar")
                                 try:
                                     request = cnn.get("/c/registrar?%s" % params)
                                     request.add_header("Connection", "close")
@@ -659,17 +812,36 @@ class DomainsAdmin(Module):
             domains = self.objlist(DomainList, query_index="user", query_equal=user.uuid)
             domains.load(silent=True)
             if len(domains):
-                status = {
+                regstatus = {
                     "ext": self._("external"),
                     "yes": self._("completed"),
                     "pending": self._("pending"),
                 }
+                rows = []
+                for domain in domains:
+                    if domain.get("suspended"):
+                        status = u'%s, <hook:admin.link href="domains/resume/%s" title="%s" />' % (self._("domain///suspended"), domain.uuid, self._("resume"))
+                    elif domain.get("project"):
+                        status = self._("domain///operational")
+                    else:
+                        status = self._("domain///inactive")
+                    rows.append([
+                        domain.uuid,
+                        regstatus.get(domain.get("registered", "ext"), self._("unknown")),
+                        domain.get("project"),
+                        status,
+                    ])
                 tables.append({
                     "type": "domains",
                     "title": self._("Domains"),
                     "order": 40,
-                    "header": [self._("Domain"), self._("Registration"), self._("Project")],
-                    "rows": [(d.uuid, status.get(d.get("registered", "ext"), self._("unknown")), d.get("project")) for d in domains]
+                    "header": [
+                        self._("Domain"),
+                        self._("Registration"),
+                        self._("Project"),
+                        self._("Status"),
+                    ],
+                    "rows": rows
                 })
 
     def ext_unassign(self):
@@ -688,6 +860,255 @@ class DomainsAdmin(Module):
             obj.remove()
             project.store()
         self.call("admin.redirect", "constructor/project-dashboard/%s" % project.uuid)
+
+    def prolong(self):
+        main_config = self.main_app().config
+        prev_month = self.now(-86400 * 30)
+        next_month = self.now(86400 * 30)
+        # get domain prices
+        tlds = []
+        self.call("domains.tlds", tlds)
+        prices = {}
+        self.call("domains.prices", prices)
+        tlds = [tld for tld in tlds if prices.get(tld)]
+        # get list of domains to prolong
+        lst = self.objlist(DomainList, query_index="registered", query_equal="yes")
+        lst.load(silent=True)
+        for domain in lst:
+            reg_till = domain.get("reg_till")
+            self.debug("Domain %s registered till %s", domain.uuid, reg_till)
+            # skip not expiring domains
+            if reg_till and reg_till > next_month:
+                continue
+            # skip domains already expired
+            if reg_till and reg_till < prev_month: 
+                continue
+            # get actual domain data from the registrar
+            try:
+                with Timeout.push(180):
+                    cnn = HTTPConnection()
+                    try:
+                        cnn.connect(("my.i7.ru", 80))
+                    except IOError as e:
+                        self.error("Error connecting to the registrar")
+                        continue
+                    try:
+                        params = []
+                        params.append(("action", "GET"))
+                        params.append(("login", main_config.get("domains.login")))
+                        params.append(("passwd", main_config.get("domains.password")))
+                        params.append(("domain", domain.uuid))
+                        self.info("Querying registrar: %s", params)
+                        params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r", "replace"))) for key, val in params])
+                        request = cnn.get("/c/registrar?%s" % params_url)
+                        request.add_header("Connection", "close")
+                        response = cnn.perform(request)
+                    finally:
+                        cnn.close()
+            except IOError as e:
+                self.error("Error querying registrar: %s", e)
+                continue
+            except TimeoutError:
+                self.error("Timeout querying registrar")
+                continue
+            # parse response
+            if response.status_code != 200:
+                self.error("Registrar response: %s", response.status)
+                continue
+            content = response.body.decode("koi8-r")
+            self.debug("Registrar response: %s", content)
+            params = {}
+            for line in re_newline.split(content):
+                if not line:
+                    continue
+                m = re_response_line.match(line)
+                if not m:
+                    continue
+                key, val = m.group(1, 2)
+                params[key] = val
+            if "reg-till" not in params:
+                self.error("No reg-till field in params of domain %s", domain.uuid)
+                continue
+            m = re_reg_date.search(params["reg-till"])
+            if not m:
+                self.error("Reg-till is not parseable: %s", params["reg-till"])
+            dd, mm, yyyy = m.group(1, 2, 3)
+            actual_reg_till = "%s-%s-%s 04:00:00" % (yyyy, mm, dd)
+            # get admin credentials
+            project_id = domain.get("project")
+            if project_id:
+                project = self.int_app().obj(Project, project_id)
+                admin_uuid = project.get("owner")
+            else:
+                admin_uuid = domain.get("user")
+            admin = self.obj(User, domain.get("user"))
+            admin_name = admin.get("name")
+            admin_email = admin.get("email")
+            self.debug("Admin name: %s, email: %s", admin_name, admin_email)
+            money = self.call("money.obj", "user", admin.uuid)
+            # update reg till
+            if reg_till != actual_reg_till:
+                self.debug("Storing reg-till for %s: %s", domain.uuid, actual_reg_till)
+                domain.set("reg_till", actual_reg_till)
+                reg_till = actual_reg_till
+                # commit money
+                if domain.get("prolong_lock"):
+                    lock = money.unlock(domain.get("prolong_lock"))
+                    domain.delkey("prolong_lock")
+                    if lock:
+                        money.force_debit(float(lock.get("amount")), lock.get("currency"), "domain-prolong", domain=domain.uuid)
+                    self.call("email.send", admin_email, admin_name, self._("%s: domain prolonged") % domain.uuid, self._("Domain {domain} is now prolonged.").format(domain=domain.uuid))
+                domain.store()
+            if reg_till > next_month:
+                continue
+            # get domain price
+            m = re_tld.search(domain.uuid)
+            if not m:
+                self.error("Invalid domain name: %s", domain.uuid)
+                continue
+            tld = m.group(1)
+            # get domain price
+            price = None
+            if tld in tlds:
+                price = prices.get(tld)
+            self.debug("Price for prolonging %s: %s", domain.uuid, price)
+            if price is None:
+                # domain is no longer supported. notify admin
+                self.call("email.send", admin_email, admin_name, self._("%s: domain prolongation") % domain.uuid, self._("Domain {domain} can not be prolonged, because TLD {tld} is no longer supported.").format(domain=domain.uuid, tld=tld))
+                continue
+            # reserve money
+            if not domain.get("prolong_lock"):
+                lock = money.lock(float(price), "MM$", "domain-prolong", domain=domain.uuid)
+                if not lock:
+                    url = self.call("money.donate-url", "MM$", v1=admin_name, email=admin_email, amount=price)
+                    if url:
+                        url = "http:%s" % url
+                    self.call("email.send", admin_email, admin_name, self._("%s: prolong your domain") % domain.uuid, self._("Domain {domain} will expire at {reg_till}, but you don't have enough money to prolong it. If you want to prolong {domain}, you must have {price} MM$ on your account.\n\nPayment interface: {url}").format(domain=domain.uuid, price=price, reg_till=self.call("l10n.date_local", reg_till), url=url))
+                    continue
+                domain.set("prolong_lock", lock.uuid)
+                domain.store()
+            else:
+                self.debug("Prolong lock: %s", domain.get("prolong_lock"))
+            # send a request to prolong
+            try:
+                with Timeout.push(180):
+                    cnn = HTTPConnection()
+                    try:
+                        cnn.connect(("my.i7.ru", 80))
+                    except IOError as e:
+                        self.error("Error connecting to the registrar")
+                        continue
+                    try:
+                        params = []
+                        params.append(("action", "PROLONG"))
+                        params.append(("login", main_config.get("domains.login")))
+                        params.append(("passwd", main_config.get("domains.password")))
+                        params.append(("domain", domain.uuid))
+                        self.info("Querying registrar: %s", params)
+                        params_url = "&".join(["%s=%s" % (key, urlencode(unicode(val).encode("koi8-r", "replace"))) for key, val in params])
+                        request = cnn.get("/c/registrar?%s" % params_url)
+                        request.add_header("Connection", "close")
+                        response = cnn.perform(request)
+                    finally:
+                        cnn.close()
+                    self.debug("Prolong response: %s", response.body)
+            except IOError as e:
+                self.error("Error querying registrar: %s", e)
+                continue
+            except TimeoutError:
+                self.error("Timeout querying registrar")
+
+    def check_dns(self):
+        if self.conf("dns.nocheck"):
+            return
+        domains = self.objlist(DomainList, query_index="all")
+        for domain in domains:
+            self.call("queue.add", "admin-domains.check-single-dns", {
+                "domain": domain.uuid
+            }, priority=5, unique="check-dns-%s" % domain.uuid)
+
+    def check_single_dns(self, domain):
+        try:
+            domain = self.obj(Domain, domain)
+        except ObjectNotFoundException:
+            return
+        if domain.get("suspended"):
+            return
+        project_uuid = domain.get("project")
+        if not project_uuid:
+            return
+        try:
+            servers = self.call("domains.dns-servers", domain.uuid)
+        except DNSCheckError as e:
+            error = unicode(e)
+        else:
+            ns1 = self.conf("dns.ns1")
+            ns2 = self.conf("dns.ns2")
+            if ns1 not in servers or ns2 not in servers or len(servers) != 2:
+                error = self._("Domain servers for {0} are: {1}. Setup your zone correctly: DNS servers must be {2} and {3}").format(domain.uuid, ", ".join(servers), ns1, ns2)
+            else:
+                error = None
+        errors = domain.get("errors", [])
+        if error:
+            self.debug(u"Domain %s: %s (prev errors: %s)", domain.uuid, error, len(errors))
+            errors = errors + [{
+                "detected": self.now(),
+                "text": error
+            }]
+            domain.set("errors", errors)
+            if len(errors) >= 5:
+                # After 5 errors suspend the game
+                domain.set("suspended", True)
+                project = self.int_app().obj(Project, project_uuid)
+                project.set("suspended", True)
+                user_uuid = domain.get("user")
+                if user_uuid:
+                    admin = self.obj(User, user_uuid)
+                    admin_name = admin.get("name")
+                    admin_email = admin.get("email")
+                    self.call("email.send", admin_email, admin_name,
+                        self._("%s: project suspended") % project.get("title_short"),
+                        self._("Domain {domain} does not resolve to the MMO Constructor Servers:\n\n{errors}\n\nYour game is now suspended.").format(
+                            domain = domain.uuid,
+                            errors = u"\n".join([u'%s: %s' % (self.call("l10n.time_local", err["detected"]), err["text"]) for err in errors])
+                        )
+                    )
+                project.store()
+            elif len(errors) >= 2:
+                # If this is not first error, notify admin
+                user_uuid = domain.get("user")
+                if user_uuid:
+                    admin = self.obj(User, user_uuid)
+                    admin_name = admin.get("name")
+                    admin_email = admin.get("email")
+                    project = self.int_app().obj(Project, project_uuid)
+                    self.call("email.send", admin_email, admin_name,
+                        self._("%s: domain errors") % project.get("title_short"),
+                        self._("Domain {domain} does not resolve to the MMO Constructor Servers:\n\n{errors}\n\nAfter the fifth error your game will be suspended.").format(
+                            domain = domain.uuid,
+                            errors = u"\n".join([u'%s: %s' % (self.call("l10n.time_local", err["detected"]), err["text"]) for err in errors])
+                        )
+                    )
+            domain.store()
+        else:
+            self.debug(u"Domain %s: ok (prev errors: %s)", domain.uuid, len(errors))
+            if errors:
+                domain.delkey("errors")
+                if len(errors) >= 2:
+                    # If there were 2+ errors before, notify admin about successful recovery
+                    user_uuid = domain.get("user")
+                    if user_uuid:
+                        admin = self.obj(User, user_uuid)
+                        admin_name = admin.get("name")
+                        admin_email = admin.get("email")
+                        project = self.int_app().obj(Project, project_uuid)
+                        self.call("email.send", admin_email, admin_name,
+                            self._("%s: domain is online") % project.get("title_short"),
+                            self._("Domain {domain} is now resolved to the MMO Constructor Servers again.").format(
+                                domain = domain.uuid,
+                            )
+                        )
+                domain.store()
 
 class DomainWizard(Wizard):
     def new(self, **kwargs):
@@ -728,6 +1149,8 @@ class DomainWizard(Wizard):
                     errors["domain"] = self._("Domain name can't contain double dash ('--'). International domain names are not supported")
                 elif len(domain) > 63:
                     errors["domain"] = self._("Domain name is too long")
+                elif self.call("domains.blacklisted", domain):
+                    errors["domain"] = self._("This domain is blacklisted")
                 if not len(errors) and not self.main_app().config.get("dns.nocheck"):
                     self.call("domains.validate_new", domain, errors)
                 if len(errors):

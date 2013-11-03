@@ -39,11 +39,13 @@ class LocationFunctions(ConstructorModule):
                 "id": fn_id,
             })
         self.call("locfunctions.list", loc, funcs)
+        nonvolatileKeys = set(["onclick"])
         for func in funcs:
             conf = self.conf("locfunc-%s.%s" % (loc.uuid, func["id"]))
             if conf:
                 for k, v in conf.iteritems():
-                    func[k] = v
+                    if k not in nonvolatileKeys:
+                        func[k] = v
         if char:
             globs = {"char": char}
             description = self._("Availability of location special function '%s'")
@@ -228,7 +230,7 @@ class LocationFunctionsAdmin(ConstructorModule):
         if not loc.valid:
             self.call("web.not_found")
         # Advice
-        self.call("admin.advice", {"title": self._("Special functions documentation"), "content": self._('You can find detailed information on the location special functions system in the <a href="//www.%s/doc/locfunc" target="_blank">special functions page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Special functions documentation"), "content": self._('You can find detailed information on the location special functions system in the <a href="//www.%s/doc/locfunc" target="_blank">special functions page</a> in the reference manual.') % self.main_host, "order": 30})
         # Loading special functions
         funcs = self.call("locfunctions.functions", loc)
         default = funcs[0]["id"] if funcs else None

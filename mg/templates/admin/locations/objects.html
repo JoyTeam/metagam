@@ -1,0 +1,53 @@
+<div class="admin-actions">
+        [%if saved%]<span class="admin-saved">[%saved.text%]</span> [%+ end%]
+        [%foreach link in links%]
+                [%if link.hook%]<hook:admin.link href="[%link.hook%]" title="[%link.text%]" />[%else%][%link.text%][%end%]
+                [%unless link.lst +%] / [%+ end%]
+        [%end%]
+</div>
+<div class="admin-location-render">
+<div id="imagemap-ie-warning" class="admin-alert" style="display: none">[%ie_warning%]</div>
+<div id="imagemap-div" style="width: [%width%]px; height: [%height%]px; background-image: url([%image%]); background-position: 0% 0%; background-repeat: no-repeat; cursor: default"></div>
+<div id="imagemap-form"></div>
+</div>
+<script type="text/javascript">
+wait(['locobjects-editor'], function() {
+        [%if storage_unavailable%]LocObjectsEditor.storage_unavailable = '[%storage_unavailable%]';[%end%]
+        LocObjectsEditor.init('[%submit_url%]', [%width%], [%height%]);
+        [%foreach action in actions%]
+        LocObjectsEditor.actions.push(['[%action.0%]', '[%action.1%]']);
+        [%end%]
+        [%foreach loc in locations%]
+        LocObjectsEditor.locations.push(['[%loc.id%]', '[%loc.name%]']);
+        [%end%]
+        [%foreach gf in globfunc%]
+        LocObjectsEditor.globfuncs.push(['[%gf.id%]', '[%gf.title%]']);
+        [%end%]
+        [%foreach sf in specfunc%]
+        LocObjectsEditor.specfuncs.push(['[%sf.id%]', '[%sf.title%]']);
+        [%end%]
+        [%foreach obj in objects%]
+        var obj = LocObjectsEditor.new_object();
+        obj.ident = '[%obj.id%]';
+        obj.x = [%obj.x%];
+        obj.y = [%obj.y%];
+        obj.width = [%obj.width%];
+        obj.height = [%obj.height%];
+        obj.image = '[%obj.image%]';
+        obj.setPolygonStr('[%obj.polygon%]');
+        obj.action = '[%obj.action%]';
+        obj.visible = '[%obj.visible%]';
+        obj.position = '[%obj.position%]';
+        [%if obj.loc%]obj.loc = '[%obj.loc%]';[%end%]
+        [%if obj.ev%]obj.ev = '[%obj.ev%]';[%end%]
+        [%if obj.globfunc%]obj.globfunc = '[%obj.globfunc%]';[%end%]
+        [%if obj.specfunc%]obj.specfunc = '[%obj.specfunc%]';[%end%]
+        [%if obj.url%]obj.url = '[%obj.url%]';[%end%]
+        [%if obj.hint%]obj.hint = '[%obj.hint%]';[%end%]
+        obj.render(LocObjectsEditor.form);
+        obj.loadImage();
+        [%end%]
+        LocObjectsEditor.run();
+});
+</script>
+

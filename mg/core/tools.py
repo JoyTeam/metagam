@@ -124,8 +124,7 @@ def parse_color(color):
 def htmlescape(val):
     if val is None:
         return ""
-    if type(val) != type("") and type(val) != unicode:
-        val = unicode(val)
+    val = str2unicode(val)
     val = string.replace(val, "&", "&amp;")
     val = string.replace(val, '"', "&quot;")
     val = string.replace(val, "<", "&lt;")
@@ -135,8 +134,7 @@ def htmlescape(val):
 def htmldecode(val):
     if val is None:
         return ""
-    if type(val) != type("") and type(val) != unicode:
-        val = unicode(val)
+    val = str2unicode(val)
     val = string.replace(val, "&quot;", '"')
     val = string.replace(val, "&lt;", "<")
     val = string.replace(val, "&gt;", ">")
@@ -248,10 +246,15 @@ def nn(num):
         return num
     if type(num) == float:
         num = '%f' % num
+    if type(num) == unicode:
+        num = utf2str(num)
     num = str(num)
     if re_frac_part.search(num) or re_exp_format.match(num):
         return float(num)
-    return int(re_remove_frac.sub('', num))
+    try:
+        return int(re_remove_frac.sub('', num))
+    except ValueError:
+        return 0
 
 class curry:
     def __init__(self, fun, *args, **kwargs):

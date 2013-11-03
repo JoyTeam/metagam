@@ -2,8 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml"[%html_attrs%]><head>
 [%if title%]<title>[%title%][%title_suffix%]</title>[%end%]
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-[%if htmlmeta.keywords%]<meta http-equiv="keywords" content="[%htmlmeta.keywords%]" />[%end%]
-[%if htmlmeta.description%]<meta http-equiv="description" content="[%htmlmeta.description%]" />[%end%]
+[%if htmlmeta.keywords%]<meta name="keywords" content="[%htmlmeta.keywords%]" />[%end%]
+[%if htmlmeta.description%]<meta name="description" content="[%htmlmeta.description%]" />[%end%]
 <link rel="stylesheet" type="text/css" href="/st-mg/[%ver%]/game/common.css" />
 <link rel="stylesheet" type="text/css" href="/st-mg/[%ver%]/socio/main.css" />
 <link rel="stylesheet" type="text/css" href="/st-mg/[%ver%]/constructor/socio/main.css" />
@@ -37,6 +37,7 @@
 				[%if socio_message_top%]<div class="socio-message-top">[%socio_message_top%]</div>[%end%]
 				[%content%]
 				<div id="socio-counters">[%counters%]</div>
+                                [%if disclaimer%]<div id="page-disclaimer">[%disclaimer%]</div>[%end%]
 			</div>
 		</td>
 		<td id="page-right"><div></div></td>

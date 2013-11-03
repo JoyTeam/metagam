@@ -1,0 +1,24 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+import mg
+import os
+import json
+import sys
+from mg.constructor.processes import ConstructorInstance
+
+def main():
+    inst = ConstructorInstance("conf_del", "metagam")
+    # parse cmdline
+    if len(inst.cmdline_args) != 2:
+        print "usage: mg_conf_del <app> <config.key>"
+        os._exit(1)
+    app_tag = inst.cmdline_args[0]
+    key = inst.cmdline_args[1]
+    # perform actions
+    app = inst.appfactory.get_by_tag(app_tag)
+    conf = app.config_updater()
+    conf.delete(key)
+    conf.store()
+
+mg.dispatch(main)

@@ -55,6 +55,7 @@ js: $(foreach module,$(js_modules),$($(module)_js_files))
 
 test:
 	for i in mg/test/*.py ; do echo $$i ; python2.6 $$i ; done
+	for i in mg/test/*.js ; do echo $$i ; node $$i ; done
 
 debug:
 	@echo "POT Files: $(foreach module,$(modules),mg/locale/mg_$(module).pot)"
@@ -63,16 +64,20 @@ debug:
 	@echo "JS Files: $(foreach module,$(js_modules),$($(module)_js_files))"
 
 clean:
-	find \( -name '*.pyc' -or -name '*~' \) -exec rm {} \;
+	find \( -name '*.pyc' -or -name '*~' -or -name '*.orig' -or -name '*.rej' \) -exec rm {} \;
 
 deploy: translations
-	rm -rf depl
-	find -name '*.pyc' -exec rm {} \;
-	bin/mg_compile .
-	mkdir -p depl/bin
-	cp bin/* depl/bin/
-	cp -R mg static perl depl/
-	find depl/mg \( -name '*.py' -or -name '.hg*' -or -name '*.po' -or -name '*.pot' \) -exec rm -rf {} \;
-	find depl/static -name robots.txt -exec rm -rf {} \;
-	rsync --links --delete -r depl/* admin.mmoconstructor.ru:/home/mg/
-	ssh admin.mmoconstructor.ru 'cd /home/mg;rsync --links --delete -r * mg-frontend-1:/home/mg/'
+	@echo Preparing package...
+	@rm -rf depl
+	@find -name '*.pyc' -exec rm {} \;
+	@devbin/mg_compile .
+	@mkdir -p depl/bin
+	@cp bin/* depl/bin/
+	@cp -R mg static perl depl/
+	@find depl/mg \( -name '*.py' -or -name '.hg*' -or -name '*.po' -or -name '*.pot' \) -exec rm -rf {} \;
+	@find depl/static -name robots.txt -exec rm -rf {} \;
+	@echo Uploading package to mg-storage...
+	@rsync --links --delete -r depl/* mg-storage@213.248.47.138:/home/mg-storage/mg/
+	@echo Deploying to servers...
+	@knife ssh -a normal.ipaddress roles:mmoconstructor 'sudo chef-client -l error'
+	@echo Success

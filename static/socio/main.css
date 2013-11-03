@@ -20,6 +20,8 @@ img { vertical-align: middle; border: none }
 #socio-counters { padding-top: 50px; text-align: right }
 .socio-message-top { border: solid 1px #dd6419; margin: 20px 0 30px 0; padding: 20px; background-color: #ececec }
 .socio-content-menu { padding: 10px 0 20px 0 }
+.advanced-search-form .form-std-form-row { width: 100% }
+.advanced-search-form .form-w100 { width: 100% }
 
 /* INDEX */
 .socio-top-cat { color: #dd6419; font-weight: bold; padding: 10px 0px 10px 0px }
@@ -82,6 +84,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .socio-avatar img { border: solid 1px #614115; margin: 0 10px 0 33px }
 .socio-member-name { color: #dd6419; font-size: 13px; font-weight: bold; padding: 0px 10px 0px 33px; }
 .socio-member-status { font-size: 11px; padding: 0px 10px 5px 33px }
+.socio-member-online { font-size: 11px; padding: 0px 10px 1px 33px }
 .socio-member-menu { font-size: 11px; color: #0078ac; padding: 5px 10px 5px 33px }
 .socio-member-menu a:link, .socio-member-menu a:visited { color: #0078ac }
 .socio-member-menu a:hover, .socio-member-menu a:active { color: #0098ec }
@@ -132,6 +135,7 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .form-control-padding { padding: 20px 20px 0 0 }
 
 /* LOGS */
+.log-table { margin-bottom: 40px }
 .log-header .log-td { font-weight: bold; border-bottom: solid 1px #404040 }
 .log-td { padding: 5px 30px 0 0; vertical-align: top }
 .log-right { text-align: right }
@@ -151,3 +155,13 @@ td.socio-catname a:hover, td.socio-catname a:active { color: #0386b1 }
 .library-param-table { margin: 10px 0 10px 0 }
 .library-param-table td { vertical-align: top; padding: 0 30px 0 0 }
 .library-param-header { font-weight: bold }
+
+/* RULES */
+.socio-rules-above-inner { padding: 0 50px 0 50px }
+
+/* EXAM */
+.forum-exam-question { width: 400px; padding: 5px 0 5px 0 }
+.forum-exam-question h1 { font-weight: bold; font-size: 16px }
+.forum-exam-answers { padding: 5px 10px 5px 50px }
+.forum-exam-answers button { padding: 5px; font-weight: bold; font-size: 14px; margin: 10px 40px 10px 0 }
+.forum-exam-counter { padding-left: 20px; font-size: 16px; font-weight: bold }

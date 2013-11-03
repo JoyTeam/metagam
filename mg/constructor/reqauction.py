@@ -1,4 +1,8 @@
 from mg.constructor import *
+from mg.core.auth import User
+import re
+
+re_del = re.compile(r'^del/(.+)$')
 
 max_votes = 3
 
@@ -6,8 +10,12 @@ class DBRequest(CassandraObject):
     clsname = "Request"
     indexes = {
         "all": [[], "created"],
+        "title": [[], "title"],
         "draft": [["draft", "author"], "created"],
         "moderation": [["moderation"], "moderation_since"],
+        "category": [["category"], "created"],
+        "category_published_priority": [["category", "published"], "priority"],
+        "implementation": [["implementation"], "priority"],
         "published_priority": [["published"], "priority"],
         "published_since": [["published"], "published_since"],
         "closed": [["closed"], "closed_since"],
@@ -19,6 +27,15 @@ class DBRequest(CassandraObject):
 
 class DBRequestList(CassandraObjectList):
     objcls = DBRequest
+
+class DBRequestCategory(CassandraObject):
+    clsname = "RequestCategory"
+    indexes = {
+        "all": [[], "name"],
+    }
+
+class DBRequestCategoryList(CassandraObjectList):
+    objcls = DBRequestCategory
 
 class DBRequestVote(CassandraObject):
     clsname = "RequestVote"
@@ -45,6 +62,8 @@ class ReqAuction(ConstructorModule):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("ext-reqauction.index", self.index, priv="logged")
+        self.rhook("ext-reqauction.all", self.allreqs, priv="logged")
+        self.rhook("ext-reqauction.cat", self.category, priv="logged")
         self.rhook("ext-reqauction.request", self.request, priv="logged")
         self.rhook("ext-reqauction.mine", self.mine, priv="logged")
         self.rhook("ext-reqauction.delete-mine", self.delete_mine, priv="logged")
@@ -59,6 +78,40 @@ class ReqAuction(ConstructorModule):
         self.rhook("ext-reqauction.parent", self.parent, priv="reqauction.control")
         self.rhook("ext-reqauction.depend", self.depend, priv="reqauction.control")
         self.rhook("ext-reqauction.undepend", self.undepend, priv="reqauction.control")
+        self.rhook("reqauction.update-counters", self.update_counters)
+        self.rhook("ext-reqauction.implement", self.implement, priv="reqauction.control")
+        self.rhook("ext-reqauction.noimplement", self.noimplement, priv="reqauction.control")
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("reqauction.update-votes", self.update_votes)
+
+    def schedule(self, sched):
+        sched.add("reqauction.update-votes", "0 5 * * *", priority=8)
+
+    def update_votes(self):
+        self.debug("Updating request auction votes")
+        lst = self.objlist(DBRequestList, query_index="canbeparent", query_equal="1")
+        lst.load(silent=True)
+        for request in lst:
+            self.update_priority(request)
+        lst.store()
+
+    def update_counters(self, cat_uuid):
+        try:
+            cat = self.obj(DBRequestCategory, cat_uuid)
+        except ObjectNotFoundException:
+            return
+        # evaluate number of requests in the category
+        lst = self.objlist(DBRequestList, query_index="category_published_priority", query_equal="%s-1" % cat_uuid)
+        lst.load(silent=True)
+        cnt = 0
+        for ent in lst:
+            if not ent.get("parent"):
+                cnt += 1
+        cat.set("requests", cnt)
+        cat.store()
+
+    def child_modules(self):
+        return ["mg.constructor.reqauction.ReqAuctionAdmin"]
 
     def objclasses_list(self, objclasses):
         objclasses["Request"] = (DBRequest, DBRequestList)
@@ -66,7 +119,8 @@ class ReqAuction(ConstructorModule):
         objclasses["RequestDependency"] = (DBRequestDependency, DBRequestDependencyList)
 
     def permissions_list(self, perms):
-        perms.append({"id": "reqauction.control", "name": self._("Requests auction control")})
+        perms.append({"id": "reqauction.control", "name": self._("reqauction///Requests auction control")})
+        perms.append({"id": "reqauction.categories", "name": self._("reqauction///Requests auction categories editor")})
 
     def format_priority(self, priority):
         if priority is None:
@@ -83,38 +137,59 @@ class ReqAuction(ConstructorModule):
         req = self.req()
         # my votes
         lst = self.objlist(DBRequestVoteList, query_index="user", query_equal=req.user())
-        lst.load()
+        lst.load(silent=True)
         myvotes = set()
         for ent in lst:
             myvotes.add(ent.get("request"))
-        # list of requests
-        lst = self.objlist(DBRequestList, query_index="published_priority", query_equal="1", query_reversed=True)
+        # list of categories
+        cat_rows = []
+        objlist = self.objlist(DBRequestCategoryList, query_index="all")
+        objlist.load(silent=True)
+        for cat in objlist:
+            cat_rows.append([
+                {"html": u'<a href="/reqauction/cat/%s">%s</a>' % (cat.uuid, cat.get("name")), "cls": "reqauction-title"},
+                {"html": cat.get("requests")},
+            ])
+        # list of uncategorized requests
+        lst = self.objlist(DBRequestList, query_index="category_published_priority", query_equal="none-1", query_reversed=True)
         lst.load(silent=True)
-        rows = []
+        req_rows = []
         for ent in lst:
             votes = ent.get("votes", 0)
             if ent.uuid in myvotes:
                 votes = '<img src="/st-mg/icons/ok.png" alt="" /> %s' % votes
-            rows.append([
+            req_rows.append([
                 {"html": '<a href="/reqauction/view/%s">%s</a>' % (ent.uuid, htmlescape(ent.get("title"))), "cls": "reqauction-title"},
                 {"html": votes, "cls": "reqauction-votes"},
                 {"html": self.format_priority(ent.get("priority")), "cls": "reqauction-priority"},
             ])
+        # tables
+        tables = []
+        if cat_rows:
+            tables.append({
+                "title": self._("reqauction///Categories"),
+                "cols": [
+                    {"title": self._("Name"), "cls": "reqauction-title"},
+                    {"title": self._("reqauction///Number of requests")},
+                ],
+                "rows": cat_rows,
+            })
+        if req_rows:
+            tables.append({
+                "title": self._("reqauction///Uncategorized requests"),
+                "cols": [
+                    {"title": self._("Title"), "cls": "reqauction-title"},
+                    {"title": self._("Votes"), "cls": "reqauction-votes"},
+                    {"title": self._("Priority"), "cls": "reqauction-priority"},
+                ],
+                "rows": req_rows,
+            })
         vars = {
             "title": self._("reqauction///Waiting for implementation"),
-            "tables": [
-                {
-                    "title": self._("reqauction///Waiting for implementation"),
-                    "cols": [
-                        {"title": self._("Title"), "cls": "reqauction-title"},
-                        {"title": self._("Votes"), "cls": "reqauction-votes"},
-                        {"title": self._("Priority"), "cls": "reqauction-priority"},
-                    ],
-                    "rows": rows,
-                }
-            ],
+            "tables": tables,
             "menu_left": [
                 {"html": self._("reqauction///Waiting for implementation")},
+                {"href": "/reqauction/all", "html": self._("reqauction///All requests")},
                 {"href": "/reqauction/mine", "html": self._("reqauction///My requests")},
                 {"href": "/reqauction/request/new", "html": self._("reqauction///New request")},
             ],
@@ -134,11 +209,137 @@ class ReqAuction(ConstructorModule):
             vars["menu_right"][-1]["lst"] = True
         self.response_template("constructor/reqauction/list.html", vars)
 
+    def allreqs(self):
+        req = self.req()
+        # my votes
+        lst = self.objlist(DBRequestVoteList, query_index="user", query_equal=req.user())
+        lst.load(silent=True)
+        myvotes = set()
+        for ent in lst:
+            myvotes.add(ent.get("request"))
+        # list of requests
+        lst = self.objlist(DBRequestList, query_index="title")
+        lst.load(silent=True)
+        req_rows = []
+        for ent in lst:
+            votes = ent.get("votes", 0)
+            if ent.uuid in myvotes:
+                votes = '<img src="/st-mg/icons/ok.png" alt="" /> %s' % votes
+            req_rows.append([
+                {"html": '<a href="/reqauction/view/%s">%s</a>' % (ent.uuid, htmlescape(ent.get("title"))), "cls": "reqauction-title"},
+                {"html": votes, "cls": "reqauction-votes"},
+                {"html": self.format_priority(ent.get("priority")), "cls": "reqauction-priority"},
+            ])
+        # tables
+        tables = []
+        if req_rows:
+            tables.append({
+                "title": self._("reqauction///All requests"),
+                "cols": [
+                    {"title": self._("Title"), "cls": "reqauction-title"},
+                    {"title": self._("Votes"), "cls": "reqauction-votes"},
+                    {"title": self._("Priority"), "cls": "reqauction-priority"},
+                ],
+                "rows": req_rows,
+            })
+        vars = {
+            "title": self._("reqauction///All requests waiting for implementation"),
+            "tables": tables,
+            "menu_left": [
+                {"href": "/reqauction", "html": self._("reqauction///Waiting for implementation")},
+                {"html": self._("reqauction///All requests")},
+                {"href": "/reqauction/mine", "html": self._("reqauction///My requests")},
+                {"href": "/reqauction/request/new", "html": self._("reqauction///New request")},
+            ],
+            "menu_right": [
+                {"href": "/reqauction/implemented", "html": self._("reqauction///Implemented requests")},
+            ]
+        }
+        if req.has_access("reqauction.control"):
+            ent = {"href": "/reqauction/moderation", "html": self._("Moderation")}
+            lst = self.objlist(DBRequestList, query_index="moderation", query_equal="1")
+            if len(lst):
+                ent["suffix"] = ' <span class="menu-counter">(%d)</span>' % len(lst)
+            vars["menu_right"].append(ent)
+        if vars["menu_left"]:
+            vars["menu_left"][-1]["lst"] = True
+        if vars["menu_right"]:
+            vars["menu_right"][-1]["lst"] = True
+        self.response_template("constructor/reqauction/list.html", vars)
+
+    def category(self):
+        req = self.req()
+        try:
+            cat = self.obj(DBRequestCategory, req.args)
+        except ObjectNotFoundException:
+            self.call("web.not_found")
+        # my votes
+        lst = self.objlist(DBRequestVoteList, query_index="user", query_equal=req.user())
+        lst.load(silent=True)
+        myvotes = set()
+        for ent in lst:
+            myvotes.add(ent.get("request"))
+        # list of requests
+        lst = self.objlist(DBRequestList, query_index="category_published_priority", query_equal="%s-1" % cat.uuid, query_reversed=True)
+        lst.load(silent=True)
+        req_rows = []
+        for ent in lst:
+            votes = ent.get("votes", 0)
+            if ent.uuid in myvotes:
+                votes = '<img src="/st-mg/icons/ok.png" alt="" /> %s' % votes
+            req_rows.append([
+                {"html": '<a href="/reqauction/view/%s">%s</a>' % (ent.uuid, htmlescape(ent.get("title"))), "cls": "reqauction-title"},
+                {"html": votes, "cls": "reqauction-votes"},
+                {"html": self.format_priority(ent.get("priority")), "cls": "reqauction-priority"},
+            ])
+        # tables
+        tables = []
+        tables.append({
+            "title": cat.get("name"),
+            "cols": [
+                {"title": self._("Title"), "cls": "reqauction-title"},
+                {"title": self._("Votes"), "cls": "reqauction-votes"},
+                {"title": self._("Priority"), "cls": "reqauction-priority"},
+            ],
+            "rows": req_rows,
+        })
+        vars = {
+            "title": cat.get("name"),
+            "tables": tables,
+            "menu_left": [
+                {"href": "/reqauction", "html": self._("reqauction///Waiting for implementation")},
+                {"html": cat.get("name")},
+                {"href": "/reqauction/request/new?category=%s" % cat.uuid, "html": self._("reqauction///New request")},
+            ],
+            "menu_right": [
+            ],
+        }
+        if vars["menu_left"]:
+            vars["menu_left"][-1]["lst"] = True
+        if vars["menu_right"]:
+            vars["menu_right"][-1]["lst"] = True
+        self.response_template("constructor/reqauction/list.html", vars)
+
     def response(self, content, vars):
         req = self.req()
         vars["content"] = content
+        tables = []
+        # my rating
+        user = self.obj(User, req.user())
+        monthly_donate = user.get("monthly_donate")
+        if monthly_donate is not None:
+            tables.append({
+                "title": self._("reqauction///Weight of my vote"),
+                "rows": [
+                    [
+                        {"html": self._("Monthly income of my games")},
+                        {"html": "%s RUB" % monthly_donate},
+                    ]
+                ],
+            })
+        # My requests
         lst = self.objlist(DBRequestVoteList, query_index="user", query_equal=req.user())
-        lst.load()
+        lst.load(silent=True)
         req_uuids = [ent.get("request") for ent in lst]
         rows = []
         if req_uuids:
@@ -151,20 +352,72 @@ class ReqAuction(ConstructorModule):
                     {"html": '<a href="/reqauction/view/%s">%s</a>' % (ent.uuid, title) if ent.get("published") else title, "cls": "reqauction-title"},
                     {"html": '<a href="/reqauction/unvote/%s?redirect=%s">%s</a>' % (ent.uuid, redirect, self._("don't want it anymore")), "cls": "reqauction-title"},
                 ])
+        if rows:
+            tables.append({
+                "title": self._("I want these features"),
+                "cols": [
+                    {"title": self._("Title"), "cls": "reqauction-title"},
+                    {"title": self._("Removal"), "cls": "reqauction-remove"},
+                ],
+                "rows": rows,
+            })
+        # my votes
+        lst = self.objlist(DBRequestVoteList, query_index="user", query_equal=req.user())
+        lst.load(silent=True)
+        myvotes = set()
+        for ent in lst:
+            myvotes.add(ent.get("request"))
+        # Currently being implemented
+        lst = self.objlist(DBRequestList, query_index="implementation", query_equal="1", query_reversed=True)
+        lst.load(silent=True)
+        rows = []
+        for ent in lst:
+            votes = ent.get("votes", 0)
+            if ent.uuid in myvotes:
+                votes = '<img src="/st-mg/icons/ok.png" alt="" /> %s' % votes
+            rows.append([
+                {"html": '<a href="/reqauction/view/%s">%s</a>' % (ent.uuid, htmlescape(ent.get("title"))), "cls": "reqauction-title"},
+                {"html": votes, "cls": "reqauction-votes"},
+                {"html": self.format_priority(ent.get("priority")), "cls": "reqauction-priority"},
+            ])
+        if rows:
+            tables.append({
+                "title": self._("reqauction///Currently being implemented"),
+                "cols": [
+                    {"title": self._("Title"), "cls": "reqauction-title"},
+                    {"title": self._("Votes"), "cls": "reqauction-votes"},
+                    {"title": self._("Priority"), "cls": "reqauction-priority"},
+                ],
+                "rows": rows,
+            })
+        # Most rated requests
+        lst = self.objlist(DBRequestList, query_index="published_priority", query_equal="1", query_reversed=True, query_limit=10)
+        lst.load(silent=True)
+        rows = []
+        for ent in lst:
+            votes = ent.get("votes", 0)
+            if ent.uuid in myvotes:
+                votes = '<img src="/st-mg/icons/ok.png" alt="" /> %s' % votes
+            rows.append([
+                {"html": '<a href="/reqauction/view/%s">%s</a>' % (ent.uuid, htmlescape(ent.get("title"))), "cls": "reqauction-title"},
+                {"html": votes, "cls": "reqauction-votes"},
+                {"html": self.format_priority(ent.get("priority")), "cls": "reqauction-priority"},
+            ])
+        if rows:
+            tables.append({
+                "title": self._("reqauction///Most rated requests"),
+                "cols": [
+                    {"title": self._("Title"), "cls": "reqauction-title"},
+                    {"title": self._("Votes"), "cls": "reqauction-votes"},
+                    {"title": self._("Priority"), "cls": "reqauction-priority"},
+                ],
+                "rows": rows,
+            })
         vars_myreq = {
-            "tables": [
-                {
-                    "title": self._("I want this features"),
-                    "cols": [
-                        {"title": self._("Title"), "cls": "reqauction-title"},
-                        {"title": self._("Removal"), "cls": "reqauction-remove"},
-                    ],
-                    "rows": rows,
-                }
-            ],
+            "tables": tables
         }
         vars["myreq"] = self.call("web.parse_template", "constructor/reqauction/list.html", vars_myreq)
-        vars["ReqAuctionDoc"] = self._("Request auction documentation")
+        vars["ReqAuctionDoc"] = self._("reqauction///Request auction documentation")
         self.call("web.response_template", "constructor/reqauction/global.html", vars)
 
     def response_template(self, template, vars):
@@ -197,14 +450,28 @@ class ReqAuction(ConstructorModule):
                     self.call("web.forbidden")
             else:
                 request = self.obj(DBRequest)
+            # categories
+            valid_categories = set()
+            categories = []
+            valid_categories.add("none")
+            categories.append({"value": "none", "description": self._("No suitable category")})
+            objlist = self.objlist(DBRequestCategoryList, query_index="all")
+            objlist.load(silent=True)
+            for cat in objlist:
+                valid_categories.add(cat.uuid)
+                categories.append({"value": cat.uuid, "description": cat.get("name")})
+            # process form
             form = self.call("web.form")
             if req.ok():
                 title = req.param("title").strip()
                 content = req.param("content").strip()
+                category = req.param("category")
                 if not title:
                     form.error("title", self._("This field is mandatory"))
                 if not content:
                     form.error("content", self._("This field is mandatory"))
+                if category not in valid_categories:
+                    form.error("cat", self._("Select a valid category"))
                 if not form.errors:
                     if req.param("preview"):
                         form.add_message_top('<h1>%s</h1>%s' % (htmlescape(title), self.call("socio.format_text", content)))
@@ -214,13 +481,19 @@ class ReqAuction(ConstructorModule):
                             request.set("author", req.user())
                             request.set("created", self.now())
                         request.set("title", title)
+                        request.set("category", category)
                         request.set("author_text", content)
                         request.store()
                         self.call("web.redirect", "/reqauction/mine")
             else:
                 title = request.get("title")
                 content = request.get("author_text")
+                if uuid == "new":
+                    category = req.param("category")
+                else:
+                    category = request.get("category")
             form.input(self._("Title"), "title", title)
+            form.select(self._("reqauction///Request category"), "category", category, categories)
             form.texteditor(self._("Content"), "content", content)
             form.submit(None, None, self._("Save"))
             form.submit(None, "preview", self._("Preview"), inline=True)
@@ -236,7 +509,7 @@ class ReqAuction(ConstructorModule):
     def mine(self):
         req = self.req()
         lst = self.objlist(DBRequestList, query_index="author", query_equal=req.user(), query_reversed=True)
-        lst.load()
+        lst.load(silent=True)
         rows = []
         for ent in lst:
             actions = []
@@ -318,38 +591,46 @@ class ReqAuction(ConstructorModule):
                 request = self.obj(DBRequest, uuid)
             except ObjectNotFoundException:
                 self.call("web.redirect", "/reqauction/mine")
+            print 1
             if not request.get("draft") or request.get("author") != req.user():
                 self.call("web.redirect", "/reqauction/mine")
-            # checking for my votes
+            print 2
+            # check for my votes
             lst = self.objlist(DBRequestVoteList, query_index="user", query_equal=req.user())
-            lst.load()
+            lst.load(silent=True)
+            voted = False
             for ent in lst:
                 if ent.get("request") == request.uuid:
-                    self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
-            if len(lst) >= max_votes:
+                    voted = True
+            if not voted and len(lst) >= max_votes:
                 self.error(self._("Voting error"), self._("reqauction///You have spent all your voices to other requests. If you want to vote for this request remove one of your votes via the rightmost panel"))
+            print 3
             request.delkey("draft")
             request.delkey("moderation_reject")
             request.set("moderation", 1)
             request.set("moderation_since", self.now())
             request.store()
-            # storing vote
-            obj = self.obj(DBRequestVote)
-            obj.set("request", request.uuid)
-            obj.set("user", req.user())
-            obj.set("priority", self.user_priority(req.user()))
-            obj.store()
-            # sending notification
+            print 4
+            # store vote
+            if not voted:
+                obj = self.obj(DBRequestVote)
+                obj.set("request", request.uuid)
+                obj.set("user", req.user())
+                obj.set("priority", self.user_priority(req.user()))
+                obj.store()
+            # send notification
             email = self.main_app().config.get("constructor.reqauction-email")
+            print email
             if email:
-                content = self._("reqauction///New request: {title}\nPlease perform required moderation actions: http://www.{main_host}/reqauction/moderate/{request}").format(title=request.get("title"), main_host=self.app().inst.config["main_host"], request=request.uuid)
+                content = self._("reqauction///New request: {title}\nPlease perform required moderation actions: {protocol}://www.{main_host}/reqauction/moderate/{request}").format(title=request.get("title"), main_host=self.main_host, request=request.uuid, protocol=self.main_app().protocol)
                 self.main_app().hooks.call("email.send", email, self._("Request auction moderator"), self._("reqauction///Request moderation: %s") % request.get("title"), content)
+            print "done"
             self.call("web.redirect", "/reqauction/mine")
 
     def moderation(self):
         req = self.req()
         lst = self.objlist(DBRequestList, query_index="moderation", query_equal="1")
-        lst.load()
+        lst.load(silent=True)
         rows = []
         for ent in lst:
             actions = []
@@ -393,18 +674,43 @@ class ReqAuction(ConstructorModule):
                 self.call("web.redirect", "/reqauction/moderation")
             if not request.get("moderation"):
                 self.call("web.redirect", "/reqauction/moderation")
+            # categories
+            valid_categories = set()
+            categories = []
+            update_categories = set()
+            update_categories.add(request.get("category"))
+            valid_categories.add("none")
+            categories.append({"value": "none", "description": self._("No suitable category")})
+            objlist = self.objlist(DBRequestCategoryList, query_index="all")
+            objlist.load(silent=True)
+            catinfo = {}
+            for cat in objlist:
+                valid_categories.add(cat.uuid)
+                categories.append({"value": cat.uuid, "description": cat.get("name")})
+                catinfo[cat.uuid] = cat
             # requests can be parents
-            parents = []
-            parents.append({})
+            parents_raw = []
             valid_parents = set()
             lst = self.objlist(DBRequestList, query_index="canbeparent", query_equal="1")
-            lst.load()
+            lst.load(silent=True)
             for ent in lst:
-                parents.append({"value": ent.uuid, "description": ent.get("title")})
+                cat = catinfo.get(ent.get("category"), {})
+                parents_raw.append({"value": ent.uuid, "description": ent.get("title"), "category": cat.get("name", self._("Uncategorized"))})
                 valid_parents.add(ent.uuid)
+            parents_raw.sort(cmp=lambda x, y: cmp(x["category"], y["category"]) or cmp(x["description"], y["description"]))
+            parents = []
+            parents.append({})
+            last_cat = None
+            for p in parents_raw:
+                if p["category"] != last_cat:
+                    last_cat = p["category"]
+                    parents.append({"value": p["category"], "description": p["category"]})
+                parents.append({"value": p["value"], "description": u"------- %s" % p["description"]})
             # form processing
             form = self.call("web.form")
             if req.ok():
+                category = req.param("category")
+                update_categories.add(category)
                 title = req.param("title").strip()
                 reason = req.param("reason").strip()
                 parent = req.param("parent")
@@ -415,17 +721,24 @@ class ReqAuction(ConstructorModule):
                     form.error("title", self._("This field is mandatory"))
                 if not author_text:
                     form.error("author_text", self._("This field is mandatory"))
+                if category not in valid_categories:
+                    form.error("cat", self._("Select a valid category"))
                 if req.param("reject"):
                     if not reason:
                         form.error("reason", self._("This field is mandatory"))
                     if not form.errors:
                         request.delkey("moderation")
                         request.delkey("moderation_since")
+                        request.set("category", category)
                         request.set("title", title)
                         request.set("author_text", author_text)
                         request.set("draft", 1)
                         request.set("moderation_reject", reason)
                         request.store()
+                        # update category counters
+                        for cat_uuid in update_categories:
+                            if cat_uuid and cat_uuid != "none":
+                                self.call("reqauction.update-counters", cat_uuid)
                         self.call("web.redirect", "/reqauction/moderation")
                 elif req.param("publish") or req.param("preview"):
                     if time <= 0:
@@ -434,6 +747,7 @@ class ReqAuction(ConstructorModule):
                         if req.param("publish"):
                             request.delkey("moderation")
                             request.delkey("moderation_since")
+                            request.set("category", category)
                             request.set("canbeparent", 1)
                             request.set("author_text", author_text)
                             request.set("text", text)
@@ -450,6 +764,10 @@ class ReqAuction(ConstructorModule):
                                 if topic:
                                     request.set("forum_topic", topic.uuid)
                             request.store()
+                            # update category counters
+                            for cat_uuid in update_categories:
+                                if cat_uuid and cat_uuid != "none":
+                                    self.call("reqauction.update-counters", cat_uuid)
                             self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
                 elif req.param("link"):
                     if parent not in valid_parents:
@@ -463,11 +781,18 @@ class ReqAuction(ConstructorModule):
                         request.set("published", 1)
                         request.set("published_since", self.now())
                         request.set("title", title)
+                        update_categories.add(request.get("category"))
+                        request.set("category", category)
+                        update_categories.add(category)
                         self.update_priority(request)
                         request.store()
                         with self.lock(["Requests.recalc"]):
                             self.link(request.uuid, parent)
                             self.recalculate(parent)
+                        # update category counters
+                        for cat_uuid in update_categories:
+                            if cat_uuid and cat_uuid != "none":
+                                self.call("reqauction.update-counters", cat_uuid)
                         self.call("web.redirect", "/reqauction/view/%s" % parent)
             else:
                 reason = ""
@@ -476,7 +801,9 @@ class ReqAuction(ConstructorModule):
                 author_text = request.get("author_text")
                 time = 0
                 title = request.get("title")
+                category = request.get("category")
             form.input(self._("Title"), "title", title)
+            form.select(self._("reqauction///Request category"), "category", category, categories)
             form.texteditor(self._("reqauction///Request description (may be empty)"), "text", text)
             form.texteditor(self._("Author text"), "author_text", author_text)
             form.input(self._("Time in days to implement this feature"), "time", time)
@@ -523,13 +850,17 @@ class ReqAuction(ConstructorModule):
         menu = []
         if request.get("published"):
             if voted_already:
-                menu.append({"href": "/reqauction/unvote/%s" % request.uuid, "html": self._("reqauction///recall my vote")})
+                menu.append({"href": "/reqauction/unvote/%s" % request.uuid, "html": self._("reqauction///revoke my vote")})
             else:
                 menu.append({"href": "/reqauction/vote/%s" % request.uuid, "html": self._("reqauction///vote for this request")})
         if req.has_access("reqauction.control"):
             menu.append({"href": "/reqauction/edit/%s" % request.uuid, "html": self._("edit")})
             menu.append({"href": "/reqauction/parent/%s" % request.uuid, "html": self._("reqauction///link to another request")})
             menu.append({"href": "/reqauction/depend/%s" % request.uuid, "html": self._("reqauction///add dependency")})
+            if request.get("implementation"):
+                menu.append({"href": "/reqauction/noimplement/%s" % request.uuid, "html": self._("reqauction///clear implementation flag")})
+            else:
+                menu.append({"href": "/reqauction/implement/%s" % request.uuid, "html": self._("reqauction///set implementation flag")})
         if menu:
             menu[-1]["lst"] = True
         info = {}
@@ -552,7 +883,7 @@ class ReqAuction(ConstructorModule):
         # dependencies
         dependencies = []
         lst = self.objlist(DBRequestDependencyList, query_index="child", query_equal=request.uuid)
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             parent = self.obj(DBRequest, ent.get("parent"))
             html = self._("Depends on: %s") % ('<a href="/reqauction/view/%s">%s</a>' % (parent.uuid, htmlescape(parent.get("title"))))
@@ -563,7 +894,7 @@ class ReqAuction(ConstructorModule):
             vars["request"]["dependencies"] = dependencies
         # linked texts
         lst = self.objlist(DBRequestList, query_index="children", query_equal=request.uuid)
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             vars["request"]["linked_texts"].append({
                 "html": self.call("socio.format_text", ent.get("author_text")),
@@ -582,6 +913,13 @@ class ReqAuction(ConstructorModule):
         if request.get("implemented"):
             vars["menu_left"].insert(0, {"href": "/reqauction/implemented", "html": self._("reqauction///Implemented requests")})
         else:
+            if request.get("category") and request.get("category") != "none":
+                try:
+                    cat = self.obj(DBRequestCategory, request.get("category"))
+                except ObjectNotFoundException:
+                    pass
+                else:
+                    vars["menu_left"].insert(0, {"href": "/reqauction/cat/%s" % cat.uuid, "html": cat.get("name")})
             vars["menu_left"].insert(0, {"href": "/reqauction", "html": self._("reqauction///Waiting for implementation")})
         self.response_template("constructor/reqauction/request.html", vars)
 
@@ -597,16 +935,34 @@ class ReqAuction(ConstructorModule):
                 self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
             if request.get("parent"):
                 self.call("web.redirect", "/reqauction/edit/%s" % request.get("parent"))
+            # categories
+            valid_categories = set()
+            categories = []
+            update_categories = set()
+            update_categories.add(request.get("category"))
+            valid_categories.add("none")
+            categories.append({"value": "none", "description": self._("No suitable category")})
+            objlist = self.objlist(DBRequestCategoryList, query_index="all")
+            objlist.load(silent=True)
+            for cat in objlist:
+                valid_categories.add(cat.uuid)
+                categories.append({"value": cat.uuid, "description": cat.get("name")})
+            # process form
             form = self.call("web.form")
             if req.ok():
                 time = intz(req.param("time"))
                 title = req.param("title").strip()
+                category = req.param("category").strip()
                 text = req.param("text").strip()
                 if time <= 0:
                     form.error("time", self._("This field must be greater than zero"))
+                if category not in valid_categories:
+                    form.error("cat", self._("Select a valid category"))
                 if not form.errors:
                     if req.param("close"):
                         if request.get("published"):
+                            request.set("category", category)
+                            update_categories.add(category)
                             request.set("title", title)
                             request.set("text", text)
                             request.set("time", time)
@@ -622,11 +978,12 @@ class ReqAuction(ConstructorModule):
                                 self.call("forum.reply", None, request.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request cancelled[/url]') % request.uuid)
                             # updating linked requests
                             lst = self.objlist(DBRequestList, query_index="children", query_equal=request.uuid)
-                            lst.load()
+                            lst.load(silent=True)
                             for ent in lst:
                                 ent.delkey("published")
                                 ent.set("closed", 1)
                                 ent.set("closed_since", self.now())
+                                update_categories.add(ent.get("category"))
                                 ent.store()
                                 if ent.get("forum_topic"):
                                     self.call("forum.reply", None, ent.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request cancelled[/url]') % request.uuid)
@@ -634,19 +991,25 @@ class ReqAuction(ConstructorModule):
                             recalculate = set()
                             recalculate.add(request.uuid)
                             lst = self.objlist(DBRequestDependencyList, query_index="child", query_equal=request.uuid)
-                            lst.load()
+                            lst.load(silent=True)
                             for ent in lst:
                                 recalculate.add(ent.get("parent"))
                             lst = self.objlist(DBRequestDependencyList, query_index="parent", query_equal=request.uuid)
-                            lst.load()
+                            lst.load(silent=True)
                             for ent in lst:
                                 recalculate.add(ent.get("child"))
                             with self.lock(["Requests.recalc"]):
                                 for uuid in recalculate:
                                     self.recalculate(uuid)
+                        # update category counters
+                        for cat_uuid in update_categories:
+                            if cat_uuid and cat_uuid != "none":
+                                self.call("reqauction.update-counters", cat_uuid)
                         self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
                     elif req.param("implemented"):
                         if request.get("published"):
+                            request.set("category", category)
+                            update_categories.add(category)
                             request.set("title", title)
                             request.set("text", text)
                             request.set("time", time)
@@ -658,7 +1021,7 @@ class ReqAuction(ConstructorModule):
                             request.delkey("votes")
                             request.store()
                             lst = self.objlist(DBRequestVoteList, query_index="request", query_equal=request.uuid)
-                            lst.load()
+                            lst.load(silent=True)
                             voters = []
                             for ent in lst:
                                 voters.append(ent.get("user"))
@@ -667,32 +1030,39 @@ class ReqAuction(ConstructorModule):
                                 self.call("forum.reply", None, request.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request implemented[/url]') % request.uuid)
                             # updating linked requests
                             lst = self.objlist(DBRequestList, query_index="children", query_equal=request.uuid)
-                            lst.load()
+                            lst.load(silent=True)
                             for ent in lst:
                                 ent.delkey("published")
                                 ent.set("implemented", 1)
                                 ent.set("closed_since", self.now())
                                 ent.store()
+                                update_categories.add(ent.get("category"))
                                 if ent.get("forum_topic"):
                                     self.call("forum.reply", None, ent.get("forum_topic"), self.obj(User, req.user()), self._('reqauction///[url=/reqauction/view/%s]Request implemented[/url]') % request.uuid)
                             # must recalculate parents and children
                             recalculate = set()
                             recalculate.add(request.uuid)
                             lst = self.objlist(DBRequestDependencyList, query_index="child", query_equal=request.uuid)
-                            lst.load()
+                            lst.load(silent=True)
                             for ent in lst:
                                 recalculate.add(ent.get("parent"))
                             lst = self.objlist(DBRequestDependencyList, query_index="parent", query_equal=request.uuid)
-                            lst.load()
+                            lst.load(silent=True)
                             for ent in lst:
                                 recalculate.add(ent.get("child"))
                             with self.lock(["Requests.recalc"]):
                                 for uuid in recalculate:
                                     self.recalculate(uuid)
-                            # sending e-mails
-                            self.call("email.users", voters, self._("Implemented: %s") % request.get("title"), self._("reqauction///Request '{title}' you voted for is implemented.\nDetails: http://{host}/reqauction/view/{request}").format(title=request.get("title"), host=req.host(), request=request.uuid))
+                            # send e-mails
+                            self.call("email.users", voters, self._("Implemented: %s") % request.get("title"), self._("reqauction///Request '{title}' you voted for is implemented.\nDetails: {protocol}://{host}/reqauction/view/{request}").format(title=request.get("title"), host=req.host(), request=request.uuid, protocol=self.app().protocol))
+                        # update category counters
+                        for cat_uuid in update_categories:
+                            if cat_uuid and cat_uuid != "none":
+                                self.call("reqauction.update-counters", cat_uuid)
                         self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
                     elif req.param("publish"):
+                        request.set("category", category)
+                        update_categories.add(request.get("category"))
                         request.set("title", title)
                         request.set("text", text)
                         request.set("time", time)
@@ -701,6 +1071,10 @@ class ReqAuction(ConstructorModule):
                         request.store()
                         with self.lock(["Requests.recalc"]):
                             self.recalculate(request.uuid)
+                        # update category counters
+                        for cat_uuid in update_categories:
+                            if cat_uuid and cat_uuid != "none":
+                                self.call("reqauction.update-counters", cat_uuid)
                         self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
                     elif req.param("preview"):
                         form.add_message_top(self.call("socio.format_text", text))
@@ -708,7 +1082,9 @@ class ReqAuction(ConstructorModule):
                 time = request.get("time")
                 title = request.get("title")
                 text = request.get("text")
+                category = request.get("category")
             form.input(self._("Title"), "title", title)
+            form.select(self._("reqauction///Request category"), "category", category, categories)
             form.texteditor(self._("reqauction///Request description"), "text", text)
             form.input(self._("Time in days to implement this feature"), "time", time)
             form.submit(None, "publish", self._("Save"))
@@ -738,6 +1114,30 @@ class ReqAuction(ConstructorModule):
         vars["content"] = msg
         self.response_template("constructor/reqauction/error.html", vars)
 
+    def implement(self):
+        req = self.req()
+        uuid = req.args
+        with self.lock(["Request.%s" % uuid]):
+            try:
+                request = self.obj(DBRequest, uuid)
+            except ObjectNotFoundException:
+                self.call("web.not_found")
+            request.set("implementation", 1)
+            request.store()
+            self.call("web.redirect", "/reqauction/view/%s" % uuid)
+
+    def noimplement(self):
+        req = self.req()
+        uuid = req.args
+        with self.lock(["Request.%s" % uuid]):
+            try:
+                request = self.obj(DBRequest, uuid)
+            except ObjectNotFoundException:
+                self.call("web.not_found")
+            request.delkey("implementation")
+            request.store()
+            self.call("web.redirect", "/reqauction/view/%s" % uuid)
+
     def vote(self):
         self.cert_check()
         req = self.req()
@@ -753,7 +1153,7 @@ class ReqAuction(ConstructorModule):
                 self.call("web.redirect", "/reqauction/vote/%s" % request.get("parent"))
             # checking for my votes
             lst = self.objlist(DBRequestVoteList, query_index="user", query_equal=req.user())
-            lst.load()
+            lst.load(silent=True)
             for ent in lst:
                 if ent.get("request") == request.uuid:
                     self.call("web.redirect", "/reqauction/view/%s" % request.uuid)
@@ -780,7 +1180,7 @@ class ReqAuction(ConstructorModule):
                 self.call("web.not_found")
             # checking for my votes
             lst = self.objlist(DBRequestVoteList, query_index="user", query_equal=req.user())
-            lst.load()
+            lst.load(silent=True)
             for ent in lst:
                 if ent.get("request") == request.uuid:
                     ent.remove()
@@ -792,7 +1192,7 @@ class ReqAuction(ConstructorModule):
     def implemented(self):
         req = self.req()
         lst = self.objlist(DBRequestList, query_index="implemented", query_equal="1", query_reversed=True)
-        lst.load()
+        lst.load(silent=True)
         rows = []
         for ent in lst:
             rows.append([
@@ -845,12 +1245,12 @@ class ReqAuction(ConstructorModule):
         # looking for votes for the parent
         votes = set()
         lst = self.objlist(DBRequestVoteList, query_index="request", query_equal=parent_uuid)
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             votes.add(ent.get("user"))
         # moving votes from child to parent
         lst = self.objlist(DBRequestVoteList, query_index="request", query_equal=request_uuid)
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             if ent.get("user") in votes:
                 # this user already voted for parent
@@ -861,18 +1261,18 @@ class ReqAuction(ConstructorModule):
                 ent.store()
         # moving children of this request to new parent
         lst = self.objlist(DBRequestList, query_index="children", query_equal=request_uuid)
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             ent.set("parent", parent_uuid)
             ent.store()
         # moving dependencies of this request to new parent
         lst = self.objlist(DBRequestDependencyList, query_index="parent", query_equal=request_uuid)
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             ent.set("parent", parent_uuid)
             ent.store()
         lst = self.objlist(DBRequestDependencyList, query_index="child", query_equal=request_uuid)
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             ent.set("child", parent_uuid)
             ent.store()
@@ -887,16 +1287,31 @@ class ReqAuction(ConstructorModule):
                 self.call("web.redirect", "/reqauction/moderation")
             if not request.get("published"):
                 self.call("web.redirect", "/reqauction")
+            # categories
+            objlist = self.objlist(DBRequestCategoryList, query_index="all")
+            objlist.load(silent=True)
+            catinfo = {}
+            for cat in objlist:
+                catinfo[cat.uuid] = cat
             # requests can be parents
-            parents = []
-            parents.append({})
+            parents_raw = []
             valid_parents = set()
             lst = self.objlist(DBRequestList, query_index="canbeparent", query_equal="1")
-            lst.load()
+            lst.load(silent=True)
             for ent in lst:
                 if ent.uuid != request.uuid and ent.get("published") and not ent.get("parent"):
-                    parents.append({"value": ent.uuid, "description": ent.get("title")})
+                    cat = catinfo.get(ent.get("category"), {})
+                    parents_raw.append({"value": ent.uuid, "description": ent.get("title"), "category": cat.get("name", self._("Uncategorized"))})
                     valid_parents.add(ent.uuid)
+            parents_raw.sort(cmp=lambda x, y: cmp(x["category"], y["category"]) or cmp(x["description"], y["description"]))
+            parents = []
+            parents.append({})
+            last_cat = None
+            for p in parents_raw:
+                if p["category"] != last_cat:
+                    last_cat = p["category"]
+                    parents.append({"value": p["category"], "description": p["category"]})
+                parents.append({"value": p["value"], "description": u"------- %s" % p["description"]})
             # form processing
             form = self.call("web.form")
             if req.ok():
@@ -913,6 +1328,7 @@ class ReqAuction(ConstructorModule):
                     with self.lock(["Requests.recalc"]):
                         self.link(request.uuid, parent)
                         self.recalculate(parent)
+                    self.call("reqauction.update-counters", request.get("category"))
                     self.call("web.redirect", "/reqauction/view/%s" % parent)
             else:
                 parent = ""
@@ -931,7 +1347,7 @@ class ReqAuction(ConstructorModule):
 
     def parents(self, request_uuid, parents):
         lst = self.objlist(DBRequestDependencyList, query_index="child", query_equal=request_uuid)
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             if not ent.get("parent") in parents:
                 parents.add(ent.get("parent"))
@@ -939,7 +1355,7 @@ class ReqAuction(ConstructorModule):
 
     def children(self, request_uuid, children):
         lst = self.objlist(DBRequestDependencyList, query_index="parent", query_equal=request_uuid)
-        lst.load()
+        lst.load(silent=True)
         for ent in lst:
             if not ent.get("child") in children:
                 children.add(ent.get("child"))
@@ -963,7 +1379,7 @@ class ReqAuction(ConstructorModule):
             parents.append({})
             valid_parents = set()
             lst = self.objlist(DBRequestList, query_index="canbeparent", query_equal="1")
-            lst.load()
+            lst.load(silent=True)
             for ent in lst:
                 # children may not be parents to the same request
                 if ent.uuid != request.uuid and ent.uuid not in children and ent.get("published") and not ent.get("parent"):
@@ -978,7 +1394,7 @@ class ReqAuction(ConstructorModule):
                 if not form.errors:
                     already = False
                     lst = self.objlist(DBRequestDependencyList, query_index="parent", query_equal=parent)
-                    lst.load()
+                    lst.load(silent=True)
                     for ent in lst:
                         if ent.get("child") == request.uuid:
                             already = True
@@ -1006,28 +1422,35 @@ class ReqAuction(ConstructorModule):
             }
             self.response(form.html(), vars)
 
+    def user_priority(self, user_uuid):
+        try:
+            user = self.obj(User, user_uuid)
+        except ObjectNotFoundException:
+            pass
+        return 100 + user.get("monthly_donate", 0)
+
     def update_priority(self, request):
         time = request.get("time")
         if time:
             lst = self.objlist(DBRequestVoteList, query_index="request", query_equal=request.uuid)
-            lst.load()
+            lst.load(silent=True)
             request.set("votes", len(lst))
             # own priority
             priority = 0.0
             users = set()
             for ent in lst:
                 users.add(ent.get("user"))
-                priority += ent.get("priority")
+                priority += self.user_priority(ent.get("user"))
             # votes for children increase our priority
             children = set()
             self.children(request.uuid, children)
             for uuid in children:
                 lst = self.objlist(DBRequestVoteList, query_index="request", query_equal=uuid)
-                lst.load()
+                lst.load(silent=True)
                 for ent in lst:
                     if ent.get("user") not in users:
                         users.add(ent.get("user"))
-                        priority += ent.get("priority")
+                        priority += self.user_priority(ent.get("user"))
             # parents increase our time
             parents = set()
             self.parents(request.uuid, parents)
@@ -1038,6 +1461,7 @@ class ReqAuction(ConstructorModule):
             # calculating priority
             priority /= time
             request.set("priority", '%015.5f' % priority)
+            self.debug("Request %s priority: %015.5f" % (request.uuid, priority))
         else:
             request.delkey("votes")
             request.delkey("priority")
@@ -1051,7 +1475,7 @@ class ReqAuction(ConstructorModule):
         parent = uuids[1]
         with self.lock(["Request.%s" % uuid, "Requests.recalc", "Request.%s" % parent]):
             lst = self.objlist(DBRequestDependencyList, query_index="parent", query_equal=parent)
-            lst.load()
+            lst.load(silent=True)
             for ent in lst:
                 if ent.get("child") == uuid:
                     ent.remove()
@@ -1059,3 +1483,110 @@ class ReqAuction(ConstructorModule):
                     self.recalculate(uuid)
                     break
             self.call("web.redirect", "/reqauction/view/%s" % uuid)
+
+class ReqAuctionAdmin(ConstructorModule):
+    def register(self):
+        self.rhook("menu-admin-constructor.index", self.menu_constructor_index)
+        self.rhook("menu-admin-reqauction.index", self.menu_reqauction_index)
+        self.rhook("ext-admin-reqauction.categories", self.admin_categories, priv="reqauction.categories")
+        self.rhook("headmenu-admin-reqauction.categories", self.headmenu_categories)
+
+    def menu_constructor_index(self, menu):
+        menu.append({"id": "reqauction.index", "text": self._("reqauction///Requests auction"), "order": 60})
+
+    def menu_reqauction_index(self, menu):
+        req = self.req()
+        if req.has_access("reqauction.categories"):
+            menu.append({"id": "reqauction/categories", "text": self._("Categories"), "leaf": True, "order": 10})
+
+    def headmenu_categories(self, args):
+        if args == "new":
+            return [self._("New category"), "reqauction/categories"]
+        elif args:
+            try:
+                cat = self.obj(DBRequestCategory, args)
+            except ObjectNotFoundException:
+                pass
+            else:
+                return [cat.get("name"), "reqauction/categories"]
+        return self._("reqauction///Requests auction categories")
+
+    def admin_categories(self):
+        req = self.req()
+        if req.args:
+            # delete
+            m = re_del.match(req.args)
+            if m:
+                uuid = m.group(1)
+                try:
+                    cat = self.obj(DBRequestCategory, uuid)
+                except ObjectNotFoundException:
+                    pass
+                else:
+                    lst = self.objlist(DBRequestList, query_index="category", query_equal=uuid)
+                    lst.load(silent=True)
+                    for r in lst:
+                        r.set("category", "none")
+                    lst.store()
+                    cat.remove()
+                self.call("admin.redirect", "reqauction/categories")
+            # edit
+            uuid = req.args
+            if uuid == "new":
+                cat = self.obj(DBRequestCategory)
+            else:
+                try:
+                    cat = self.obj(DBRequestCategory, uuid)
+                except ObjectNotFoundException:
+                    self.call("admin.redirect", "reqauction/categories")
+            # process form
+            if req.ok():
+                errors = {}
+                # name
+                name = req.param("name").strip()
+                if not name:
+                    errors["name"] = self._("This field is mandatory")
+                else:
+                    cat.set("name", name)
+                # process errors
+                if errors:
+                    self.call("web.response_json", {"success": False, "errors": errors})
+                # store
+                cat.store()
+                self.call("reqauction.update-counters", cat.uuid)
+                self.call("admin.redirect", "reqauction/categories")
+            # show form
+            fields = [
+                {"name": "name", "label": self._("Category name"), "value": cat.get("name")},
+            ]
+            self.call("admin.form", fields=fields)
+        # list
+        rows = []
+        objlist = self.objlist(DBRequestCategoryList, query_index="all")
+        objlist.load(silent=True)
+        for cat in objlist:
+            rows.append([
+                cat.get("name"),
+                u'<hook:admin.link href="reqauction/categories/%s" title="%s" />' % (cat.uuid, self._("edit")),
+                u'<hook:admin.link href="reqauction/categories/del/%s" title="%s" confirm="%s" />' % (cat.uuid, self._("delete"), self._("Are you sure want to delete this category?")),
+            ])
+        vars = {
+            "tables": [
+                {
+                    "links": [
+                        {
+                            "hook": "reqauction/categories/new",
+                            "text": self._("New category"),
+                            "lst": True,
+                        }
+                    ],
+                    "header": [
+                        self._("Category name"),
+                        self._("Editing"),
+                        self._("Deletion"),
+                    ],
+                    "rows": rows,
+                }
+            ]
+        }
+        self.call("admin.response_template", "admin/common/tables.html", vars)

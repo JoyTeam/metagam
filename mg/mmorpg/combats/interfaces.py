@@ -1,416 +1,354 @@
-from mg.constructor import *
-from mg.mmorpg.combats.core import Combat, CombatMember
-from mg.mmorpg.combats.characters import CombatCharacterMember, CombatGUIController
+import mg.constructor
+import mg
+from mg.core.tools import *
+from mg.mmorpg.combats.core import CombatUnavailable
+from mg.mmorpg.combats.daemon import CombatInterface, DBRunningCombat, DBRunningCombatList
+from mg.constructor.design import TemplateNotFound
+from mg.mmorpg.combats.logs import CombatLogViewer, DBCombatLogList
+from mg.mmorpg.combats.characters import DBCombatCharacterLogList
+from mg.constructor.script_classes import ScriptTemplateObject
+import json
 import re
 
-re_del = re.compile(r'^del/([a-z0-9_]+)$', re.IGNORECASE)
-re_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|actions|action/.+|script)$', re.IGNORECASE)
-re_valid_identifier = re.compile(r'^[a-z_][a-z0-9_]*$', re.IGNORECASE)
-re_action_cmd = re.compile(r'action/(.+)', re.IGNORECASE)
-re_action_edit = re.compile(r'^edit/([a-z0-9_]+)/(profile|script)$', re.IGNORECASE)
+show_entries_per_page = 100
 
-class Combats(ConstructorModule):
+re_valid_uuid = re.compile(r'^[0-9a-f]{32}$')
+
+class CharacterCombatState(object):
+    def __init__(self, state):
+        self.state = state
+
+    def __str__(self):
+        return "[CharacterCombatState]"
+
+    def script_attr(self, attr, handle_exceptions=True):
+        if (attr == "team" or attr == "name" or attr == "sex" or attr == "team" or attr == "may_turn" or
+                attr == "active" or attr == "image" or attr == "combat"):
+            return self.state.get(attr)
+        else:
+            raise AttributeError(attr)
+
+class Combats(mg.constructor.ConstructorModule):
     def register(self):
-        self.rhook("combats.character-member", self.character_member)
-        self.rhook("ext-combat.interface", self.combat_interface)
+        self.rhook("objclasses.list", self.objclasses_list)
+        self.rhook("ext-combat.interface", self.combat_interface, priv="logged")
+        self.rhook("ext-combat.state", self.combat_state, priv="logged")
+        self.rhook("gameinterface.render", self.gameinterface_render)
+        self.rhook("combat.default-aboveavatar", self.default_aboveavatar)
+        self.rhook("combat.default-belowavatar", self.default_belowavatar)
+        self.rhook("ext-combat.action", self.combat_action, priv="logged")
+        self.rhook("combat.unavailable-exception-char", self.unavailable_exception_char)
+        self.rhook("ext-combat.handler", self.combat_log, priv="public")
+        self.rhook("ext-combat.debug", self.combat_debug_log, priv="public")
+        self.rhook("character.public-info-menu", self.character_public_info_menu)
+        self.rhook("ext-character.combats", self.character_combats, priv="public")
+        self.rhook("characters.context-menu-available", self.context_menu_available)
+        self.rhook("combat.character-state", self.character_state)
+        self.rhook("combat.character-script-state", self.character_script_state)
+
+    def context_menu_available(self, menu):
+        menu.append({
+            "code": "attack",
+            "title": self._("contextmenu///Attack"),
+            "qevent": "attack",
+            "order": 20.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/attack.png",
+            "visible": ['and', ['and', ['not', ['.', ['glob', 'char'], 'combat']], ['not', ['.', ['glob', 'viewer'], 'combat']]],
+                ['!=', ['.', ['glob', 'char'], 'id'], ['.', ['glob', 'viewer'], 'id']],
+            ],
+        })
+        menu.append({
+            "code": "intervent",
+            "title": self._("contextmenu///Help in combat"),
+            "qevent": "intervent",
+            "order": 21.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/attack.png",
+            "visible": ['and', ['and', ['not', ['.', ['glob', 'viewer'], 'combat']], ['.', ['glob', 'char'], 'combat']],
+                ['!=', ['.', ['glob', 'char'], 'id'], ['.', ['glob', 'viewer'], 'id']],
+            ],
+        })
 
     def child_modules(self):
         return [
-            "mg.mmorpg.combats.interfaces.CombatsAdmin",
-            "mg.mmorpg.combats.wizards.AttackBlock",
+            "mg.mmorpg.combats.wizards.CombatRulesDialogs",
             "mg.mmorpg.combats.scripts.CombatScripts",
+            "mg.mmorpg.combats.daemon.CombatRunner",
+            "mg.mmorpg.combats.characters.Combats",
+            "mg.mmorpg.combats.admin.CombatsAdmin",
+            "mg.mmorpg.combats.design.CombatInterface",
+            "mg.mmorpg.combats.design.CombatInterfaceAdmin",
         ]
 
-    def character_member(self, combat, character):
-        member = CombatCharacterMember(combat, character)
-        control = CombatGUIController(member)
-        member.add_controller(control)
-        return member
+    def objclasses_list(self, objclasses):
+        objclasses["RunningCombat"] = (DBRunningCombat, DBRunningCombatList)
 
     def combat_interface(self):
         req = self.req()
-        combat_uuid = req.args
-        self.call("main-frame.info", self._("Combat %s interface") % htmlescape(combat_uuid))
+        char = self.character(req.user())
+        combat_id = req.args
+        try:
+            combat = CombatInterface(self.app(), combat_id)
+            combat.ping()
+            # Show combat interface to user
+            rules = self.conf("combats-%s.rules" % combat.rules, {})
+            vars = {
+                "combat": combat_id,
+                "load_extjs": {
+                    "full": True
+                },
+                "generic": rules.get("generic", 1),
+            }
+            if vars["generic"]:
+                vars["generic_myavatar"] = rules.get("generic_myavatar", 1)
+                if vars["generic_myavatar"]:
+                    vars["generic_myavatar_width"] = rules.get("generic_myavatar_width", 300)
+                vars["generic_enemyavatar"] = rules.get("generic_enemyavatar", 1)
+                if vars["generic_enemyavatar"]:
+                    vars["generic_enemyavatar_width"] = rules.get("generic_enemyavatar_width", 300)
+                vars["generic_log"] = rules.get("generic_log", 1)
+                if vars["generic_log"]:
+                    layout = vars["generic_log_layout"] = rules.get("generic_log_layout", 0)
+                    if layout == 0:
+                        vars["generic_combat_height"] = rules.get("generic_combat_height", 300)
+                    elif layout == 1:
+                        vars["generic_log_height"] = rules.get("generic_log_height", 300)
+                    vars["generic_log_resize"] = "true" if rules.get("generic_log_resize", True) else "false"
+                if rules.get("generic_gobutton", True):
+                    vars["generic_gobutton"] = True
+                    vars["generic_gobutton_text"] = jsencode(rules.get("generic_gobutton_text", "Go"))
+                for pos in ["aboveavatar", "belowavatar"]:
+                    params = rules.get(pos)
+                    if params is None:
+                        params = []
+                        self.call("combats.default-%s" % pos, params)
+                        params.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["id"], y["id"]))
+                    vars["generic_%s" % pos] = json.dumps(params)
+                vars["generic_target_template"] = json.dumps(rules.get("generic_target_template", [[".", ["glob", "member"], "name"]]))
+                vars["generic_member_list_template"] = json.dumps(rules.get("generic_member_list_template", [[".", ["glob", "member"], "name"]]))
+            dim_avatar = rules.get("dim_avatar", [120, 220])
+            vars["combat_avatar_width"] = dim_avatar[0]
+            vars["combat_avatar_height"] = dim_avatar[1]
+            content = self.call("combat.parse", combat.rules, "combat-interface.html", vars)
+            self.call("combat.response_main_frame", combat.rules, "combat.html", vars, content)
+        except CombatUnavailable as e:
+            self.call("combat.unavailable-exception-char", combat_id, char, e)
+            self.call("web.redirect", "/location")
 
-class CombatsAdmin(ConstructorModule):
-    def register(self):
-        self.rhook("permissions.list", self.permissions_list)
-        self.rhook("menu-admin-root.index", self.menu_root_index)
-        self.rhook("menu-admin-combats.index", self.menu_combats_index)
-        self.rhook("ext-admin-combats.rules", self.admin_rules, priv="combats.rules")
-        self.rhook("headmenu-admin-combats.rules", self.headmenu_rules)
-        self.rhook("ext-admin-combats.config", self.admin_config, priv="combats.config")
-        self.rhook("headmenu-admin-combats.config", self.headmenu_config)
-
-    def menu_root_index(self, menu):
-        menu.append({"id": "combats.index", "text": self._("Combats"), "order": 24})
-
-    def menu_combats_index(self, menu):
+    def combat_state(self):
         req = self.req()
-        if req.has_access("combats.config"):
-            menu.append({"id": "combats/rules", "text": self._("Combats rules"), "order": 1, "leaf": True})
-            menu.append({"id": "combats/config", "text": self._("Combats configuration"), "order": 2, "leaf": True})
-
-    def permissions_list(self, perms):
-        perms.append({"id": "combats.rules", "name": self._("Combats rules editor")})
-        perms.append({"id": "combats.config", "name": self._("Combats configuration")})
-
-    def headmenu_config(self, args):
-        return self._("Combats configuration")
-
-    def admin_config(self):
-        self.call("admin.response", "TODO", {})
-
-    def headmenu_rules(self, args):
-        if args == "new":
-            return [self._("New rules"), "combats/rules"]
-        elif args:
-            m = re_edit.match(args)
-            if m:
-                code, action = m.group(1, 2)
-                rules = self.conf("combats.rules", {})
-                info = rules.get(code)
-                if info:
-                    if action == "profile":
-                        return [htmlescape(info["name"]), "combats/rules"]
-                    elif action == "actions":
-                        return [self._("Actions of '%s'") % htmlescape(info["name"]), "combats/rules"]
-                    elif action == "script":
-                        return [self._("Scripts of '%s'") % htmlescape(info["name"]), "combats/rules"]
-                    else:
-                        m = re_action_cmd.match(action)
-                        if m:
-                            cmd = m.group(1)
-                            if cmd == "new":
-                                return [self._("New action"), "combats/rules/edit/%s/actions" % code]
-                            else:
-                                m = re_action_edit.match(cmd)
-                                if m:
-                                    action_code, cmd = m.group(1, 2)
-                                    for act in self.conf("combats-%s.actions" % code, []):
-                                        if act["code"] == action_code:
-                                            if cmd == "profile":
-                                                return [htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
-                                            elif cmd == "script":
-                                                return [self._("Scripts of '%s'") % htmlescape(act["name"]), "combats/rules/edit/%s/actions" % code]
-        return self._("Combats rules")
-
-    def admin_rules(self):
-        req = self.req()
-        rules = self.conf("combats.rules", {})
-        if req.args == "new":
-            return self.rules_new()
-        elif req.args:
-            # deletion
-            m = re_del.match(req.args)
-            if m:
-                code = m.group(1)
-                if code in rules:
-                    del rules[code]
-                    self.app().config.delete_group("combats-%s" % code)
-                    config = self.app().config_updater()
-                    config.set("combats.rules", rules)
-                    config.store()
-                self.call("admin.redirect", "combats/rules")
-            # editing
-            m = re_edit.match(req.args)
-            if m:
-                code, action = m.group(1, 2)
-                if code in rules:
-                    return self.rules_edit(rules, code, action)
-                self.call("admin.redirect", "combats/rules")
-            # not found
+        char = self.character(req.user())
+        combat_id = req.args
+        try:
+            combat = CombatInterface(self.app(), combat_id)
+            self.call("web.response_json", combat.state_for_interface(char, req.param("marker")))
+        except CombatUnavailable as e:
+            self.call("combat.unavailable-exception-char", combat_id, char, e)
             self.call("web.not_found")
-        rules = rules.items()
-        rows = []
-        rules.sort(cmp=lambda x, y: cmp(x[1]["order"], y[1]["order"]) or cmp(x[0], y[0]))
-        for code, info in rules:
-            rows.append([
-                code,
-                htmlescape(info["name"]),
-                info["order"],
-                u'<br />'.join([
-                    u'<hook:admin.link href="combats/rules/edit/%s/profile" title="%s" />' % (code, self._("combat system profile")),
-                    u'<hook:admin.link href="combats/rules/edit/%s/script" title="%s" />' % (code, self._("script handlers")),
-                    u'<hook:admin.link href="combats/rules/edit/%s/actions" title="%s" />' % (code, self._("combat actions")),
-                ]),
-                u'<hook:admin.link href="combats/rules/del/%s" title="%s" confirm="%s" />' % (code, self._("delete"), self._("Are you sure want to delete these rules?")),
-            ])
+
+    def gameinterface_render(self, character, vars, design):
+        vars["js_modules"].add("combat-stream")
+
+    def default_aboveavatar(self, lst):
+        lst.extend([
+            {
+                "id": "1",
+                "type": "tpl",
+                "tpl": [
+                    u'<div class="combat-param">\n  <span class="combat-param-name">%s</span>:\n  <span class="combat-param-value">' % self._("HP"),
+                    [".", ["glob", "member"], "p_hp"],
+                    ' / ',
+                    [".", ["glob", "member"], "p_max_hp"],
+                    '</span>\n</div>'
+                ],
+                "order": 10.0
+            },
+        ])
+
+    def default_belowavatar(self, lst):
+        pass
+
+    def unavailable_exception_char(self, combat_id, char, e):
+        with self.lock([char.busy_lock]):
+            busy = char.busy
+            if busy and busy["tp"] == "combat" and busy.get("combat") == combat_id:
+                # character is a member of a missing combat. free him
+                self.call("debug-channel.character", char, self._("Character is a member of missing combat (%s). Freeing lock") % e)
+                char.unset_busy()
+
+    def combat_action(self):
+        req = self.req()
+        data = req.param("data")
+        try:
+            data = json.loads(data)
+        except ValueError:
+            self.call("web.response_json", {"error": self._("Invalid JSON data submitted")})
+        char = self.character(req.user())
+        combat_id = req.args
+        try:
+            combat = CombatInterface(self.app(), combat_id)
+            self.call("web.response_json", combat.action(char, data))
+        except CombatUnavailable as e:
+            self.call("combat.unavailable-exception-char", combat_id, char, e)
+            self.call("web.not_found")
+
+    def show_combat_log(self, tp):
+        req = self.req()
+        uuid = req.args
+        if not re_valid_uuid.match(uuid):
+            self.call("web.not_found")
+        log = CombatLogViewer(self.app(), tp, uuid)
+        if not log.valid:
+            self.call("web.not_found")
+        title = log.title
         vars = {
-            "tables": [
-                {
-                    "links": [
-                        {
-                            "hook": "combats/rules/new",
-                            "text": self._("New combats rules"),
-                            "lst": True,
-                        }
-                    ],
-                    "header": [
-                        self._("Code"),
-                        self._("Rules name"),
-                        self._("Order"),
-                        self._("Editing"),
-                        self._("Deletion"),
-                    ],
-                    "rows": rows,
-                }
-            ]
+            "title": title,
+            "combat_title": title,
+            "entries": []
         }
-        self.call("admin.response_template", "admin/common/tables.html", vars)
-
-    def rules_new(self):
-        req = self.req()
-        # loading list of combat types
-        combat_types = []
-        self.call("admin-combats.types", combat_types)
-        combat_types.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
-        combat_types_dict = dict([(tp.get("id"), tp) for tp in combat_types])
-        combat_types = [(tp.get("id"), tp.get("name")) for tp in combat_types]
-        combat_types.insert(0, (None, None))
-        # processing request
-        if req.ok():
-            errors = {}
-            # tp
-            tp = req.param("v_tp")
-            if not tp:
-                errors["v_tp"] = self._("This field is mandatory")
-            else:
-                type_info = combat_types_dict.get(tp)
-                if not type_info:
-                    errors["v_tp"] = self._("Make a valid selection")
-            # processing errors
-            if errors:
-                self.call("web.response_json", {"success": False, "errors": errors})
-            # running dialog
-            dialog = type_info["dialog"](self.app())
-            dialog.show()
-        # rendering form
-        fields = [
-            {"name": "tp", "type": "combo", "label": self._("Type of combat system"), "values": combat_types},
-        ]
-        buttons = [
-            {"text": self._("Generate combat system")},
-        ]
-        self.call("admin.form", fields=fields, buttons=buttons)
-
-    def rules_edit(self, rules, code, action):
-        if action == "profile":
-            return self.rules_edit_profile(rules, code)
-        elif action == "actions":
-            return self.rules_edit_actions(code)
-        elif action == "script":
-            return self.rules_edit_script(code)
+        # show pager
+        pages = int((len(log) + show_entries_per_page - 1) / show_entries_per_page)
+        if pages < 1:
+            pages = 1
+        show_page = intz(req.param("page"))
+        if show_page < 0:
+            show_page = 0
+        if show_page >= pages:
+            show_page = pages - 1
+        if pages >= 2:
+            vars["to_page"] = self._("Pages")
+            rpages = []
+            for page in xrange(0, pages):
+                if tp == "debug":
+                    href = "/combat/debug/%s" % uuid
+                else:
+                    href = "/combat/%s" % uuid
+                if page > 0:
+                    href += "?page=%d" % page
+                rpages.append({
+                    "entry": {
+                        "text": page + 1,
+                        "a": { "href": href } if page != show_page else None,
+                    }
+                })
+            rpages[-1]["lst"] = True
+            vars["pages"] = rpages
+        # show log
+        for ent in log.entries(show_page * show_entries_per_page, (show_page + 1) * show_entries_per_page):
+            vars["entries"].append(ent)
+        # show right menu
+        if tp == "user":
+            if req.has_access("combats.debug-logs"):
+                if CombatLogViewer(self.app(), "debug", uuid).valid:
+                    vars["menu_right"] = [
+                        {
+                            "href": "/combat/debug/%s" % uuid,
+                            "html": self._("Debug combat log"),
+                            "lst": True
+                        }
+                    ]
         else:
-            m = re_action_cmd.match(action)
-            if m:
-                cmd = m.group(1)
-                return self.rules_action(code, cmd)
+            if CombatLogViewer(self.app(), "user", uuid).valid:
+                vars["menu_right"] = [
+                    {
+                        "href": "/combat/%s" % uuid,
+                        "html": self._("User combat log"),
+                        "lst": True
+                    }
+                ]
+        # show left menu
+        menu_left = []
+        menu_left.append({
+            "html": self._("combat///Started: %s") % self.call("l10n.time_local", log.started)
+        })
+        if log.stopped:
+            menu_left.append({
+                "html": self._("combat///Ended: %s") % self.call("l10n.time_local", log.stopped)
+            })
+        menu_left[-1]["lst"] = True
+        vars["menu_left"] = menu_left
+        self.call("combat.response_template", log.rules, "log.html", vars)
 
-    def rules_edit_profile(self, rules, code):
+    def combat_log(self):
+        self.show_combat_log("user")
+
+    def combat_debug_log(self):
+        self.show_combat_log("debug")
+
+    def character_public_info_menu(self, character, menu):
+        lst = self.objlist(DBCombatCharacterLogList, query_index="character-created", query_equal=character.uuid, query_limit=1)
+        if len(lst):
+            menu.append({
+                "href": "/character/combats/%s" % character.uuid,
+                "html": self._("Combats of the character"),
+                "order": 5,
+            })
+
+    def character_combats(self):
         req = self.req()
-        rules = rules.copy()
-        info = rules[code].copy()
-        # processing request
-        if req.ok():
-            errors = {}
-            # name
-            name = req.param("name")
-            if not name:
-                errors["name"] = self._("This field is mandatory")
-            # order
-            order = floatz(req.param("order"))
-            # processing errors
-            if errors:
-                self.call("web.response_json", {"success": False, "errors": errors})
-            # saving changes
-            info["order"] = order
-            info["name"] = name
-            rules[code] = info
-            config = self.app().config_updater()
-            config.set("combats.rules", rules)
-            config.store()
-            self.call("admin.redirect", "combats/rules")
-        # rendering form
-        fields = [
-            {"name": "name", "label": self._("Combat rules name"), "value": info["name"]},
-            {"name": "order", "label": self._("Sorting order"), "value": info["order"], "inline": True},
-        ]
-        self.call("admin.form", fields=fields)
-
-    def rules_edit_actions(self, code):
-        actions = self.conf("combats-%s.actions" % code, [])
-        rows = []
-        for act in actions:
-            rows.append([
-                act["code"],
-                htmlescape(act["name"]),
-                act["order"],
-                u'<br />'.join([
-                    u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/profile" title="%s" />' % (code, act["code"], self._("combat action profile")),
-                    u'<hook:admin.link href="combats/rules/edit/%s/action/edit/%s/script" title="%s" />' % (code, act["code"], self._("script handlers")),
-                ]),
-                u'<hook:admin.link href="combats/rules/edit/%s/action/del/%s" title="%s" confirm="%s" />' % (code, act["code"], self._("delete"), self._("Are you sure want to delete this combat action?")),
-            ])
+        character = self.character(req.args)
+        if not character.valid:
+            self.call("web.not_found")
         vars = {
-            "tables": [
-                {
-                    "links": [
-                        {
-                            "hook": "combats/rules/edit/%s/action/new" % code,
-                            "text": self._("New combat action"),
-                            "lst": True,
-                        }
-                    ],
-                    "header": [
-                        self._("Code"),
-                        self._("Action name"),
-                        self._("Order"),
-                        self._("Editing"),
-                        self._("Deletion"),
-                    ],
-                    "rows": rows,
-                }
-            ]
+            "title": self._("Combats of %s") % htmlescape(character.name),
+            "char": ScriptTemplateObject(character),
+            "character": {
+                "html": character.html(),
+                "name": character.name,
+                "sex": character.sex,
+            },
         }
-        self.call("admin.response_template", "admin/common/tables.html", vars)
+        # List of combats
+        lst = self.objlist(DBCombatCharacterLogList, query_index="character-created", query_equal=character.uuid, query_reversed=True, query_limit=50)
+        lst.load(silent=True)
+        log_ids = ["%s-user" % ent.get("combat") for ent in lst]
+        clst = self.objlist(DBCombatLogList, log_ids)
+        clst.load(silent=True)
+        logs = dict([(ent.uuid, ent) for ent in clst])
+        last_date = None
+        params = []
+        for ent in lst:
+            log = logs.get("%s-user" % ent.get("combat"))
+            if not log:
+                continue
+            combat_date = ent.get("created").split(" ")[0]
+            if combat_date != last_date:
+                last_date = combat_date
+                params.append({
+                    "header": self.call("l10n.date_local", ent.get("created")),
+                })
+            params.append({
+                "combat": ent.get("combat"),
+                "date": self.call("l10n.time_local", ent.get("created")),
+                "title": htmlescape(log.get("title"))
+            })
+        if params:
+            vars["character"]["params"] = params
+        # Menu
+        menu = []
+        self.call("character.public-info-menu", character, menu)
+        if menu:
+            for ent in menu:
+                if ent["href"] == "/character/combats/%s" % character.uuid:
+                    del ent["href"]
+            menu.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)))
+            menu[-1]["lst"] = True
+            vars["menu"] = menu
+        self.call("game.response_external", "character-combats.html", vars)
 
-    def rules_action(self, code, cmd):
-        if cmd == "new":
-            return self.rules_action_edit(code, None)
-        else:
-            m = re_del.match(cmd)
-            if m:
-                action_code = m.group(1)
-                actions = [act for act in self.conf("combats-%s.actions" % code, []) if act["code"] != action_code]
-                config = self.app().config_updater()
-                config.set("combats-%s.actions" % code, actions)
-                config.store()
-                self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
-            m = re_action_edit.match(cmd)
-            if m:
-                action_code, cmd = m.group(1, 2)
-                if cmd == "profile":
-                    return self.rules_action_edit(code, action_code)
-                elif cmd == "script":
-                    return self.rules_action_script(code, action_code)
+    def character_state(self, combat_id, character_uuid):
+        try:
+            combat = CombatInterface(self.app(), combat_id)
+            for member in combat.members:
+                if member.get("character") == character_uuid:
+                    member["combat"] = combat_id
+                    return member
+        except CombatUnavailable as e:
+            return None
 
-    def rules_action_edit(self, code, action_code):
-        req = self.req()
-        actions = [act.copy() for act in self.conf("combats-%s.actions" % code, [])]
-        if action_code is None:
-            info = {}
-            order = None
-            for act in actions:
-                if order is None or act["order"] > order:
-                    order = act["order"]
-            if order is None:
-                info["order"] = 0.0
-            else:
-                info["order"] = order + 10.0
-        else:
-            info = None
-            for act in actions:
-                if act["code"] == action_code:
-                    info = act
-                    break
-            if info is None:
-                self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
-        existing_codes = set()
-        for act in actions:
-            existing_codes.add(act["code"])
-        # processing request
-        if req.ok():
-            errors = {}
-            # code
-            act_code = req.param("code")
-            if not act_code:
-                errors["code"] = self._("This field is mandatory")
-            elif not re_valid_identifier.match(act_code):
-                errors["code"] = self._("Action code must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'")
-            elif act_code in existing_codes and act_code != action_code:
-                errors["code"] = self._("Action with the same code already exists")
-            # name
-            name = req.param("name")
-            if not name:
-                errors["name"] = self._("This field is mandatory")
-            # order
-            order = floatz(req.param("order"))
-            # processing errors
-            if errors:
-                self.call("web.response_json", {"success": False, "errors": errors})
-            # saving changes
-            info["code"] = act_code
-            info["name"] = name
-            info["order"] = order
-            if action_code is None:
-                actions.append(info)
-            actions.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["code"], y["code"]))
-            config = self.app().config_updater()
-            config.set("combats-%s.actions" % code, actions)
-            config.store()
-            self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
-        # rendering form
-        fields = [
-            {"name": "code", "label": self._("Action code"), "value": info.get("code")},
-            {"name": "order", "label": self._("Sorting order"), "value": info.get("order"), "inline": True},
-            {"name": "name", "label": self._("Action name"), "value": info.get("name")},
-        ]
-        self.call("admin.form", fields=fields)
-
-    def rules_edit_script(self, code):
-        req = self.req()
-        if req.ok():
-            # test objects
-            combat = Combat(self.app(), code)
-            # parsing form
-            errors = {}
-            config = self.app().config_updater()
-            config.set("combats-%s.script-start" % code, self.call("combats-admin.script-field", combat, "start", errors, globs={"combat": combat}, mandatory=False))
-            # processing errors
-            if errors:
-                self.call("web.response_json", {"success": False, "errors": errors})
-            # storing
-            config.store()
-            self.call("admin.redirect", "combats/rules")
-        fields = [
-            {"name": "start", "label": self._("Combat script running when combat starts") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", self.conf("combats-%s.script-start" % code)), "height": 150},
-        ]
-        self.call("admin.form", fields=fields)
-
-    def rules_action_script(self, code, action_code):
-        req = self.req()
-        actions = [act.copy() for act in self.conf("combats-%s.actions" % code, [])]
-        info = None
-        for act in actions:
-            if act["code"] == action_code:
-                info = act
-                break
-        if info is None:
-            self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
-        if req.ok():
-            # test objects
-            combat = Combat(self.app(), code)
-            member1 = CombatMember(combat)
-            member2 = CombatMember(combat)
-            # parsing form
-            errors = {}
-            info["script-before-execute"] = self.call("combats-admin.script-field", combat, "before-execute", errors, globs={"combat": combat, "source": member1}, mandatory=False)
-            info["script-execute"] = self.call("combats-admin.script-field", combat, "execute", errors, globs={"combat": combat, "source": member1, "target": member2}, mandatory=False)
-            info["script-after-execute"] = self.call("combats-admin.script-field", combat, "after-execute", errors, globs={"combat": combat, "source": member1}, mandatory=False)
-            # processing errors
-            if errors:
-                self.call("web.response_json", {"success": False, "errors": errors})
-            # storing
-            config = self.app().config_updater()
-            config.set("combats-%s.actions" % code, actions)
-            config.store()
-            self.call("admin.redirect", "combats/rules/edit/%s/actions" % code)
-        # rendering form
-        fields = [
-            {"name": "before-execute", "label": self._("Before execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-before-execute")), "height": 150},
-            {"name": "execute", "label": self._("Execution itself (applying action effect to targets)") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-execute")), "height": 150},
-            {"name": "after-execute", "label": self._("After execution") + self.call("script.help-icon-expressions", "combats"), "type": "textarea", "value": self.call("combats-admin.unparse-script", info.get("script-after-execute")), "height": 150},
-        ]
-        self.call("admin.form", fields=fields)
-
+    def character_script_state(self, combat_id, character_uuid):
+        state = self.character_state(combat_id, character_uuid)
+        if not state:
+            return None
+        return CharacterCombatState(state)

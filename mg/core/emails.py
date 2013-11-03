@@ -12,12 +12,15 @@ import sys
 import datetime
 import time
 import traceback
+import hashlib
 
 re_sender_actions = re.compile(r'^(options)/(\S+)$');
 re_format_name = re.compile(r'\[name\]')
 re_image = re.compile(r'(<img[^>]*src="[^>]*>)', re.IGNORECASE)
 re_image_src = re.compile(r'^(<img.*src=")([^"]+)(".*>)', re.IGNORECASE)
 re_image_type = re.compile(r'^image/(.+)$')
+
+MAX_SIMILAR_EMAILS = 10
 
 class BulkEmailMessage(CassandraObject):
     clsname = "BulkEmailMessage"
@@ -113,6 +116,19 @@ class Email(Module):
         menu.append({"id": "email.index", "text": self._("E-mail"), "order": 32})
 
     def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain", signature=True, headers={}):
+        fingerprint = utf2str(from_email) + "/" + utf2str(to_email) + "/" + utf2str(subject)
+        m = hashlib.md5()
+        m.update(fingerprint)
+        fingerprint = m.hexdigest()
+        mcid = "email-sent-%s" % fingerprint
+        sent = intz(self.app().mc.get(mcid))
+        if sent < 0:
+            return
+        if sent >= MAX_SIMILAR_EMAILS:
+            self.warning("Blocked email flood to %s: %s", to_email, subject)
+            self.app().mc.set(mcid, -1, 3600)
+            return
+        self.app().mc.set(mcid, sent + 1, 600)
         if not immediately:
             return self.call("queue.add", "email.send", {
                 "to_email": to_email,
@@ -125,9 +141,9 @@ class Email(Module):
                 "subtype": subtype,
                 "signature": signature,
                 "headers": headers,
-            }, retry_on_fail=True)
+            })
         params = {
-            "email": "robot@%s" % self.app().inst.config["main_host"],
+            "email": "robot@%s" % self.main_host,
             "name": "Metagam Robot",
             "prefix": "[mg] ",
         }
@@ -135,8 +151,8 @@ class Email(Module):
         if from_email is None or from_name is None:
             from_email = params["email"]
             from_name = params["name"]
-        self.info("To %s <%s>: %s", utf2str(to_name), utf2str(to_email), utf2str(subject))
-        s = SMTP(self.app().inst.config["smtp_server"])
+        self.info("%s: To %s <%s>: %s", mcid, utf2str(to_name), utf2str(to_email), utf2str(subject))
+        s = SMTP(self.clconf("smtp_server", "127.0.0.1"))
         try:
             if type(content) == unicode:
                 content = content.encode("utf-8")
@@ -157,7 +173,8 @@ class Email(Module):
                 if getattr(self.app(), "canonical_domain", None):
                     sig += "\n"
                     sig += self._("Remind password - {href}").format(
-                        href="http://{domain}/auth/remind".format(
+                        href="{protocol}://{domain}/auth/remind".format(
+                            protocol=self.app().protocol,
                             domain=self.app().canonical_domain,
                         ),
                     )
@@ -202,15 +219,17 @@ class Email(Module):
                 "immediately": True,
                 "subtype": subtype,
                 "signature": signature,
-            }, retry_on_fail=True)
+            })
         usr = self.objlist(UserList, users)
         usr.load(silent=True)
         for user in usr:
             self.email_send(self.call("user.email", user), user.get("name"), subject, content, from_email, from_name, immediately=True)
 
-    def exception_report(self, exception):
+    def exception_report(self, exception, e_type=None, e_value=None, e_traceback=None):
         try:
-            dump = traceback.format_exc()
+            if e_type is None:
+                e_type, e_value, e_traceback = sys.exc_info()
+            dump = "".join(traceback.format_exception(e_type, e_value, e_traceback))
             try:
                 msg = u"%s %s" % (exception.__class__.__name__, exception)
             except Exception as e:
@@ -218,10 +237,34 @@ class Email(Module):
             email = self.int_app().config.get("email.exceptions")
             if email:
                 try:
-                    tag = self.app().tag
+                    app = self.app()
+                    try:
+                        tag = app.tag
+                    except AttributeError:
+                        tag = "NOTAG"
+                    try:
+                        project = app.project
+                    except AttributeError:
+                        project = None
                 except AttributeError:
-                    tag = "NOTAG"
+                    tag = "NOAPP"
+                    app = None
+                    project = None
                 vars = {}
+                # project owner
+                if project:
+                    vars["project"] = project.uuid
+                    vars["project_title"] = htmlescape(project.get("title_short"))
+                    vars["project_owner"] = project.get("owner")
+                    if vars["project_owner"]:
+                        try:
+                            owner = self.main_app().obj(User, vars["project_owner"])
+                        except ObjectNotFoundException:
+                            pass
+                        else:
+                            vars["project_owner_name"] = htmlescape(owner.get("name"))
+                    vars["main_host"] = self.main_host
+                    vars["main_protocol"] = self.main_app().protocol
                 try:
                     req = self.req()
                 except AttributeError:
@@ -270,7 +313,7 @@ class Email(Module):
 
     def unsubscribe_text(self, email):
         code = self.call("email.unsubscribe-code", email)
-        return self._("Unsubscribe - http://{domain}/email/unsubscribe/{code}").format(domain=self.app().canonical_domain, code=code)
+        return self._("Unsubscribe - {protocol}://{domain}/email/unsubscribe/{code}").format(protocol=self.app().protocol, domain=self.app().canonical_domain, code=code)
 
     def unsubscribe(self):
         vars = {
@@ -398,6 +441,11 @@ class EmailSender(Module):
                 {"name": "content", "value": content, "type": "htmleditor", "label": self._("Message content")},
             ]
             self.call("admin-email-sender.message-form-render", message, fields)
+            self.call("admin.advice", {
+                "title": self._("How to write perfect e-mail"),
+                "content": self._("Try to use as much personalisation as possible. A player should feel that e-mail is not just a bulk e-mail delivery, but a directed email to himself. Greet a player personally: 'Hello [%char.name%]', use correct sex, character class and so on: 'Dear fairy Maria'."),
+                "order": 20
+            })
             self.call("admin.form", fields=fields, modules=["HtmlEditorPlugins"])
         rows = []
         lst = self.objlist(BulkEmailMessageList, query_index="created", query_reversed=True)
@@ -543,7 +591,7 @@ class EmailSender(Module):
             content = '<font face="Tahoma">%s</font>' % message.get("content")
             subject = message.get("subject")
             params = {
-                "email": "robot@%s" % self.app().inst.config["main_host"],
+                "email": "robot@%s" % self.main_host,
                 "name": "Metagam Robot",
                 "prefix": "[mg] ",
                 "content": content,
@@ -643,18 +691,22 @@ class EmailSender(Module):
         # converting data
         content = str2unicode(content)
         domain = self.app().canonical_domain
-        content += u'<br>--<br>{project_title} &mdash; <a href="http://{domain}/" target="_blank">http://{domain}</a><br>{your_name}<br>{unsubscribe}'.format(
+        protocol = self.app().protocol
+        content += u'<br>--<br>{project_title} &mdash; <a href="{protocol}://{domain}/" target="_blank">{protocol}://{domain}</a><br>{your_name}<br>{unsubscribe}'.format(
+            protocol=protocol,
             domain=domain,
             project_title=htmlescape(self.call("project.title")),
             your_name=self._('Your name is {user_name} &mdash; <a href="{href}" target="_blank">remind password</a>').format(
                 user_name=htmlescape(params.get("recipient_name")),
-                href="http://{domain}/auth/remind?email={email}".format(
+                href="{protocol}://{domain}/auth/remind?email={email}".format(
+                    protocol=protocol,
                     domain=domain,
                     email=urlencode(email),
                 ),
             ),
             unsubscribe=self._('To stop receiving letters press <a href="{href}" target="_blank">here</a>').format(
-                href="http://{domain}/email/unsubscribe/{code}".format(
+                href="{protocol}://{domain}/email/unsubscribe/{code}".format(
+                    protocol=protocol,
                     domain=domain,
                     code=self.call("email.unsubscribe-code", email),
                 ),

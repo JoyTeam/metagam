@@ -13,6 +13,7 @@ our $db = $inst->sql->{dbh};
 sql_init();
 sql_table('donate',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
 		'income_cnt' => [ -type=>'integer', -null=>0 ],
@@ -25,6 +26,7 @@ sql_table('donate',
 );
 sql_table('donators',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
 		'user' => [ -type=>'varchar(32)', -null=>0 ],
@@ -38,6 +40,7 @@ sql_table('donators',
 );
 sql_table('visits',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
 		'peak_ccu' => [ -type=>'integer', -null=>0 ],
@@ -56,6 +59,7 @@ sql_table('visits',
 );
 sql_table('active_players',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
 		'player' => [ -type=>'varchar(32)', -null=>0 ],
@@ -67,6 +71,7 @@ sql_table('active_players',
 );
 sql_table('config',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'stored' => [ -type=>'datetime', -null=>0 ],
 		'grp' => [ -type=>'varchar(50)', -null=>0 ],
@@ -78,6 +83,7 @@ sql_table('config',
 );
 sql_table('item_remains',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
 		'item_type' => [ -type=>'varchar(32)', -null=>0 ],
@@ -89,6 +95,7 @@ sql_table('item_remains',
 );
 sql_table('item_descriptions',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
 		'item_type' => [ -type=>'varchar(32)', -null=>0 ],
@@ -103,6 +110,7 @@ sql_table('item_descriptions',
 );
 sql_table('money_remains',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
 		'currency' => [ -type=>'varchar(10)', -null=>0 ],
@@ -114,6 +122,7 @@ sql_table('money_remains',
 );
 sql_table('money_descriptions',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
 		'currency' => [ -type=>'varchar(10)', -null=>0 ],
@@ -128,33 +137,41 @@ sql_table('money_descriptions',
 );
 sql_table('queue_tasks',
 	[
+                'idn' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'id' => [ -type=>'varchar(32)', -null=>0 ],
+                'cls' => [ -type=>'varchar(16)', -null=>1 ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'at' => [ -type=>'datetime', -null=>0 ],
 		'priority' => [ -type=>'integer', -null=>0 ],
 		'unique' => [ -type=>'varchar(84)', -null=>1 ],
+                'hook' => [ -type=>'varchar(32)', -null=>0 ],
 		'data' => [ -type=>'longblob' ],
+		'locked' => [ -type=>'varchar(50)', -null=>0 ],
+		'locked_till' => [ -type=>'datetime', -null=>1 ],
 	], [
 		'index' => 'id',
-		'index' => 'app,at',
-		'index' => 'at',
 		'index' => 'app,unique',
+		'index' => 'cls,locked,at',
+		'index' => 'locked_till',
 	]
 );
 sql_table('modifiers',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'till' => [ -type=>'datetime', -null=>0 ],
 		'cls' => [ -type=>'varchar(16)' ],
 		'app' => [ -type=>'varchar(32)' ],
 		'target_type' => [ -type=>'varchar(16)' ],
 		'target' => [ -type=>'varchar(32)' ],
+		'priority' => [ -type=>'integer', -null=>0, -default=>'100' ],
 	], [
 		'index' => 'app,target,till',
-		'index' => 'till',
+		'index' => 'cls,till',
 	]
 );
 sql_table('shops_sell',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'shop' => [ -type=>'varchar(80)', -null=>0 ],
 		'item_type' => [ -type=>'varchar(32)', -null=>0 ],
@@ -171,6 +188,7 @@ sql_table('shops_sell',
 );
 sql_table('shops_buy',
 	[
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
 		'shop' => [ -type=>'varchar(80)', -null=>0 ],
 		'item_type' => [ -type=>'varchar(32)', -null=>0 ],

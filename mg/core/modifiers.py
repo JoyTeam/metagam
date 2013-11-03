@@ -65,7 +65,7 @@ class MemberModifiers(Module):
         # storing mobjs
         if self.mobjs:
             for mobj in self.mobjs:
-                self.sql_write.do("insert into modifiers(till, cls, app, target_type, target) values (?, ?, ?, ?, ?)", *mobj)
+                self.sql_write.do("insert into modifiers(till, cls, app, target_type, target, priority) values (?, ?, ?, ?, ?, ?)", *mobj)
             self.mobjs = []
 
     def notify(self):
@@ -127,6 +127,8 @@ class MemberModifiers(Module):
         for ent in self._mods.get("mods"):
             kind = ent.get("kind")
             val = ent.get("value")
+            if type(val) != int and type(val) != float:
+                val = floatz(val)
             till = ent.get("till")
             if till:
                 if now is None:
@@ -192,8 +194,15 @@ class MemberModifiers(Module):
         self._mods.get("mods").append(ent)
         self._mods.touch()
         self.created[ent["uuid"]] = ent
+        if till and till < self.now(600):
+            mcid = "modifiers-cooldown"
+            cnt = intz(self.app().mc.get(mcid)) + 1
+            self.app().mc.set(mcid, cnt, 60)
+            priority = 100 - cnt
+        else:
+            priority = 100
         if till:
-            mobj = [till, self.app().inst.cls, self.app().tag, self.target_type, self.uuid]
+            mobj = [till, self.app().inst.cls, self.app().tag, self.target_type, self.uuid, priority]
             self.mobjs.append(mobj)
         return ent
 
@@ -232,6 +241,9 @@ class MemberModifiers(Module):
     def _prolong(self, kind, value, period, **kwargs):
         mod = self.get(kind)
         if mod:
+            # Prolonging infinite modifier
+            if mod["maxtill"] is None:
+                return
             # Prolong
             self._destroy(kind)
             till = from_unixtime(unix_timestamp(mod["maxtill"]) + period)
@@ -267,37 +279,34 @@ class MemberModifiers(Module):
 
     __repr__ = __str__
 
-class ModifiersManager(Module):
-    "This module is loaded in the 'main' project"
+class ModifiersChecker(Module):
     def register(self):
-        self.rhook("daemons.persistent", self.daemons_persistent)
-        self.rhook("int-modifiers.daemon", self.daemon, priv="public")
+        self.rhook("core.fastidle", self.fastidle)
+        self.tasklet_running = False
 
-    def daemons_persistent(self, daemons):
-        daemons.append({"cls": "metagam", "app": "main", "daemon": "modifiers", "url": "/modifiers/daemon"})
-
-    def daemon(self):
-        self.debug("Running modifiers daemon")
-        daemon = ModifiersDaemon(self.main_app())
-        daemon.run()
-        self.call("web.response_json", {"ok": True})
-
-class ModifiersDaemon(Daemon):
-    "This daemon constantly monitors expiring modifiers and sends notifications to the corresponding application"
-    def __init__(self, app, id="modifiers"):
-        Daemon.__init__(self, app, "mg.core.modifiers.ModifiersDaemon", id)
-        self.persistent = True
-
-    def main(self):
-        while not self.terminate:
+    def modifiers_checker_runner(self):
+        try:
+            inst = self.app().inst
+            cls = inst.cls
+            lock = self.lock(["modifiers"])
+            if not lock.trylock():
+                return
             try:
                 now = self.now()
-                for mod in self.sql_write.selectall_dict("select target_type, target, app, cls from modifiers where ?>=till group by target_type, target, app, cls", now):
-                    self.call("queue.add", "modifiers.stop", {"target_type": mod["target_type"], "target": mod["target"]}, retry_on_fail=True, app_tag=mod["app"], app_cls=mod["cls"], unique="mod-%s-%s" % (mod["app"], mod["target"]))
-                    self.sql_write.do("delete from modifiers where app=? and target=? and ?>=till", mod["app"], mod["target"], now)
-            except Exception as e:
-                self.exception(e)
-            Tasklet.sleep(3)
+                for mod in self.sql_write.selectall_dict("select target_type, target, app, priority from modifiers where cls=? and till<=? group by target_type, target, app", cls, now):
+                    self.call("queue.add", "modifiers.stop", {"target_type": mod["target_type"], "target": mod["target"]}, app_tag=mod["app"], app_cls=cls, unique="mod-%s-%s" % (mod["app"], mod["target"]), priority=mod["priority"])
+                    self.sql_write.do("delete from modifiers where app=? and target=? and till<=?", mod["app"], mod["target"], now)
+            finally:
+                lock.unlock()
+        except Exception as e:
+            self.exception(e)
+        finally:
+            self.tasklet_running = False
+
+    def fastidle(self):
+        if not self.tasklet_running:
+            self.tasklet_running = True
+            Tasklet.new(self.modifiers_checker_runner)()
 
 class Modifiers(Module):
     def register(self):

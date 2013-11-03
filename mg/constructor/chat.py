@@ -1,5 +1,6 @@
 from mg import *
 from mg.constructor import *
+from mg.mmorpg.locations_classes import FakeLocation
 from uuid import uuid4
 import datetime
 import re
@@ -17,13 +18,14 @@ re_loc_channel = re.compile(r'^loc-(\S+)$')
 re_valid_command = re.compile(r'^/(\S+)$')
 re_after_dash = re.compile(r'-.*')
 re_unjoin = re.compile(r'^unjoin/(\S+)$')
-re_character_name = re.compile(r'(<span class="char-name">.*?</span>)')
+re_character_name = re.compile(r'(<span class="char-name">(.*?)</span>)')
 re_color = re.compile(r'^#[0-9a-f]{6}$')
 re_curly = re.compile(r'[{}]')
 re_valid_cls = re.compile(r'^[a-z][a-z\-]*$')
 re_sharp = re.compile(r'#')
 re_q = re.compile(r'q')
 re_del = re.compile(r'^del/(.+)$')
+re_newline = re.compile(r'\n')
 
 #logging.getLogger("mg.constructor.chat.Chat").setLevel(logging.INFO)
 
@@ -101,6 +103,27 @@ class Chat(ConstructorModule):
         self.rhook("library-page-chat.content", self.library_page_chat)
         self.rhook("character.name-invalidated", self.character_name_invalidated)
         self.rhook("character.debug-access", self.debug_access)
+        self.rhook("characters.context-menu-available", self.context_menu_available)
+
+    def context_menu_available(self, menu):
+        menu.append({
+            "code": "chatmsg",
+            "title": self._("Chat message"),
+            "onclick": ["Chat.click(['", [".", ["glob", "char"], "name"], "'], false);"],
+            "order": 5.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/chat-message.png",
+            "visible": ["!=", [".", ["glob", "char"], "id"], [".", ["glob", "viewer"], "id"]],
+        })
+        menu.append({
+            "code": "chatprivate",
+            "title": self._("Chat private message"),
+            "onclick": ["Chat.click(['", [".", ["glob", "char"], "name"], "'], true);"],
+            "order": 6.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/chat-private.png",
+            "visible": ["!=", [".", ["glob", "char"], "id"], [".", ["glob", "viewer"], "id"]],
+        })
 
     def library_index_pages(self, pages):
         pages.append({"page": "chat", "order": 20})
@@ -144,7 +167,8 @@ class Chat(ConstructorModule):
     def name_fixup(self, character, purpose, params):
         if purpose == "roster":
             js = "Chat.click(['%s']); return false" % jsencode(character.name)
-            params["NAME"] = ur'<span class="chat-roster-char chat-clickable" onclick="{0}" ondblclick="{0}">{1}</span>'.format(js, params["NAME"])
+            html = re_character_name.sub(ur'<span class="char-name" oncontextmenu="Characters.menu(this); return false;">\2</span>', params["NAME"])
+            params["NAME"] = ur'<span class="chat-roster-char chat-clickable" onclick="{0}" ondblclick="{0}">{1}</span>'.format(js, html)
 
     def schedule(self, sched):
         sched.add("chat.cleanup", "10 1 * * *", priority=10)
@@ -231,7 +255,7 @@ class Chat(ConstructorModule):
 
     def chat_config(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat configuration in the <a href="//www.%s/doc/chat" target="_blank">chat manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat configuration in the <a href="//www.%s/doc/chat" target="_blank">chat manual</a>.') % self.main_host})
         if req.param("ok"):
             config = self.app().config_updater()
             errors = {}
@@ -291,12 +315,13 @@ class Chat(ConstructorModule):
                         config.set("chat.cmd-dip", "")
             # chat messages
             char = self.character(req.user())
+            loc = FakeLocation()
             config.set("chat.msg_went_online", self.call("script.admin-text", "msg_went_online", errors, globs={"char": char}, require_glob=["char"]))
             config.set("chat.msg_went_offline", self.call("script.admin-text", "msg_went_offline", errors, globs={"char": char}, require_glob=["char"]))
-            config.set("chat.msg_entered_location", self.call("script.admin-text", "msg_entered_location", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}, require_glob=["char"]))
-            config.set("chat.msg_left_location", self.call("script.admin-text", "msg_left_location", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}, require_glob=["char"]))
-            config.set("chat.msg_you_entered_location", self.call("script.admin-text", "msg_you_entered_location", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}, require_glob=["loc_to"]))
-            config.set("chat.msg_location_messages", self.call("script.admin-text", "msg_location_messages", errors, globs={"char": char, "loc_from": char.location, "loc_to": char.location}))
+            config.set("chat.msg_entered_location", self.call("script.admin-text", "msg_entered_location", errors, globs={"char": char, "loc_from": loc, "loc_to": loc}, require_glob=["char"]))
+            config.set("chat.msg_left_location", self.call("script.admin-text", "msg_left_location", errors, globs={"char": char, "loc_from": loc, "loc_to": loc}, require_glob=["char"]))
+            config.set("chat.msg_you_entered_location", self.call("script.admin-text", "msg_you_entered_location", errors, globs={"char": char, "loc_from": loc, "loc_to": loc}, require_glob=["loc_to"]))
+            config.set("chat.msg_location_messages", self.call("script.admin-text", "msg_location_messages", errors, globs={"char": char, "loc_from": loc, "loc_to": loc}))
             config.set("chat.auth-msg-channel", "wld" if req.param("auth_msg_channel") else "loc")
             # analysing errors
             if len(errors):
@@ -331,7 +356,7 @@ class Chat(ConstructorModule):
             {"name": "cmd-wld", "label": self._("Chat command for writing to the entire world channel"), "value": cmd_wld, "condition": "[chatmode]>0"},
             {"name": "cmd-loc", "label": self._("Chat command for writing to the current location channel"), "value": cmd_loc, "condition": "[chatmode]>0"},
             {"name": "cmd-trd", "label": self._("Chat command for writing to the trading channel"), "value": cmd_trd, "condition": "[chatmode]>0 && [trade-channel]"},
-            {"name": "cmd-dip", "label": self._("Chat command for writing to the trading channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
+            {"name": "cmd-dip", "label": self._("Chat command for writing to the diplomacy channel"), "value": cmd_dip, "condition": "[chatmode]>0 && [diplomacy-channel]"},
             {"name": "auth_msg_channel", "label": self._("Should online/offline messages be visible worldwide"), "type": "checkbox", "checked": auth_msg_channel=="wld", "condition": "[chatmode]>0"},
             {"name": "msg_went_online", "label": self._("Message about character went online") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_went_online())},
             {"name": "msg_went_offline", "label": self._("Message about character went offline") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.msg_went_offline())},
@@ -355,7 +380,7 @@ class Chat(ConstructorModule):
 
     def admin_chat_colors(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat colors configuration in the <a href="//www.%s/doc/chat-colors" target="_blank">chat colors manual</a>.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Documentation"), "content": self._('You can find information on chat colors configuration in the <a href="//www.%s/doc/chat-colors" target="_blank">chat colors manual</a>.') % self.main_host})
         colors = self.chat_colors()
         if req.args:
             m = re_del.match(req.args)
@@ -544,7 +569,13 @@ class Chat(ConstructorModule):
         restraints = {}
         self.call("restraints.check", user, restraints)
         if restraints.get("chat-silence"):
-            self.call("web.response_json", {"error": self._("Silence till %s") % self.call("l10n.time_local", restraints["chat-silence"].get("till")), "hide_title": True})
+            message = self._("Silence till %s") % self.call("l10n.time_local", restraints["chat-silence"].get("till"))
+            reason_user = restraints["chat-silence"].get("reason_user")
+            if reason_user:
+                message += u'\n%s' % restraints["chat-silence"].get("reason_user")
+                message = htmlescape(message)
+                message = re_newline.sub('<br />', message)
+            self.call("web.response_json", {"error": message, "hide_title": True})
         author = self.character(user)
         text = req.param("text") 
         if len(text) > max_chat_message:
@@ -711,6 +742,11 @@ class Chat(ConstructorModule):
         message["channel"] = self.channel2tab(channel)
         message["priv"] = private
         message["manual"] = manual
+        if mentioned:
+            char_params = {}
+            for character in mentioned:
+                char_params[character.uuid] = character.deliverable_params()
+            message["characters"] = char_params
         html_head = u''
         html_tail = u''
         if div_attr:
@@ -771,14 +807,17 @@ class Chat(ConstructorModule):
         if char:
             add_cls = u""
             add_tag = u""
+            add_tag_char_name = u""
             if token.get("missing"):
                 add_cls += u" chat-msg-char-missing"
             recipients = ["'%s'" % jsencode(ch.name) for ch in token["mentioned"] if ch.uuid != viewer_uuid] if char.uuid == viewer_uuid else ["'%s'" % jsencode(char.name)]
             if recipients:
                 add_cls += " clickable"
-                js = u'Chat.click([%s]%s); return false' % (",".join(recipients), (", 1" if private else ""))
-                add_tag += u' onclick="{0}" ondblclick="{0}"'.format(js)
-            return re_character_name.sub(ur'<span class="chat-msg-char%s"%s>\1</span>' % (add_cls, add_tag), char.html("chat"))
+                jschat = u'Chat.click([%s]%s); return false' % (",".join(recipients), (", 1" if private else ""))
+                add_tag += u' onclick="{0}" ondblclick="{0}"'.format(jschat)
+            jsmenu = u'Characters.menu(this); return false'
+            add_tag_char_name += u' oncontextmenu="{0}"'.format(jsmenu)
+            return re_character_name.sub(ur'<span class="chat-msg-char%s"%s><span class="char-name"%s>\2</span></span>' % (add_cls, add_tag, add_tag_char_name), char.html("chat"))
         now = token.get("time")
         if now:
             recipients = [char for char in token["mentioned"] if char.uuid != viewer_uuid] if viewer_uuid else token["mentioned"]
@@ -846,6 +885,8 @@ class Chat(ConstructorModule):
             self.call("chat.channel-join", character, channel, send_myself=False)
 
     def character_init(self, session_uuid, character):
+        syschannel = "id_%s" % session_uuid
+        self.call("stream.packet", syschannel, "chat", "clear")
         channels = []
         self.call("chat.character-channels", character, channels)
         # reload_channels resets destroyes all channels not listed in the 'channels' list and unconditionaly clears online lists
@@ -860,7 +901,6 @@ class Chat(ConstructorModule):
         self.call("stream.character", character, "chat", "reload_channels", channels=show_channels)
         # send information about all characters on all subscribed channels
         # also load old messages
-        syschannel = "id_%s" % session_uuid
         messages = []
         for channel in channels:
             if channel["id"] == "loc":
@@ -1146,18 +1186,18 @@ class Chat(ConstructorModule):
                 # design-specific channel button image
                 ok = True
                 res = self.call("design.prepare_button", design, "%s-on.png" % filename, "chat-channel-button-on.png", "chat-%s.png" % channel_id)
-                if res is None:
-                    raise RuntimeError(self._("Error generating %s-on.png") % filename)
+                #if res is None:
+                #    raise RuntimeError(self._("Error generating %s-on.png") % filename)
                 if not res:
                     ok = False
                 res = self.call("design.prepare_button", design, "%s-off.png" % filename, "chat-channel-button-off.png", "chat-%s.png" % channel_id)
-                if res is None:
-                    raise RuntimeError(self._("Error generating %s-off.png") % filename)
+                #if res is None:
+                #    raise RuntimeError(self._("Error generating %s-off.png") % filename)
                 if not res:
                     ok = False
                 res = self.call("design.prepare_button", design, "%s-new.png" % filename, "chat-channel-button-new.png", "chat-%s.png" % channel_id)
-                if res is None:
-                    raise RuntimeError(self._("Error generating %s-new.png") % filename)
+                #if res is None:
+                #    raise RuntimeError(self._("Error generating %s-new.png") % filename)
                 if not res:
                     ok = False
                 if ok:
@@ -1259,6 +1299,7 @@ class Chat(ConstructorModule):
                 "id": character.uuid,
                 "name": character.name,
                 "html": character.html("roster"),
+                "params": character.deliverable_params(),
             }
             return character._roster_info
 
@@ -1276,7 +1317,6 @@ class Chat(ConstructorModule):
         if not cur:
             return None
         cinfo = self.call("money.currency-info", cur)
-        req = self.req()
         return {
             "id": "chat_colours",
             "name": self._("Colours in the chat"),

@@ -18,7 +18,7 @@ sub new
 sub connect
 {
 	my $self = shift;
-	my $host = $self->conf('mysql_server');
+	my $host = $self->conf('mysql_write_server')->[0];
 	my $database = $self->conf('mysql_database');
 	my $user = $self->conf('mysql_user');
 	my $password = $self->conf('mysql_password');

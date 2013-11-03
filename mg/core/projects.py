@@ -1,7 +1,7 @@
-from mg import *
+import mg
 import re
 
-class Project(CassandraObject):
+class Project(mg.CassandraObject):
     clsname = "Project"
     indexes = {
         "created": [[], "created"],
@@ -13,12 +13,13 @@ class Project(CassandraObject):
         "name_en": [[], "name_en"],
     }
 
-class ProjectList(CassandraObjectList):
+class ProjectList(mg.CassandraObjectList):
     objcls = Project
 
-class Projects(Module):
+class Projects(mg.Module):
     def register(self):
         self.rhook("applications.list", self.applications_list)
+        self.rhook("project.get", self.project_get)
 
     def applications_list(self, apps):
         apps.append({"cls": "metagam", "tag": "main"})
@@ -26,3 +27,9 @@ class Projects(Module):
         projects.load(silent=True)
         for proj in projects:
             apps.append({"cls": proj.get("cls") if proj.get("cls") else "metagam", "tag": proj.uuid})
+
+    def project_get(self, uuid):
+        try:
+            return self.int_app().obj(Project, uuid)
+        except mg.ObjectNotFoundException:
+            return None

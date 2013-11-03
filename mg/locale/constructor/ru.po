@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: Metagam 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-02 21:30+0400\n"
-"PO-Revision-Date: 2012-02-17 17:59+0300\n"
+"PO-Revision-Date: 2013-08-04 11:59+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian\n"
 "Language: \n"
@@ -21,8 +21,29 @@ msgstr ""
 msgid "Abort wizard"
 msgstr "Прервать мастер"
 
+msgid "Action is not selected"
+msgstr "Действие не выбрано"
+
+msgid "Active zone vertices (relative to the object pivot)"
+msgstr "Вершины активной зоны (относительно опорной точки объекта)"
+
 msgid "Add arbitrary image"
 msgstr "Добавить произвольное изображение"
+
+msgid "Add image from the storage"
+msgstr "Добавить изображение из хранилища"
+
+msgid "Add new clickable area"
+msgstr "Добавить новую кликабельную область"
+
+msgid "Add new visual object"
+msgstr "Добавить новый визуальный объект"
+
+msgid "Add new visual object from the storage"
+msgstr "Добавить новый визуальный объект из хранилища"
+
+msgid "Add object"
+msgstr "Добавить объект"
 
 msgid "Apply"
 msgstr "Применить"
@@ -32,6 +53,12 @@ msgstr "Обзор..."
 
 msgid "Buy MM$"
 msgstr "Купить MM$"
+
+msgid "Center X"
+msgstr "Центр X"
+
+msgid "Center Y"
+msgstr "Центр Y"
 
 msgid "Character image"
 msgstr "Образ персонажа"
@@ -45,6 +72,9 @@ msgstr "Проверить доступность"
 msgid "Click action"
 msgstr "Действие при клике"
 
+msgid "Combat was terminated"
+msgstr "Бой завершён"
+
 msgid "Connection terminated"
 msgstr "Соединение прервано"
 
@@ -57,11 +87,18 @@ msgstr "Эффекты"
 msgid "Enable grid"
 msgstr "Включить сетку"
 
+msgid "Enable scripted position"
+msgstr "Включить скриптовое положение"
+
 msgid "Error"
 msgstr "Ошибка"
 
 msgid "Error connecting to the server"
 msgstr "Ошибка связи с сервером"
+
+#, python-format
+msgid "Error loading %s"
+msgstr "Ошибка при загрузке %s"
 
 msgid "Error parsing server response"
 msgstr "Ошибка при разборе ответа сервера"
@@ -71,6 +108,10 @@ msgstr "Идентификатор события"
 
 msgid "Exception"
 msgstr "Исключение"
+
+#, python-format
+msgid "Exception in %s"
+msgstr "Исключение в %s"
 
 msgid "Fill"
 msgstr "Заливка"
@@ -93,8 +134,19 @@ msgstr "Файл с изображением"
 msgid "Insert Image"
 msgstr "Вставка изображения"
 
+msgid "Invalid URI"
+msgstr "Неверный URI"
+
 msgid "Invalid non-integer coordinate encountered"
 msgstr "Найдена неверная координата, не являющаяся целым числом"
+
+#, python-format
+msgid "Maximal number of targets for this action is %d"
+msgstr "Максимальное количество целей для этого действия - %d"
+
+#, python-format
+msgid "Minimal number of targets for this action is %d"
+msgstr "Минимальное количество целей для этого действия - %d"
 
 msgid "Minimal number of vertices - 3"
 msgstr "Минимальное количество вершин - 3"
@@ -108,8 +160,30 @@ msgstr "Далее"
 msgid "Next >"
 msgstr "Далее >"
 
+#, python-format
+msgid "Not selected: %s"
+msgstr "Не выбрано: %s"
+
+msgid "Number of coordinates must not be odd"
+msgstr "Количество координат не может быть нечётным"
+
 msgid "Number of corrdinates must not be odd"
 msgstr "Количество координат не может быть нечётным"
+
+msgid "Object"
+msgstr "Объект"
+
+msgid "Object URI (only URIs from the storage are allowed)"
+msgstr "URI объекта (разрешены только URI из хранилища)"
+
+msgid "Object identifier"
+msgstr "Идентификатор объекта"
+
+msgid "Object position expression"
+msgstr "Выражение для положения объекта"
+
+msgid "Opera Warning"
+msgstr "Предупреждение об Opera"
 
 msgid "Or provide image URL"
 msgstr "Или укажите его URL"
@@ -140,6 +214,9 @@ msgstr "Относительный URL (начинается с \"/\")"
 
 msgid "Save"
 msgstr "Сохранить"
+
+msgid "Scripted object position"
+msgstr "Скриптовое положение объекта"
 
 msgid "Select"
 msgstr "Выбрать"
@@ -196,8 +273,20 @@ msgstr "Загрузить файл"
 msgid "Upload image"
 msgstr "Загрузите изображение"
 
+msgid "Upload visual object image"
+msgstr "Загрузить изображение визуального объекта"
+
 msgid "Uploading data..."
 msgstr "Отправка данных..."
+
+msgid "Visibility condition"
+msgstr "Условие видимости"
+
+msgid "You are using old version of Opera browser. It has known bugs that may prevent form uploads from working. Please upgrade to the recent Opera version or use Firefox or Chrome."
+msgstr "Вы используете старую версию браузера Opera. В ней есть известные баги, из-за которых может не работать загрузка файлов на сервер. Пожалуйста, обновите Opera до свежей версии или воспользуйтесь Firefox или Chrome."
+
+msgid "Your action is already being sent to server"
+msgstr "Ваше действие уже отправляется на сервер"
 
 msgid "Zone"
 msgstr "Зона"
@@ -224,8 +313,6 @@ msgstr "Зона"
 #~ msgstr "Адрес e-mail"
 #~ msgid "Subsciption to the project news"
 #~ msgstr "Подписка на новости проекта"
-#~ msgid "Error loading %s: %s"
-#~ msgstr "Ошибка при загрузке %s: %s"
 #~ msgid "Category title"
 #~ msgstr "Название раздела"
 #~ msgid "Category description"

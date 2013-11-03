@@ -6,6 +6,7 @@ img { border: none }
 #page-table { background-image: url(/st/constructor/index/grad.gif); background-repeat: repeat-x; background-position: 0% 50%; height: 100%; width: 100%; }
 #page-td {vertical-align: middle; text-align: center }
 #page-td-cabinet { vertical-align: top; text-align: center }
+#page-disclaimer { position: absolute; z-index: 10; right: 10px; bottom: 10px; color: #ffffff }
 #cab-toplogo { height: 200px; width: 100% }
 #cab-toplogo td { text-align: center }
 #page-bottom { height: 50px; vertical-align: bottom; text-align: center; color: #80b8cd; font-size: 11px; padding: 40px 10px 40px 10px }
@@ -35,7 +36,7 @@ img { border: none }
 .form-bg { background-color: #fbfbfb; border: solid 1px #e5e5e5; }
 .form-bg:focus { border: solid 3px #b4bac2; margin: 1px 0px 18px 0px; }
 input.form-bg, select.form-bg { font-size: 22px; color: #777777; padding: 3px; margin: 3px 0px 20px 0px }
-.form-submit { width: 125px; height: 31px; background: none; background-image: url(/st/constructor/index/form_btn.gif); background-position: 50% 100%; background-repeat: no-repeat; color: #262626; border: 0 }
+.form-submit { width: 125px; height: 31px; background: none; background-image: url(/st/constructor/index/form_btn.gif); background-position: 50% 100%; background-repeat: no-repeat; color: #262626; border: 0; font-size: 14px }
 .form-control { text-align: center; }
 .form-std-form-row { width: 100% }
 .form-list-messages-bottom { padding-top: 15px; color: #898989; }

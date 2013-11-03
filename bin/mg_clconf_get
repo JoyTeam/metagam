@@ -1,0 +1,24 @@
+#!/usr/bin/python2.6
+
+from mg.constructor.processes import ConstructorInstance
+import mg
+import sys
+import os
+import json
+
+def main():
+    inst = ConstructorInstance("dbconf_get", "metagam")
+    app = inst.int_app
+    if len(sys.argv) == 1:
+        print json.dumps(inst.dbconfig.data, indent=4)
+    elif len(sys.argv) == 2:
+        val = inst.dbconfig.data.get(sys.argv[1])
+        if type(val) == dict or type(val) == list:
+            print json.dumps(val, indent=4)
+        elif val is not None:
+            print val
+    else:
+        print "usage: mg_clconf_get [<key>]"
+        os._exit(1)
+
+mg.dispatch(main)

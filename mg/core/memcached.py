@@ -1,5 +1,6 @@
-from concurrence.memcache.client import MemcacheConnection, MemcacheResult
+from concurrence.memcache.client import Memcache, MemcacheResult
 from concurrence import Tasklet
+from mg.core.tools import utf2str
 import stackless
 import re
 import time
@@ -11,47 +12,34 @@ import random
 class MemcachedEmptyKeyError(Exception):
     pass
 
-class MemcachedConnection(MemcacheConnection):
-    def __init__(self, *args, **kwargs):
-        MemcacheConnection.__init__(self, *args, **kwargs)
-        #print "init %s" % self
-
-    def __del__(self):
-        #print "del %s" % self
-        #self.close()
-        pass
-
 class MemcachedPool(object):
     """
-    Handles pool of MemcachedConnection objects, allowing get and put operations.
+    Handles pool of Memcache objects, allowing get and put operations.
     Connections are created on demand
     """
-    def __init__(self, host=("127.0.0.1", 11211), size=8):
+    def __init__(self, hosts=[("127.0.0.1", 11211)], size=8):
         """
         size - max amount of active memcached connections (None if no limit)
         """
-        self.host = tuple(host)
+        self.hosts = [(a, 100) for a in hosts]
+        self.hosts_version = 0
         self.connections = []
         self.size = size
         self.allocated = 0
         self.channel = None
         self.last_debug = 0
 
-    def set_host(self, host):
-        self.host = tuple(host)
+    def set_hosts(self, hosts):
+        self.hosts = hosts
+        self.hosts_version += 1
         del self.connections[:]
         self.allocated = 0
 
     def new_connection(self):
-        "Create a new MemcachedConnection and connect it"
-        while True:
-            try:
-                connection = MemcachedConnection(self.host)
-                connection.connect()
-                return connection
-            except IOError as e:
-                logging.getLogger("mg.core.memcached.MemcachedPool").error("Error connecting to memcached: %s", e)
-            Tasklet.sleep(0.3)
+        "Create a new Memcached and connect it"
+        conn = Memcache(self.hosts)
+        conn._hosts_version = self.hosts_version
+        return conn
 
     def get(self):
         "Get a connection from the pool. If the pool is empty, current tasklet will be locked"
@@ -79,7 +67,7 @@ class MemcachedPool(object):
     def put(self, connection):
         "Return a connection to the pool"
         # If memcached host changed
-        if connection._address != self.host:
+        if connection._hosts_version != self.hosts_version:
             self.put(self.new_connection())
         else:
             # If somebody waits on the channel
@@ -129,9 +117,6 @@ class Memcached(object):
                     raise MemcachedEmptyKeyError()
                 query_keys.append(qk)
             got = connection.get_multi(query_keys)
-            if got[0] == MemcacheResult.ERROR or got[0] == MemcacheResult.TIMEOUT:
-                self.pool.new()
-                return {}
             res = {}
             for item in got[1].iteritems():
                 (key, data) = item
@@ -318,13 +303,29 @@ class MemcachedLock(object):
         mc - Memcached instance
         keys - list of keys to lock
         """
+        # Filter out keys that are already locked by the current tasklet
+        tasklet_locks = self.tasklet_locks()
+        self.keys = []
+        for key in sorted(keys):
+            mkey = "LOCK-" + str(key)
+            if mkey not in tasklet_locks:
+                self.keys.append(mkey)
+
         self.mc = mc
-        self.keys = ["LOCK-" + str(key) for key in sorted(keys)]
         self.patience = patience
         self.delay = delay
         self.locked = None
         self.ttl = ttl
         self.value = str(value_prefix) + str(id(Tasklet.current()))
+
+    def tasklet_locks(self):
+        tasklet = Tasklet.current()
+        try:
+            return tasklet.memcached_locks
+        except AttributeError:
+            locks = set()
+            tasklet.memcached_locks = locks
+            return locks
 
     def __del__(self):
         self.__exit__(None, None, None)
@@ -335,32 +336,40 @@ class MemcachedLock(object):
         start = None
         while True:
             locked = []
-            success = True
-            badlock = None
-            for key in self.keys:
-                if self.mc.add(key, self.value, self.ttl) == MemcacheResult.STORED:
-                    locked.append(key)
-                else:
-                    for k in locked:
-                        self.mc.delete(k)
-                    success = False
-                    badlock = (key, self.mc.get(key))
-                    break
-            if success:
-                self.locked = time.time()
-                return
-            Tasklet.sleep(self.delay)
-            if start is None:
-                start = time.time()
-            elif time.time() > start + self.patience:
-                logging.getLogger("mg.core.memcached.MemcachedLock").error("Timeout waiting lock %s (locked by %s)" % badlock)
-                logging.getLogger("mg.core.memcached.MemcachedLock").error(traceback.format_stack())
+            try:
+                success = True
+                badlock = None
                 for key in self.keys:
-                    self.mc.set(key, self.value, self.ttl)
-                self.locked = time.time()
-                return
+                    if self.mc.add(key, self.value, self.ttl) != MemcacheResult.NOT_STORED:
+                        locked.append(key)
+                    else:
+                        for k in locked:
+                            self.mc.delete(k)
+                        success = False
+                        badlock = (key, self.mc.get(key))
+                        break
+                if success:
+                    self.locked = time.time()
+                    self.onlocked()
+                    return
+                Tasklet.sleep(self.delay)
+                if start is None:
+                    start = time.time()
+                elif time.time() > start + self.patience:
+                    logging.getLogger("mg.core.memcached.MemcachedLock").error("Timeout waiting lock %s (locked by %s)" % badlock)
+                    logging.getLogger("mg.core.memcached.MemcachedLock").error(traceback.format_stack())
+                    for key in self.keys:
+                        self.mc.set(key, self.value, self.ttl)
+                    self.locked = time.time()
+                    self.onlocked()
+                    return
+            except Exception:
+                logging.getLogger("mg.core.memcached.MemcachedLock").error("Exception during locking. Unlock everything immediately")
+                for k in locked:
+                    self.mc.delete(k)
+                raise
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type, value, tb):
         if self.mc is None:
             return
         if self.locked is not None:
@@ -368,3 +377,38 @@ class MemcachedLock(object):
                 for key in self.keys:
                     self.mc.delete(key)
             self.locked = None
+            self.onunlocked()
+
+    def trylock(self):
+        if self.mc is None:
+            return False
+        locked = []
+        try:
+            for key in self.keys:
+                if self.mc.add(key, self.value, self.ttl) != MemcacheResult.NOT_STORED:
+                    locked.append(key)
+                else:
+                    for k in locked:
+                        self.mc.delete(k)
+                    return False
+        except Exception:
+            logging.getLogger("mg.core.memcached.MemcachedLock").error("Exception during trylock. Unlock everything immediately")
+            for k in locked:
+                self.mc.delete(k)
+            raise
+        self.locked = time.time()
+        self.onlocked()
+        return True
+
+    def unlock(self):
+        self.__exit__(None, None, None)
+
+    def onlocked(self):
+        tasklet_locks = self.tasklet_locks()
+        for key in self.keys:
+            tasklet_locks.add(key)
+
+    def onunlocked(self):
+        tasklet_locks = self.tasklet_locks()
+        for key in self.keys:
+            tasklet_locks.discard(key)

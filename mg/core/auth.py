@@ -1,5 +1,5 @@
 from mg.core.cass import CassandraObject, CassandraObjectList, ObjectNotFoundException
-from mg.core import Module
+from mg.core.applications import Module
 from uuid import uuid4
 from wsgiref.handlers import format_date_time
 from datetime import datetime
@@ -167,7 +167,7 @@ class Sessions(Module):
                 if session.get("updated") < self.now(-3600):
                     with self.lock(["session.%s" % session.uuid]):
                         session.load()
-                        session.set("valid_till", "%020d" % (time.time() + 90 * 86400))
+                        session.set("valid_till", "%020d" % (self.time() + 90 * 86400))
                         session.set("updated", self.now())
                         if session.get("ip") != req.remote_addr():
                             session.set("ip", req.remote_addr())
@@ -194,7 +194,7 @@ class Sessions(Module):
             req.set_cookie(cookie_name, sid, **args)
             # newly created session is stored for 24 hour only
             # this interval is increased after the next successful 'get'
-            session.set("valid_till", "%020d" % (time.time() + 86400))
+            session.set("valid_till", "%020d" % (self.time() + 86400))
             session.set("ip", req.remote_addr())
             # Time in the past. This guarantees that get_session will properly update valid_till on the next get
             session.set("updated", self.now(-3601))
@@ -288,11 +288,11 @@ class Interface(Module):
         sched.add("auth.cleanup", "5 1 * * *", priority=10)
 
     def cleanup(self):
-        sessions = self.objlist(SessionList, query_index="valid_till", query_finish="%020d" % time.time())
+        sessions = self.objlist(SessionList, query_index="valid_till", query_finish="%020d" % self.time())
         sessions.remove()
-        captchas = self.objlist(CaptchaList, query_index="valid_till", query_finish="%020d" % time.time())
+        captchas = self.objlist(CaptchaList, query_index="valid_till", query_finish="%020d" % self.time())
         captchas.remove()
-        autologins = self.objlist(AutoLoginList, query_index="valid_till", query_finish="%020d" % time.time())
+        autologins = self.objlist(AutoLoginList, query_index="valid_till", query_finish="%020d" % self.time())
         autologins.remove()
         authlog = self.objlist(AuthLogList, query_index="performed", query_finish=self.now(-365 * 86400))
         authlog.remove()
@@ -300,7 +300,7 @@ class Interface(Module):
         banips.remove()
 
     def cleanup_inactive_users(self):
-        users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (time.time() - 86400 * 3))
+        users = self.objlist(UserList, query_index="inactive", query_equal="1", query_finish="%020d" % (self.time() - 86400 * 3))
         users.remove()
 
     def objclasses_list(self, objclasses):
@@ -370,7 +370,7 @@ class Interface(Module):
             if not form.errors:
                 email = email.lower()
                 user = self.obj(User)
-                now = "%020d" % time.time()
+                now = "%020d" % self.time()
                 user.set("created", now)
                 user.set("last_login", now)
                 user.set("sex", sex)
@@ -400,10 +400,10 @@ class Interface(Module):
                 self.call("session.log", act="register", session=session.uuid, ip=req.remote_addr(), user=user.uuid)
                 params = {
                     "subject": self._("Account activation"),
-                    "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+                    "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\n{protocol}://{host}/auth/activate/{user}?code={code}"),
                 }
                 self.call("auth.activation_email", params)
-                self.call("email.send", email, name, params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid))
+                self.call("email.send", email, name, params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid, protocol=self.app().protocol))
                 self.call("web.redirect", "/auth/activate/%s" % user.uuid)
         if redirect is not None:
             form.hidden("redirect", redirect)
@@ -530,10 +530,10 @@ class Interface(Module):
                 user.store()
                 params = {
                     "subject": self._("Account activation"),
-                    "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/activate/{user}?code={code}"),
+                    "content": self._("Someone possibly you requested registration on the {host}. If you really want to do this enter the following activation code on the site:\n\n{code}\n\nor simply follow the link:\n\n{protocol}://{host}/auth/activate/{user}?code={code}"),
                 }
                 self.call("auth.activation_email", params)
-                self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid))
+                self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=activation_code, host=req.host(), user=user.uuid, protocol=self.app().protocol))
                 self.call("web.redirect", "/auth/activate/%s" % user.uuid)
         form.input(self._("New e-mail"), "email", email)
         form.input('<img id="captcha" src="/auth/captcha" alt="" /><br />' + self._('Enter a number (6 digits) from the picture'), "captcha", "")
@@ -696,7 +696,7 @@ class Interface(Module):
         del draw
         captcha = self.obj(Captcha, session.uuid, silent=True)
         captcha.set("number", number)
-        captcha.set("valid_till", "%020d" % (time.time() + 86400))
+        captcha.set("valid_till", "%020d" % (self.time() + 86400))
         captcha.store()
         data = cStringIO.StringIO()
         image = image.filter(ImageFilter.MinFilter(3))
@@ -939,10 +939,10 @@ class Interface(Module):
                 user.store()
                 params = {
                     "subject": self._("E-mail confirmation"),
-                    "content": self._("Someone possibly you requested e-mail change on the {host}. If you really want to do this enter the following confirmation code on the site:\n\n{code}\n\nor simply follow the link:\n\nhttp://{host}/auth/email/confirm?code={code}"),
+                    "content": self._("Someone possibly you requested e-mail change on the {host}. If you really want to do this enter the following confirmation code on the site:\n\n{code}\n\nor simply follow the link:\n\n{protocol}://{host}/auth/email/confirm?code={code}"),
                 }
                 self.call("auth.email_change_email", params)
-                self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=code, host=req.host()))
+                self.call("email.send", email, user.get("name"), params["subject"], params["content"].format(code=code, host=req.host(), protocol=self.app().protocol))
                 self.call("web.redirect", "/auth/email/confirm")
         form.hidden("prefix", prefix)
         form.input(self._("New e-mail address"), "email", email)
@@ -969,7 +969,7 @@ class Interface(Module):
     def auth_permissions(self, user_id):
         perms = {}
         if user_id:
-            if user_id == self.app().inst.config.get("admin_user"):
+            if user_id == self.clconf("admin_user"):
                 perms["admin"] = True
                 perms["global.admin"] = True
                 perms["global_admin"] = True
@@ -1244,7 +1244,7 @@ class Interface(Module):
     def autologin(self, user_uuid, interval=60):
         autologin = self.obj(AutoLogin, data={})
         autologin.set("user", user_uuid)
-        autologin.set("valid_till", "%020d" % (time.time() + interval))
+        autologin.set("valid_till", "%020d" % (self.time() + interval))
         autologin.store()
         return autologin.uuid
 
@@ -1376,7 +1376,7 @@ class Interface(Module):
                         self.call("web.not_found")
         rows = []
         lst = self.objlist(AuthLogList, query_index=index, query_equal=equal, query_reversed=True, query_limit=log_per_page)
-        lst.load()
+        lst.load(silent=True)
         users = {}
         for ent in lst:
             if ent.get("user"):

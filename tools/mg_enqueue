@@ -1,0 +1,23 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+import mg
+import os
+import json
+import sys
+from mg.constructor.processes import ConstructorInstance
+
+def main():
+    inst = ConstructorInstance("enqueue", "metagam")
+    # parse cmdline
+    if len(inst.cmdline_args) != 3:
+        print "usage: mg_enqueue <class> <app> <hook>"
+        os._exit(1)
+    app_cls = inst.cmdline_args[0]
+    app_tag = inst.cmdline_args[1]
+    hook = inst.cmdline_args[2]
+    inst.int_app.load(["mg.core.queue.Queue"])
+    inst.int_app.call("queue.add", hook, app_tag=app_tag, app_cls=app_cls)
+    os._exit(0)
+
+mg.dispatch(main)

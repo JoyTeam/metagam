@@ -1,0 +1,28 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+import mg
+import os
+import json
+import sys
+from mg.constructor.processes import ConstructorInstance
+from mg.constructor.reqauction import DBRequestList
+
+def main():
+    inst = ConstructorInstance("reqauction_reset", "metagam")
+    # parse cmdline
+    if len(inst.cmdline_args) != 1:
+        print "usage: mg_reqauction_reset <project>"
+        os._exit(1)
+    tag = inst.cmdline_args[0]
+    app = inst.appfactory.get_by_tag(tag)
+    lst = app.objlist(DBRequestList, query_index="all")
+    lst.load(silent=True)
+    for r in lst:
+        r.set("category", "none")
+        #r.delkey("parent")
+    lst.store()
+    sys.stdout.flush()
+    os._exit(0)
+
+mg.dispatch(main)

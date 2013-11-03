@@ -3,7 +3,7 @@
 from mg import *
 from operator import itemgetter
 from uuid import uuid4
-from mg.core.cluster import StaticUploadError
+from mg.core.common import StaticUploadError
 from concurrence.http import HTTPError
 from concurrence import Timeout, TimeoutError
 from PIL import Image, ImageEnhance
@@ -24,6 +24,7 @@ edit_comment_timeout = 900
 
 re_trim = re.compile(r'^\s*(.*?)\s*$', re.DOTALL)
 re_r = re.compile(r'\r')
+re_newline = re.compile(r'\n')
 re_emptylines = re.compile(r'(\s*\n)+\s*')
 re_trimlines = re.compile(r'^\s*(.*?)\s*$', re.DOTALL | re.MULTILINE)
 re_images = re.compile(r'\[img:([0-9a-f]+)\]')
@@ -43,6 +44,7 @@ re_urls = re.compile(r'(.*?)(((?:http|ftp|https):\/\/|(?=www|ftp)|(?=(?:[a-z][\-
 re_email = re.compile(r'(.*?)(\w[\w\-\.]*\@[a-z0-9][a-z0-9_\-]*(?:\.[a-z0-9][a-z0-9_\-]*)*)(.*)', re.IGNORECASE | re.DOTALL)
 re_split_tags = re.compile(r'\s*(,\s*)+')
 re_text_chunks = re.compile(r'.{1000,}?\S*|.+', re.DOTALL)
+re_any_tag = re.compile(r'\[\/?[a-z]+(?:=([^\[\]]+)|)\]')
 delimiters = r'\s\.,\-\!\&\(\)\'"\:;\<\>\/\?\`\|»\—«\r\n'
 re_word_symbol = re.compile(r'[^%s]' % delimiters)
 re_not_word_symbol = re.compile(r'[%s]' % delimiters)
@@ -51,6 +53,7 @@ re_format_date = re.compile(r'^(\d\d\d\d)-(\d\d)-(\d\d) \d\d:\d\d:\d\d$')
 re_valid_date = re.compile(r'^(\d\d\.\d\d\.\d\d\d\d|\d\d\.\d\d\.\d\d\d\d \d\d:\d\d:\d\d)$')
 re_valid_tag = re.compile(r'^[\w\- ]+$', re.UNICODE)
 re_whitespace = re.compile(r'\s+')
+re_search_query = re.compile(r'"([^"]*)"|-([^%s]+)|([^%s]+)' % (delimiters, delimiters))
 
 class UserForumSettings(CassandraObject):
     clsname = "UserForumSettings"
@@ -207,6 +210,7 @@ class ForumAdmin(Module):
                 self.call("web.not_found")
         if req.param("ok"):
             errors = {}
+            values = {}
             title = req.param("title")
             topcat = req.param("topcat")
             description = req.param("description")
@@ -223,6 +227,7 @@ class ForumAdmin(Module):
                 errors["order"] = self._("Enter category order")
             elif not re.match(r'^-?(?:\d+|\d+\.\d+)$', order):
                 errors["order"] = self._("Invalid numeric format")
+            self.call("admin-forum.category-validate", values, errors)
             if len(errors):
                 self.call("web.response_json", {"success": False, "errors": errors})
             categories = self.call("forum.categories")
@@ -237,6 +242,7 @@ class ForumAdmin(Module):
             cat["default_subscribe"] = True if default_subscribe else False
             cat["manual_date"] = manual_date
             cat["allow_skip_notify"] = allow_skip_notify
+            self.call("admin-forum.category-store", values, cat)
             conf = self.app().config_updater()
             conf.set("forum.categories", categories)
             conf.store()
@@ -292,6 +298,7 @@ class ForumAdmin(Module):
                 "type": "checkbox",
             },
         ]
+        self.call("admin-forum.category-form", cat, fields)
         self.call("admin.form", fields=fields)
 
     def headmenu_forum_category(self, args):
@@ -419,6 +426,10 @@ class Socio(Module):
             lst.extend(["mg.constructor.library.Library"])
         if self.conf("module.socialnets"):
             lst.extend(["mg.constructor.socialnets.SocialNets"])
+        if self.conf("module.forum-rules"):
+            lst.extend(["mg.socio.rules.ForumRules"])
+        if self.conf("module.news"):
+            lst.extend(["mg.socio.news.News"])
         return lst
 
     def modules_list(self, modules):
@@ -442,6 +453,16 @@ class Socio(Module):
                 "id": "socialnets",
                 "name": self._("Social networks interconnection"),
                 "description": self._("Ability to put Google +1 and Facebook Like buttons"),
+                "parent": "socio",
+            }, {
+                "id": "forum-rules",
+                "name": self._("Interactive forum rules"),
+                "description": self._("Administator enters list of rules and they are shown to users in the form of exam"),
+                "parent": "socio",
+            }, {
+                "id": "news",
+                "name": self._("News"),
+                "description": self._("Creation, modification and publication of news"),
                 "parent": "socio",
             }
         ])
@@ -492,6 +513,9 @@ class Socio(Module):
         return req._socio_semi_user
 
     def word_extractor(self, text):
+        # remove tags
+        text = re_any_tag.sub('', text)
+        # extract words
         for chunk in re_text_chunks.finditer(text):
             text = chunk.group()
             while True:
@@ -516,7 +540,7 @@ class Socio(Module):
                     break
 
     def fulltext_store(self, group, uuid, words):
-        timestamp = time.time() * 1000
+        timestamp = self.time() * 1000
         app_tag = str(self.app().tag)
         cnt = dict()
         for word in words:
@@ -554,7 +578,7 @@ class Socio(Module):
             self.app().db.batch_mutate(mutations, ConsistencyLevel.QUORUM)
 
     def fulltext_remove(self, group, uuid):
-        timestamp = time.time() * 1000
+        timestamp = self.time() * 1000
         app_tag = str(self.app().tag)
         if self.app().db.storage == 0:
             key = "%s_Search_%s" % (group, uuid)
@@ -580,11 +604,14 @@ class Socio(Module):
                 self.db().batch_mutate({"%s_*" % self.app().db.app: {cf: mutations}}, ConsistencyLevel.QUORUM)
                 self.db().remove("%s_%s" % (self.app().db.app, uuid), ColumnPath(cf), timestamp, ConsistencyLevel.QUORUM)
 
-    def fulltext_search(self, group, words):
+    def fulltext_search(self, group, tokens):
         app_tag = str(self.app().tag)
         render_objects = None
-        for word in words:
-            query_search = word
+        tokens.sort(cmp=lambda x, y: cmp(x.get("substract", False), y.get("substract", False)))
+        for token in tokens:
+            query_search = self.stem(token["word"].lower())
+            if len(query_search) < 3:
+                continue
             if len(query_search) > max_word_len:
                 query_search = query_search[0:max_word_len]
             start = (query_search + "//").encode("utf-8")
@@ -598,8 +625,14 @@ class Socio(Module):
             elif self.app().db.storage == 2:
                 row = "%s_*" % self.app().db.app
                 cf = "%s_Search" % group
-            objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in self.app().db.get_slice(row, ColumnParent(cf), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)])
-            if render_objects is None:
+            objs = self.app().db.get_slice(row, ColumnParent(cf), SlicePredicate(slice_range=SliceRange(start, finish, count=10000000)), ConsistencyLevel.QUORUM)
+            objs = dict([(re_remove_word.sub('', obj.column.name), int(obj.column.value)) for obj in objs])
+            if token.get("substract"):
+                if render_objects:
+                    for k, v in render_objects.items():
+                        if k in objs:
+                            del render_objects[k]
+            elif render_objects is None:
                 render_objects = objs
             else:
                 for k, v in render_objects.items():
@@ -844,7 +877,7 @@ class Socio(Module):
         vars = {
             "title": self._("Upload image")
         }
-        self.call("socio.response_simple", form.html(), vars)
+        self.call("socio.response_simple", form.html(renderer="socio.render-form"), vars)
 
     def ext_user(self):
         req = self.req()
@@ -875,6 +908,8 @@ class Forum(Module):
         self.rhook("forum.categories", self.categories)                 # get list of forum categories
         self.rhook("forum.newtopic", self.newtopic)                     # create new topic
         self.rhook("forum.reply", self.reply)                           # reply in the topic
+        self.rhook("forum.topic-delete", self.topic_delete)             # delete topic
+        self.rhook("forum.topic-update", self.topic_update)
         self.rhook("forum.notify-newtopic", self.notify_newtopic)
         self.rhook("forum.notify-reply", self.notify_reply)
         self.rhook("socio.setup-interface", self.setup_interface)
@@ -891,6 +926,8 @@ class Forum(Module):
         self.rhook("ext-forum.unsubscribe", self.ext_unsubscribe, priv="logged")
         self.rhook("ext-forum.pin", self.ext_pin, priv="logged")
         self.rhook("ext-forum.unpin", self.ext_unpin, priv="logged")
+        self.rhook("ext-forum.close", self.ext_close, priv="logged")
+        self.rhook("ext-forum.open", self.ext_open, priv="logged")
         self.rhook("ext-forum.move", self.ext_move, priv="logged")
         self.rhook("ext-forum.tag", self.ext_tag, priv="public")
         self.rhook("ext-forum.tags", self.ext_tags, priv="public")
@@ -899,7 +936,6 @@ class Forum(Module):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("auth.registered", self.auth_registered)
         self.rhook("queue-gen.schedule", self.schedule)
-        self.rhook("hook-forum.news", self.news)
         self.rhook("forum.may_read", self.may_read)
         self.rhook("forum.may_write", self.may_write)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
@@ -944,6 +980,8 @@ class Forum(Module):
         silence = self.silence(self.call("socio.user"))
         if silence:
             vars["socio_message_top"] = self.call("socio-admin.message-silence").format(till=self.call("l10n.time_local", silence.get("till")))
+            if silence.get("reason_user"):
+                vars["socio_message_top"] += u"<br />%s" % re_newline.sub('<br />', htmlescape(silence.get("reason_user")))
         else:
             vars["socio_message_top"] = self.conf("socio.message-top")
 
@@ -1090,9 +1128,19 @@ class Forum(Module):
             if errors is not None:
                 errors["may_write"] = self._("You are not logged in")
             return False
-        if self.silence(user):
+        if topic:
+            if topic.get("closed"):
+                if errors is not None:
+                    errors["may_write"] = self._("This topic is closed")
+                return False
+        slc = self.silence(user)
+        if slc:
             if errors is not None:
                 errors["may_write"] = self._("Silence restraint")
+                if slc.get("reason_user"):
+                    html = htmlescape(slc.get("reason_user"))
+                    html = u"<br />%s" % re_newline.sub(u'<br />', html)
+                    errors["may_write"] += html
             return False
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
@@ -1115,9 +1163,12 @@ class Forum(Module):
             if errors is not None:
                 errors["may_create_topic"] = self._("You are not logged on")
             return False
-        if self.silence(user):
+        slc = self.silence(user)
+        if slc:
             if errors is not None:
                 errors["may_create_topic"] = self._("Silence restraint")
+                if slc.get("reason_user"):
+                    errors["may_create_topic"] += u"<br />%s" % re_newline.sub('<br />', htmlescape(slc.get("reason_user")))
             return False
         rules, roles = self.load_rules_roles(user, cat, rules, roles)
         if rules is None:
@@ -1136,6 +1187,8 @@ class Forum(Module):
     def may_edit(self, cat, topic=None, post=None, rules=None, roles=None):
         req = self.req()
         user = self.call("socio.user")
+        if topic.get("news_entry") and post is None:
+            return False
         if user is None:
             return False
         if self.silence(user):
@@ -1186,6 +1239,9 @@ class Forum(Module):
             if perm == "+M" and role in roles:
                 return True
         return False
+
+    def may_close(self, cat, topic=None, rules=None, roles=None):
+        return self.may_moderate(cat, topic, rules, roles)
 
     def may_pin(self, cat, topic=None, rules=None, roles=None):
         return self.may_moderate(cat, topic, rules, roles)
@@ -1386,6 +1442,10 @@ class Forum(Module):
                     form.error("created", self._("Invalid datetime format"))
             self.call("forum.topic-form", None, form, "validate")
             if not form.errors:
+                err = self.call("forum.rules-agreement", cat, form)
+                if err:
+                    form.error("content", err)
+            if not form.errors:
                 if req.param("publish"):
                     user = self.obj(User, self.call("socio.user"))
                     topic = self.call("forum.newtopic", cat, user, subject, content, tags, date_from_human(created) if created else None, notify=notify)
@@ -1413,7 +1473,7 @@ class Forum(Module):
                 { "html": self._("New topic") },
             ],
         }
-        self.call("socio.response", form.html(), vars)
+        self.call("socio.response", form.html(renderer="socio.render-form"), vars)
 
     def newtopic(self, cat, author, subject, content, tags="", created=None, notify=True):
         topic = self.obj(ForumTopic)
@@ -1424,7 +1484,7 @@ class Forum(Module):
         topic.set("created", created)
         topic.set("updated", created)
         catstat = self.catstat(cat["id"])
-        catstat.set("updated", time.time())
+        catstat.set("updated", self.time())
         catstat.incr("topics")
         last = {
             "topic": topic.uuid,
@@ -1456,7 +1516,7 @@ class Forum(Module):
             self.subscribe(author.uuid, topic.uuid, cat["id"], created)
         catstat.store()
         if notify:
-            self.call("queue.add", "forum.notify-newtopic", {"topic_uuid": topic.uuid}, retry_on_fail=True)
+            self.call("queue.add", "forum.notify-newtopic", {"topic_uuid": topic.uuid})
         return topic
 
     def tags_parse(self, tags_str):
@@ -1475,7 +1535,7 @@ class Forum(Module):
         tags = self.tags_parse(tags_str)
         mutations = {}
         mutations_tags = []
-        timestamp = time.time() * 1000
+        timestamp = self.time() * 1000
         app_tag = str(self.app().tag)
         for tag in tags:
             tag_short = tag
@@ -1514,7 +1574,7 @@ class Forum(Module):
         else:
             tags = self.tags_parse(tags_str)
         mutations = {}
-        timestamp = time.time() * 1000
+        timestamp = self.time() * 1000
         app_tag = str(self.app().tag)
         short_tags = []
         for tag in tags:
@@ -1577,7 +1637,7 @@ class Forum(Module):
             post.set("topic", topic.uuid)
             post.set("created", now)
             catstat = self.catstat(cat["id"])
-            catstat.set("updated", time.time())
+            catstat.set("updated", self.time())
             catstat.incr("replies")
             last = {
                 "topic": topic.uuid,
@@ -1601,7 +1661,7 @@ class Forum(Module):
             posts = len(self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid))
             page = (posts - 1) / posts_per_page + 1
             catstat.store()
-            self.call("queue.add", "forum.notify-reply", {"topic_uuid": topic.uuid, "page": page, "post_uuid": post.uuid}, retry_on_fail=True)
+            self.call("queue.add", "forum.notify-reply", {"topic_uuid": topic.uuid, "page": page, "post_uuid": post.uuid})
             self.call("socio.fulltext_store", "ForumSearch", post.uuid, self.call("socio.word_extractor", content))
             raise Hooks.Return((post, page))
 
@@ -1639,6 +1699,8 @@ class Forum(Module):
         if topic_content.get("tags"):
             topic_data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [htmlescape(tag) for tag in topic_content.get("tags")]])
         self.topics_htmlencode([topic_data], load_settings=True)
+        # adding Character object into topic_data (if possible)
+        topic_data["author"] = self.call("character.get", topic.get("author"))
         # preparing menu
         menu = [
             { "href": "/forum", "html": self._("Forum categories") },
@@ -1680,6 +1742,11 @@ class Forum(Module):
                         menu.append({"href": "/forum/unpin/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("unpin"), "right": True})
                     else:
                         menu.append({"href": "/forum/pin/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("pin"), "right": True})
+                if self.may_close(cat, topic, rules=rules, roles=roles):
+                    if topic.get("closed"):
+                        menu.append({"href": "/forum/open/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("open"), "right": True})
+                    else:
+                        menu.append({"href": "/forum/close/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("close"), "right": True})
                 if self.may_move(cat, topic, rules=rules, roles=roles):
                     menu.append({"href": "/forum/move/%s?redirect=%s" % (topic.uuid, redirect), "html": self._("move"), "right": True})
         self.call("forum.topic-menu", topic, menu)
@@ -1696,6 +1763,8 @@ class Forum(Module):
                 actions.append('<a href="/forum/reply/' + topic.uuid + '/' + post["uuid"] + '">' + self._("reply") + '</a>')
             if len(actions):
                 post["post_actions"] = " / ".join(actions)
+            # adding Character object into post data (if possible)
+            post["author"] = self.call("character.get", post.get("author"))
         # reply form
         content = req.param("content")
         form = self.call("web.form", action="/forum/topic/" + topic.uuid + "#post-form")
@@ -1703,9 +1772,13 @@ class Forum(Module):
             errors = {}
             if not content:
                 form.error("content", self._("Enter post content"))
-            elif not self.may_write(cat, rules=rules, roles=roles, errors=errors):
+            elif not self.may_write(cat, topic, rules=rules, roles=roles, errors=errors):
                 form.error("content", errors.get("may_write", self._("Access denied")))
             self.call("forum.reply-form", form, "validate")
+            if not form.errors:
+                err = self.call("forum.rules-agreement", cat, form)
+                if err:
+                    form.error("content", err)
             if not form.errors:
                 if req.param("save"):
                     user = self.obj(User, self.call("socio.user"))
@@ -1721,9 +1794,11 @@ class Forum(Module):
             "show_topic": page <= 1,
             "posts": posts,
             "menu": menu,
+            "author_online_text": self._("Status: %s") % self._("Online"),
+            "author_offline_text": self._("Status: %s") % self._("Offline"),
         }
         errors = {}
-        if req.ok() or (self.may_write(cat, rules=rules, roles=roles, errors=errors) and (page == pages)):
+        if req.ok() or (self.may_write(cat, topic, rules=rules, roles=roles, errors=errors) and (page == pages)):
             if errors.get("may_write"):
                 form.error("content", errors["may_write"])
             form.texteditor(None, "content", content)
@@ -1731,8 +1806,8 @@ class Forum(Module):
             form.submit(None, "save", self._("Post reply"), inline=True)
             self.call("forum.reply-form", form, "render")
             if req.ok():
-                self.call("socio.response", form.html(), vars)
-            vars["new_post_form"] = form.html()
+                self.call("socio.response", form.html(renderer="socio.render-form"), vars)
+            vars["new_post_form"] = form.html(renderer="socio.render-form")
         else:
             if errors.get("may_write"):
                 vars["new_post_form"] = u'<div class="socio-access-error">%s</div>' % errors["may_write"]
@@ -1748,7 +1823,7 @@ class Forum(Module):
                 last_show = show
             pages_list[-1]["lst"] = True
             vars["pages"] = pages_list
-        vars["share_url"] = htmlescape("http://%s%s" % (getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), req.uri()))
+        vars["share_url"] = htmlescape("%s://%s%s" % (self.app().protocol, getattr(self.app(), "canonical_domain", "www.%s" % self.app().domain), req.uri()))
         self.call("forum.vars-topic", vars)
         self.call("socio.response_template", "topic.html", vars)
 
@@ -1904,7 +1979,7 @@ class Forum(Module):
                 { "html": self._("Reply") },
             ],
         }
-        self.call("socio.response", form.html(), vars)
+        self.call("socio.response", form.html(renderer="socio.render-form"), vars)
 
     def update_last(self, cat, stat):
         topics = self.objlist(ForumTopicList, query_index="category_list", query_equal=cat["id"], query_reversed=True, query_limit=1)
@@ -1959,22 +2034,49 @@ class Forum(Module):
             catstat.store()
             self.call("web.redirect", "/forum/topic/%s?page=%d%s" % (topic.uuid, page, prev))
         else:
-            posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic.uuid)
-            posts.remove()
-            lastread = self.objlist(ForumLastReadList, query_index="topic", query_equal=topic.uuid)
-            lastread.remove()
-            topic.remove()
-            topic_content = self.obj(ForumTopicContent, topic.uuid, {})
-            topic_content.remove()
-            self.call("forum.topic-form", topic, None, "delete")
-            catstat = self.catstat(cat["id"])
-            catstat.decr("topics")
-            catstat.decr("replies", len(posts))
-            if catstat.get("last") and catstat.get("last").get("topic") == topic.uuid:
-                self.update_last(cat, catstat)
-            catstat.store()
+            try:
+                self.call("forum.topic-delete", topic.uuid)
+            except ObjectNotFoundException: 
+                self.call("web.not_found")
             self.call("web.redirect", "/forum/cat/%s" % cat["id"])
-
+    
+    def topic_delete(self, uuid):
+        topic_obj = self.obj(ForumTopic, uuid)
+        posts = self.objlist(ForumPostList, query_index="topic", query_equal=topic_obj.uuid)
+        posts.remove()
+        lastread = self.objlist(ForumLastReadList, query_index="topic", query_equal=topic_obj.uuid)
+        lastread.remove()
+        topic_obj.remove()
+        topic_content = self.obj(ForumTopicContent, topic_obj.uuid, {})
+        topic_content.remove()
+        self.call("forum.topic-form", topic_obj, None, "delete")
+        cat = self.call("forum.category", topic_obj.get("category"))
+        catstat = self.catstat(cat["id"])
+        catstat.decr("topics")
+        catstat.decr("replies", len(posts))
+        if catstat.get("last") and catstat.get("last").get("topic") == topic_obj.uuid:
+            self.update_last(cat, catstat)
+        catstat.store()
+    
+    def topic_update(self, uuid, content = None, subject=None, tags=None):
+        #self.debug("topic_update %s %s %s %s", uuid, content, subject, tags)
+        topic_obj = self.obj(ForumTopic, uuid)
+        topic_content = self.obj(ForumTopicContent, topic_obj.uuid, {})
+        if not tags:
+            tags = topic_obj.get("tags")
+        with self.lock(["ForumTopic-" + topic_obj.uuid]):
+            topic_obj.set("subject", subject)
+            topic_content.set("content", content)
+            topic_content.set("content_html", self.call("socio.format_text", content))
+            self.tags_remove(topic_obj.uuid, topic_content.get("tags"))
+            tags = self.tags_store(topic_obj.uuid, tags)
+            topic_content.set("tags", tags)
+            topic_obj.store()
+            topic_content.store()
+            self.call("forum.topic-form", topic_obj, None, "store")
+            self.call("socio.fulltext_remove", "ForumSearch", topic_obj.uuid)
+            self.call("socio.fulltext_store", "ForumSearch", topic_obj.uuid, list(chain(self.call("socio.word_extractor", subject), self.call("socio.word_extractor", content))))
+    
     def ext_edit(self):
         cat, topic, post = self.category_or_topic_args()
         if not self.may_edit(cat, topic, post):
@@ -2054,7 +2156,7 @@ class Forum(Module):
                 form.input(self._("Tags (delimited with commas)"), "tags", tags)
             self.call("forum.topic-form", topic, form, "form")
         form.submit(None, None, self._("Save"))
-        self.call("socio.response", form.html(), vars)
+        self.call("socio.response", form.html(renderer="socio.render-form"), vars)
 
     def ext_settings(self):
         req = self.req()
@@ -2277,7 +2379,7 @@ class Forum(Module):
             form.add_message_top('<div class="form-avatar-demo"><img src="%s" alt="" /></div>' % avatar)
         if grayscale:
             form.add_message_top(self._('You can use grayscale avatars only. To get an ability to upload coloured avatars <a href="/socio/paid-services">please subscribe</a>'))
-        self.call("socio.response", form.html(), vars)
+        self.call("socio.response", form.html(renderer="socio.render-form"), vars)
 
     def ext_subscribe(self):
         req = self.req()
@@ -2355,6 +2457,46 @@ class Forum(Module):
             self.call("web.redirect", redirect)
         self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
 
+    def ext_close(self):
+        req = self.req()
+        with self.lock(["ForumTopic-" + req.args]):
+            try:
+                topic = self.obj(ForumTopic, req.args)
+            except ObjectNotFoundException:
+                self.call("web.not_found")
+            cat = self.call("forum.category", topic.get("category"))
+            if cat is None:
+                self.call("web.not_found")
+            if not self.may_close(cat, topic):
+                self.call("web.forbidden")
+            topic.set("closed", 1)
+            topic.sync()
+            topic.store()
+        redirect = req.param("redirect")
+        if redirect is not None and redirect != "":
+            self.call("web.redirect", redirect)
+        self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+
+    def ext_open(self):
+        req = self.req()
+        with self.lock(["ForumTopic-" + req.args]):
+            try:
+                topic = self.obj(ForumTopic, req.args)
+            except ObjectNotFoundException:
+                self.call("web.not_found")
+            cat = self.call("forum.category", topic.get("category"))
+            if cat is None:
+                self.call("web.not_found")
+            if not self.may_close(cat, topic):
+                self.call("web.forbidden")
+            topic.delkey("closed")
+            topic.sync()
+            topic.store()
+        redirect = req.param("redirect")
+        if redirect is not None and redirect != "":
+            self.call("web.redirect", redirect)
+        self.call("web.redirect", "/forum/topic/%s" % topic.uuid)
+
     def ext_move(self):
         req = self.req()
         with self.lock(["ForumTopic-" + req.args]):
@@ -2407,7 +2549,7 @@ class Forum(Module):
         vars = {
             "title": self._("Move topic: %s") % topic.get("subject")
         }
-        self.call("socio.response", form.html(), vars)
+        self.call("socio.response", form.html(renderer="socio.render-form"), vars)
 
     def auth_registered(self, user):
         settings = self.obj(UserForumSettings, user.uuid, {})
@@ -2426,8 +2568,14 @@ class Forum(Module):
 
     def notify_newtopic(self, topic_uuid):
         try:
+            req = self.req()
+        except AttributeError:
+            req = None
+        try:
             topic = self.obj(ForumTopic, topic_uuid)
         except ObjectNotFoundException:
+            if req is None:
+                return
             self.call("web.response_json", {"error": "Topic not found"})
         subscribers = self.objlist(UserForumSettingsList, query_index="notify_any", query_equal="1")
         subscribers.load()
@@ -2444,6 +2592,7 @@ class Forum(Module):
                 "author_name": topic.get("author_name"),
                 "topic_subject": topic.get("subject"),
                 "domain": self.app().domain,
+                "protocol": self.app().protocol,
                 "topic_uuid": topic.uuid,
             }
             if author:
@@ -2451,17 +2600,24 @@ class Forum(Module):
                 sex = author_obj.get("sex", 0)
             else:
                 sex = 0
-            self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has started new topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}").format(**vars)), immediately=True)
-        self.call("web.response_json", {"ok": 1})
+            self.call("email.users", users, self._("New topic: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has started new topic: {topic_subject}\n\n{protocol}://www.{domain}/forum/topic/{topic_uuid}").format(**vars)), immediately=True)
 
     def notify_reply(self, topic_uuid, page, post_uuid):
         try:
+            req = self.req()
+        except AttributeError:
+            req = None
+        try:
             topic = self.obj(ForumTopic, topic_uuid)
         except ObjectNotFoundException:
+            if req is None:
+                return
             self.call("web.response_json", {"error": "Topic not found"})
         try:
             post = self.obj(ForumPost, post_uuid)
         except ObjectNotFoundException:
+            if req is None:
+                return
             self.call("web.response_json", {"error": "Post not found"})
         subscribers = self.objlist(ForumLastReadList, query_index="topic_subscribed", query_equal="%s-1" % topic.uuid)
         subscribers.load()
@@ -2469,7 +2625,7 @@ class Forum(Module):
         users = []
         cat = self.call("forum.category", topic.get("category"))
         rules = self.load_rules([cat["id"]])
-        now = time.time()
+        now = self.time()
         for sub in subscribers:
             email_notified = sub.get("email_notified")
             if email_notified is None or float(email_notified) < now - 86400 * 3:
@@ -2492,6 +2648,7 @@ class Forum(Module):
                 "author_name": post.get("author_name"),
                 "topic_subject": topic.get("subject"),
                 "domain": self.app().domain,
+                "protocol": self.app().protocol,
                 "topic_uuid": topic.uuid,
                 "post_uuid": post.uuid,
                 "post_page": page,
@@ -2501,8 +2658,7 @@ class Forum(Module):
                 sex = author_obj.get("sex", 0)
             else:
                 sex = 0
-            self.call("email.users", notify_users, self._("New replies: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has replied in the topic: {topic_subject}\n\nhttp://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}").format(**vars)), immediately=True)
-        self.call("web.response_json", {"ok": 1})
+            self.call("email.users", notify_users, self._("New replies: %s") % topic.get("subject"), format_gender(sex, self._("{author_name} has replied in the topic: {topic_subject}\n\n{protocol}://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}").format(**vars)), immediately=True)
 
     def catstat(self, cat_id):
         return self.obj(ForumCategoryStat, cat_id, silent=True)
@@ -2580,7 +2736,7 @@ class Forum(Module):
             topics = self.app().db.get_slice(key, ColumnParent(cf), SlicePredicate(slice_range=SliceRange("", "", count=1)), ConsistencyLevel.QUORUM)
             if not topics:
                 if timestamp is None:
-                    timestamp = time.time() * 1000
+                    timestamp = self.time() * 1000
                 mutations.append(Mutation(deletion=Deletion(predicate=SlicePredicate([tag_utf8]), timestamp=timestamp)))
         if len(mutations):
             if self.app().db.storage == 0:
@@ -2593,7 +2749,6 @@ class Forum(Module):
                 key = "%s_*" % self.app().db.app
                 cf = "ForumTags_Search"
             self.db().batch_mutate({key: {cf: mutations}}, ConsistencyLevel.QUORUM)
-        self.call("web.response_json", {"ok": 1})
 
     def ext_tag(self):
         req = self.req()
@@ -2669,37 +2824,176 @@ class Forum(Module):
         for cat in categories:
             if self.may_read(user_uuid, cat, rules=rules[cat["id"]], roles=roles):
                 may_read_category.add(cat["id"])
-        # querying
-        query = req.args.lower().strip()
-        words = list(self.call("socio.word_extractor", query))
-        render_objects = self.call("socio.fulltext_search", "ForumSearch", words)
-        if len(render_objects) > search_results_per_page:
-            del render_objects[search_results_per_page:]
-        posts = []
-        while len(render_objects):
-            get_cnt = 1000
-            if get_cnt > len(render_objects):
-                get_cnt = len(render_objects)
-            bucket = [render_objects[i][1] for i in range(0, get_cnt)]
-            del render_objects[0:get_cnt]
-            loaded = dict()
-            posts_list = self.objlist(ForumPostList, bucket)
-            posts_list.load(silent=True)
-            for post in posts_list:
-                loaded[post.uuid] = post
-            remain = [uuid for uuid in bucket if uuid not in loaded]
-            if len(remain):
-                topics_list = self.objlist(ForumTopicList, remain)
-                topics_list.load(silent=True)
-                topics_content_list = self.objlist(ForumTopicContentList, topics_list.uuids())
-                topics_content_list.load(silent=True)
-                topics_content = dict([(obj.uuid, obj.data) for obj in topics_content_list])
-                for topic in topics_list:
-                    loaded[topic.uuid] = topic
-            bucket = [loaded.get(uuid) for uuid in bucket if loaded.get(uuid) and loaded.get(uuid).get("category") in may_read_category]
-            for obj in bucket:
+        # advanced search form
+        early_pagination = True
+        form = self.call("web.form", action="/forum/search")
+        form.method = "get"
+        # get query
+        query = req.param("query").strip() or req.args.lower().strip()
+        author = req.param("author").strip()
+        category = req.param("category")
+        since = req.param("since").strip()
+        till = req.param("till").strip()
+        if req.param("query"):
+            search_topics = True if req.param("search_topics") else False
+            search_comments = True if req.param("search_comments") else False
+            if not search_topics or not search_comments:
+                early_pagination = False
+        else:
+            search_topics = True
+            search_comments = True
+        # process author
+        author_obj = None
+        if author:
+            author_obj = self.call("session.find_user", author)
+            if not author_obj:
+                form.error("author", self._("No such user"))
+            else:
+                early_pagination = False
+                author = author_obj.get("name")
+        # process since
+        since_val = None
+        if since:
+            since_val = self.call("l10n.parse_date", since)
+            if since_val is None:
+                form.error("since", self._("Invalid date format"))
+            else:
+                early_pagination = False
+        # process till
+        till_val = None
+        if till:
+            till_val = self.call("l10n.parse_date", till, dayend=True)
+            if till_val is None:
+                form.error("till", self._("Invalid date format"))
+            else:
+                early_pagination = False
+        # parse query
+        tokens = []
+        exact_matches = []
+        for match in re_search_query.findall(query):
+            if match[0]:
+                early_pagination = False
+                for word in re_not_word_symbol.split(match[0]):
+                    if word:
+                        tokens.append({
+                            "word": word
+                        })
+                exact_matches.append(re_whitespace.sub(' ', match[0].lower()).strip())
+            elif match[1]:
+                tokens.append({
+                    "word": match[1],
+                    "substract": True,
+                })
+            elif match[2]:
+                tokens.append({
+                    "word": match[2]
+                })
+        if not tokens:
+            form.error("query", self._("The query is empty"))
+        vars = {
+            "search_query": htmlescape(query),
+            "title": htmlescape(query),
+            "menu": [
+                { "href": "/forum", "html": self._("Forum categories") },
+                { "html": self._("results///Search") },
+                { "html": htmlescape(query) },
+            ],
+            "Tags": self._("Tags"),
+        }
+        if not form.errors:
+            # search index
+            render_objects = self.call("socio.fulltext_search", "ForumSearch", tokens)
+            # early pagination
+            if early_pagination:
+                pages = (len(render_objects) + search_results_per_page - 1) / search_results_per_page
+                if pages < 1:
+                    pages = 1
+                page = intz(req.param("page"))
+                if page < 1:
+                    page = 1
+                elif page > pages:
+                    page = pages
+                del render_objects[page * search_results_per_page:]
+                del render_objects[0:(page - 1) * search_results_per_page]
+            # load topics and posts
+            search_result = []
+            topics_content = {}
+            while len(render_objects):
+                get_cnt = 1000
+                if get_cnt > len(render_objects):
+                    get_cnt = len(render_objects)
+                bucket = [render_objects[i][1] for i in range(0, get_cnt)]
+                del render_objects[0:get_cnt]
+                loaded = dict()
+                if search_comments:
+                    posts_list = self.objlist(ForumPostList, bucket)
+                    posts_list.load(silent=True)
+                    for post in posts_list:
+                        loaded[post.uuid] = post
+                remain = [uuid for uuid in bucket if uuid not in loaded]
+                if len(remain) and search_topics:
+                    topics_list = self.objlist(ForumTopicList, remain)
+                    topics_list.load(silent=True)
+                    topics_content_list = self.objlist(ForumTopicContentList, topics_list.uuids())
+                    topics_content_list.load(silent=True)
+                    for obj in topics_content_list:
+                        topics_content[obj.uuid] = obj.data
+                    for topic in topics_list:
+                        loaded[topic.uuid] = topic
+                for uuid in bucket:
+                    obj = loaded.get(uuid)
+                    if obj and obj.get("category") in may_read_category:
+                        search_result.append(obj)
+            # exact matches filter
+            def contains_exact_matches(obj):
+                if type(obj) == ForumTopic:
+                    topic_content = topics_content.get(obj.uuid)
+                    if topic_content:
+                        subject = re_whitespace.sub(' ', obj.get("subject").lower()).strip()
+                        content = re_whitespace.sub(' ', topic_content.get("content").lower()).strip()
+                        for match in exact_matches:
+                            if subject.find(match) < 0 and content.find(match) < 0:
+                                return False
+                    else:
+                        return False
+                else:
+                    content = re_whitespace.sub(' ', obj.get("content").lower()).strip()
+                    for match in exact_matches:
+                        if content.find(match) < 0:
+                            return False
+                return True
+            if exact_matches:
+                search_result = [obj for obj in search_result if contains_exact_matches(obj)]
+            # author filter
+            if author_obj:
+                search_result = [obj for obj in search_result if obj.get("author") == author_obj.uuid]
+            # category filter
+            if category:
+                search_result = [obj for obj in search_result if obj.get("category") == category]
+            # since filter
+            if since_val:
+                search_result = [obj for obj in search_result if obj.get("created") >= since_val]
+            # till filter
+            if till_val:
+                search_result = [obj for obj in search_result if obj.get("created") <= till_val]
+            # late pagination
+            if not early_pagination:
+                pages = (len(search_result) + search_results_per_page - 1) / search_results_per_page
+                if pages < 1:
+                    pages = 1
+                page = intz(req.param("page"))
+                if page < 1:
+                    page = 1
+                elif page > pages:
+                    page = pages
+                del search_result[page * search_results_per_page:]
+                del search_result[0:(page - 1) * search_results_per_page]
+            # render serp
+            posts = []
+            for obj in search_result:
                 data = obj.data_copy()
                 if type(obj) == ForumTopic:
+                    data["topic"] = obj.uuid
                     content = topics_content.get(obj.uuid)
                     if content is not None:
                         data["content_html"] = content.get("content_html")
@@ -2709,30 +3003,73 @@ class Forum(Module):
                         if content.get("tags"):
                             data["tags_html"] = ", ".join(['<a href="/forum/tag/%s">%s</a>' % (tag, tag) for tag in [htmlescape(tag) for tag in content.get("tags")]])
                         posts.append(data)
+                    if "uuid" in data:
+                        del data["uuid"]
                 else:
+                    data["uuid"] = obj.uuid
                     self.posts_htmlencode([data])
                     topic_posts = self.objlist(ForumPostList, query_index="topic", query_equal=data.get("topic"))
-                    page = ""
+                    topage = ""
                     for i in range(0, len(topic_posts)):
                         if topic_posts[i].uuid == data.get("uuid"):
-                            page = "?page=%d" % (i / posts_per_page + 1)
+                            topage = "?page=%d" % (i / posts_per_page + 1)
                             break
-                    data["post_actions"] = '<a href="/forum/topic/%s%s#%s">%s</a>' % (data.get("topic"), page, data.get("uuid"), self._("open"))
+                    data["post_actions"] = '<a href="/forum/topic/%s%s#%s">%s</a>' % (data.get("topic"), topage, data.get("uuid"), self._("open"))
                     posts.append(data)
-        if len(posts):
-            posts[-1]["lst"] = True
-        vars = {
-            "search_query": htmlescape(query),
-            "title": htmlescape(query),
-            "posts": posts,
-            "menu": [
-                { "href": "/forum", "html": self._("Forum categories") },
-                { "html": self._("results///Search") },
-                { "html": htmlescape(query) },
-            ],
-            "Tags": self._("Tags"),
-            "new_post_form": "" if len(posts) else self._("Nothing found")
-        }
+            if len(posts):
+                posts[-1]["lst"] = True
+            # output templates
+            vars["posts"] = posts
+            vars["new_post_form"] = "" if len(posts) else self._("Nothing found")
+            # render pages
+            if pages > 1:
+                if since_val or till_val or not search_topics or not search_comments or author_obj or category:
+                    page_url_template = "/forum/search?query=%s" % urlencode(query)
+                    if since_val:
+                        page_url_template += "&since=%s" % urlencode(self.call("l10n.unparse_date", since_val))
+                    if till_val:
+                        page_url_template += "&till=%s" % urlencode(self.call("l10n.unparse_date", till_val, dayend=True))
+                    if search_topics:
+                        page_url_template += "&search_topics=1"
+                    if search_comments:
+                        page_url_template += "&search_comments=1"
+                    if author_obj:
+                        page_url_template += "&author=%s" % urlencode(author)
+                    if category:
+                        page_url_template += "&category=%s" % urlencode(category)
+                    page_url_template += "&page="
+                else:
+                    page_url_template = "/forum/search/%s?page=" % urlencode(query)
+                pages_list = []
+                last_show = None
+                for i in range(1, pages + 1):
+                    show = (i <= 5) or (i >= pages - 5) or (abs(i - page) < 5)
+                    if show:
+                        pages_list.append({"entry": {"text": i, "a": None if i == page else {"href": page_url_template + str(i)}}})
+                    elif last_show:
+                        pages_list.append({"entry": {"text": "..."}})
+                    last_show = show
+                pages_list[-1]["lst"] = True
+                vars["pages"] = pages_list
+        # render form
+        form.input(self._("Search query"), "query", query)
+        categories = self.categories()
+        rules = self.load_rules([cat["id"] for cat in categories])
+        roles = {}
+        self.call("security.users-roles", [user_uuid], roles)
+        roles = roles.get(user_uuid, [])
+        categories = [cat for cat in categories if self.may_read(user_uuid, cat, rules=rules[cat["id"]], roles=roles)]
+        rcategories = [{"value": "", "description": self._("All categories")}] + [{"value": cat["id"], "description": cat["title"]} for cat in categories]
+        form.select(self._("forum///Category"), "category", category, rcategories)
+        form.input(self._("Post author"), "author", author, inline=True)
+        form.input(self._("forumsearch///Since (dd.mm.yyyy)"), "since", since)
+        form.input(self._("forumsearch///Till (dd.mm.yyyy)"), "till", till, inline=True)
+        form.checkbox(self._("Search topics"), "search_topics", search_topics, inline=True)
+        form.checkbox(self._("Search comments"), "search_comments", search_comments, inline=True)
+        form.submit(None, None, self._("btn///Search"))
+        vars["advanced_search_form"] = form.html(renderer="socio.render-form")
+        # render page
+        self.call("forum.vars-topic", vars)
         self.call("socio.response_template", "topic.html", vars)
 
     def ext_subscribed(self):
@@ -2797,40 +3134,6 @@ class Forum(Module):
         self.call("forum.vars-tags", vars)
         self.call("socio.response_template", "tags.html", vars)
 
-    def news(self, vars, category, limit=5, template=None):
-        req = self.req()
-        user_uuid = self.call("socio.user")
-        cat = self.call("forum.category-by-tag", category)
-        if not cat:
-            return ""
-        topics, page, pages = self.topics(cat, 1, limit)
-        # loading content
-        topics_content_list = self.objlist(ForumTopicContentList, topics.uuids())
-        topics_content_list.load(silent=True)
-        topics_content = dict([(obj.uuid, obj.data) for obj in topics_content_list])
-        # preparing output
-        topics = topics.data()
-        self.topics_htmlencode(topics)
-        if len(topics):
-            topics[-1]["lst"] = True
-        for topic in topics:
-            content = topics_content.get(topic["uuid"])
-            if content:
-                content = content.get("content")
-                if content:
-                    m = re_cut.search(content)
-                    if m:
-                        topic["more"] = True
-                        content = content[0:m.start()]
-                topic["content"] = self.call("socio.format_text", content)
-        vars["news"] = topics
-        vars["ReadMore"] = self._("Read more")
-        vars["Comment"] = self._("Comment")
-        if template is None:
-            template = self.call("socio.template", "news", "news.html")
-        if template:
-            return self.call("web.parse_template", 'socio/%s' % template, vars)
-
 class SocioAdmin(Module):
     def register(self):
         self.rhook("permissions.list", self.permissions_list)
@@ -2845,13 +3148,14 @@ class SocioAdmin(Module):
         files.append({"filename": "global.html", "description": self._("Global template for all socio pages"), "doc": "/doc/design/sociointerface"})
         files.append({"filename": "global-simple.html", "description": self._("Simple global template")})
         files.append({"filename": "list.html", "description": self._("List of miscellaneous items")})
+        files.append({"filename": "form.html", "description": self._("Multipurpose form"), "doc": "/doc/design/forms"})
         files.append({"filename": "user.html", "description": self._("Socio user profile")})
 
     def menu_root_index(self, menu):
         menu.append({"id": "socio.index", "text": self._("Socio"), "order": 1000})
 
     def message_silence(self):
-        return self.conf("socio.message-silence", self._("Your access to the forum is temporarily blocked till {till}"))
+        return self.conf("socio.message-silence", self._("Your access is temporarily blocked till {till}"))
 
     def permissions_list(self, perms):
         perms.append({"id": "socio.messages", "name": self._("Socio interface message editor")})

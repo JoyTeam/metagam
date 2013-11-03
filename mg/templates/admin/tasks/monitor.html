@@ -1,0 +1,13 @@
+[%for daemon in daemons%]
+    <h1 class="admin-submenu">[%daemon.id%]</h1>
+    [%if daemon.error%]
+    <div class="admin-error">[%daemon.error%]</div>
+    [%elsif daemon.tasklets%]
+    [%foreach tasklet in daemon.tasklets%]
+    <table><tr><td style="width: [%tasklet.level * 30%]px;"></td><td>
+                <strong>[%tasklet.task.name%]</strong>
+                <pre>[%foreach line in tasklet.task.stack%][%line%][%end%]</pre>
+    </td></tr></table>
+    [%end%]
+    [%end%]
+[%end%]

@@ -2,6 +2,7 @@ from mg.constructor import *
 from mg.core.auth import AuthLogList
 from mg.constructor.player_classes import DBCharacterOnlineList, DBPlayerList
 from mg.constructor.interface import DBFirstVisitList
+from mg.core.config import DBConfigGroup, DBConfigGroupList
 import re
 
 class DBDailyStat(CassandraObject):
@@ -255,8 +256,8 @@ class GameReporter(ConstructorModule):
             return
         self.debug("Storing config changes of the project %s", self.app().tag)
         config = {}
-        lst = self.objlist(ConfigGroupList, query_index="all")
-        lst.load()
+        lst = self.objlist(DBConfigGroupList, query_index="all")
+        lst.load(silent=True)
         for ent in lst:
             config[ent.uuid] = ent.data
         self.call("dbexport.add", "config", config=config)

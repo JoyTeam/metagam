@@ -80,20 +80,31 @@ class EmailSenderAdmin(ConstructorModule):
                             if not char:
                                 return False
                             return app.hooks.call("script.evaluate-expression", cond, globs={"char": char}, description=lambda: self._("Script condition whether to deliver an e-mail"))
-                        info = app.hooks.call("admin-email-sender.actual-deliver", message, ent.get("params"), errors, grep=grep)
-                        if errors:
-                            self.call("admin.response", u'<br />'.join(errors.values()), {})
-                        ent.delkey("waiting")
-                        send_history = ent.get("send_history", [])
-                        ent.set("send_history", send_history)
-                        message.set("sent", self.now())
-                        message.set("users_sent", info["sent"])
-                        message.set("users_skipped", info["skipped"])
-                        send_history.append(self.now())
-                        message.delkey("moderation")
+                        app.modules.load(["mg.core.emails.EmailSender", "mg.constructor.emails.EmailSender"])
+                        def run_process():
+                            info = app.hooks.call("admin-email-sender.actual-deliver", message, ent.get("params"), errors, grep=grep)
+                            ent.delkey("sending")
+                            message.delkey("sending")
+                            if errors:
+                                ent.set("errors", errors)
+                                message.set("errors", errors)
+                            else:
+                                ent.delkey("waiting")
+                                send_history = ent.get("send_history", [])
+                                ent.set("send_history", send_history)
+                                message.set("sent", self.now())
+                                message.set("users_sent", info["sent"])
+                                message.set("users_skipped", info["skipped"])
+                                send_history.append(self.now())
+                                message.delkey("moderation")
+                            ent.store()
+                            message.store()
+                        ent.set("sending", True)
+                        message.set("sending", True)
                         ent.store()
                         message.store()
-                        self.call("admin.response", info["status"], {})
+                        # Run sending in background
+                        Tasklet.new(run_process, name='E-mail sender. app=%s' % self.app().tag)()
                     self.call("admin.redirect", "email/moderation")
                 elif act == "reject":
                     if req.ok():
@@ -149,6 +160,12 @@ class EmailSenderAdmin(ConstructorModule):
                 continue
             owner = self.obj(User, project.get("owner"))
             params = ent.get("params")
+            if ent.get("sending"):
+                status = self._("Sending is in progress")
+            elif ent.get("errors"):
+                status = u'<br />'.join([htmlescape(s) for s in ent.get("errors")])
+            else:
+                status = ''
             rows.append([
                 u'<hook:admin.link href="constructor/project-dashboard/%s" title="%s" /><br />%s: <hook:admin.link href="auth/user-dashboard/%s" title="%s" />' % (
                     project.uuid, htmlescape(project.get("title_short")),
@@ -157,7 +174,8 @@ class EmailSenderAdmin(ConstructorModule):
                 ),
                 self.call("l10n.time_local", ent.get("created")),
                 htmlescape(params["subject"]),
-                u'<hook:admin.link href="email/moderation/%s" title="%s" />' % (ent.uuid, self._("open"))
+                u'<hook:admin.link href="email/moderation/%s" title="%s" />' % (ent.uuid, self._("open")),
+                status
             ])
         vars = {
             "tables": [
@@ -167,6 +185,7 @@ class EmailSenderAdmin(ConstructorModule):
                         self._("Created"),
                         self._("Subject"),
                         self._("Opening"),
+                        self._("Status"),
                     ],
                     "rows": rows,
                 }
@@ -188,9 +207,11 @@ class EmailSender(ConstructorModule):
         self.rhook("advice-admin-email.sender", self.advice)
 
     def advice(self, args, advice):
-        advice.append({"title": self._("Email sender documentation"), "content": self._('You can find detailed information on the email sending system in the <a href="//www.%s/doc/emailsender" target="_blank">email sender page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Email sender documentation"), "content": self._('You can find detailed information on the email sending system in the <a href="//www.%s/doc/emailsender" target="_blank">email sender page</a> in the reference manual.') % self.main_host})
 
     def message_form_render(self, message, fields):
+        if message.get("moderation"):
+            self.call("admin.response", u'<span class="no">%s</span>' % self._("This email is being checked by the moderators"), {})
         fields.append({"name": "cond", "label": self._("Script condition to evaluate whether a character must receive this letter") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", message.get("cond", 1))})
 
     def message_form_validate(self, message, errors):
@@ -218,7 +239,7 @@ class EmailSender(ConstructorModule):
         del commands[:]
         commands.append(self._("[% ... %] will be parsed by the templating engine"))
         commands.append(self._("[% char.name %] is a character's name"))
-        self.call("admin.advice", {"title": self._("Templating engine"), "content": self._('You can find detailed information on the templating engine in the <a href="//www.%s/doc/design/templates" target="_blank">templating engine</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 10})
+        self.call("admin.advice", {"title": self._("Templating engine"), "content": self._('You can find detailed information on the templating engine in the <a href="//www.%s/doc/design/templates" target="_blank">templating engine</a> in the reference manual.') % self.main_host, "order": 10})
 
     def sample_params(self, params):
         req = self.req()
@@ -251,17 +272,20 @@ class EmailSender(ConstructorModule):
         except TemplateException as e:
             if param == "content":
                 param = "error"
-            errors[param] = self._("Error parsing template: %s") % str(e)
+            errors[param] = self._("Error parsing template: %s") % utf2str(e)
 
     def deliver(self, message, params, errors):
         req = self.req()
         main_app = self.main_app()
+        if message.get("moderation"):
+            self.call("admin.response", u'<span class="no">%s</span>' % self._("This email is being checked by the moderators"), {})
         obj = main_app.obj(DBBulkEmailQueue, message.uuid, silent=True)
         obj.set("app", self.app().tag)
         obj.set("waiting", 1)
         obj.set("user", req.user())
         obj.set("created", self.now())
         obj.set("params", params)
+        obj.delkey("errors")
         message.set("moderation", self.now())
         message.delkey("reject_reason")
         message.delkey("sent")
@@ -269,7 +293,7 @@ class EmailSender(ConstructorModule):
         message.store()
         email = self.int_app().config.get("email.moderation")
         if email:
-            self.int_app().hooks.call("email.send", email, self._("Emails moderator"), self._("E-mail moderation request"), self._("New e-mail moderation request received. Go to the admin panel please and perform required moderation actions:\nhttp://www.%s/admin#email/moderation") % self.app().inst.config["main_host"], immediately=True)
+            self.int_app().hooks.call("email.send", email, self._("Emails moderator"), self._("E-mail moderation request"), self._("New e-mail moderation request received. Go to the admin panel please and perform required moderation actions:\n{protocol}://www.{domain}/admin#email/moderation").format(protocol=self.main_app().protocol, domain=self.main_host), immediately=True)
         raise Hooks.Return({
             "status": u'<span class="yes">%s</span>' % self._("You email was enqueued to be checked by the moderator")
         })

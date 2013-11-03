@@ -1,0 +1,11 @@
+/* Dashboard */
+.mon-image { vertical-align: top; text-align: center; padding: 0 0 50px 0 }
+.mon-list { vertical-align: top; padding: 0 0 50px 50px }
+.mon-list .list { margin: 5px 0 0 0 }
+
+/* List table */
+.list { margin: 10px 0px 10px 0px }
+.list td { padding: 2px 10px 2px 20px; border-bottom: solid 1px #e5f1f7; vertical-align: top }
+.list .header { background-color: #e5f1f7; color: #0078ac }
+.list td.subheader { color: #dd6419; padding: 10px 10px 10px 20px }
+.list .right { text-align: right }

@@ -1,9 +1,11 @@
 from mg.constructor import *
 from mg.constructor.interface_classes import *
+from mg.constructor.paramobj import ParametrizedObject
 import re
 
 re_param_attr = re.compile(r'^p_(.+)')
 re_html_attr = re.compile(r'^html_(.+)')
+re_dyn_attr = re.compile(r'^dyn_(.+)')
 re_perm_attr = re.compile(r'^perm_(.+)')
 re_quest_attr = re.compile(r'^q_(.+)')
 
@@ -71,9 +73,10 @@ class DBCharacterBusyList(CassandraObjectList):
 
 # Business logic objects
 
-class Character(Module):
+class Character(Module, ParametrizedObject):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Character"):
         Module.__init__(self, app, fqn)
+        ParametrizedObject.__init__(self, "characters")
         self.uuid = uuid
 
     @property
@@ -256,6 +259,22 @@ class Character(Module):
             self._location = self.call("locations.character_get", self) or [None, None, None]
             return self._location[2]
 
+    def set_param(self, key, val):
+        param = self.call("characters.param", key)
+        if not param:
+            return None
+        res = ParametrizedObject.set_param(self, key, val)
+        self.send_param(param, val)
+        return res
+
+    def send_param(self, param, val):
+        if param.get("owner_visible") and self.call("characters.visibility-condition", param, self):
+            if self.tech_online:
+                self.send_param_force(param, val)
+
+    def send_param_force(self, param, val):
+        self.call("stream.character", self, "characters", "myparam", param=param["code"], value=val)
+
     def set_location(self, location, instance=None, delay=None):
         old_location = self.location
         old_instance = self.instance
@@ -302,12 +321,14 @@ class Character(Module):
             self._db_busy.set("busy", options)
             self._db_busy.store()
             self._busy = options
+            self.call("character.busy-changed", self)
         return True
 
     def unset_busy(self):
         self._db_busy.set("busy", None)
         self._db_busy.store()
         self._busy = None
+        self.call("character.busy-changed", self)
 
     @property
     def db_settings(self):
@@ -317,6 +338,12 @@ class Character(Module):
             self._db_settings = self.obj(DBCharacterSettings, self.uuid, silent=True)
             return self._db_settings
 
+    def invalidate_sessions(self):
+        try:
+            del self._sessions
+        except AttributeError:
+            pass
+
     @property
     def sessions(self):
         try:
@@ -325,6 +352,10 @@ class Character(Module):
             self._sessions = []
             self.call("session.character-sessions", self, self._sessions)
             return self._sessions
+
+    @property
+    def stream_channels(self):
+        return ["id_%s" %i for i in self.sessions]
 
     @property
     def money(self):
@@ -350,6 +381,30 @@ class Character(Module):
             self._settings = self.obj(DBCharacterSettings, self.uuid, silent=True)
             return self._settings
 
+    @property
+    def combat_id(self):
+        try:
+            return self._combat_id
+        except AttributeError:
+            busy = self.busy
+            if busy:
+                self._combat_id = busy.get("combat")
+            else:
+                self._combat_id = None
+            return self._combat_id
+
+    @property
+    def combat_state(self):
+        try:
+            return self._combat_state
+        except AttributeError:
+            combat_id = self.combat_id
+            if not combat_id:
+                self._combat_state = None
+            else:
+                self._combat_state = self.call("combat.character-script-state", combat_id, self.uuid)
+            return self._combat_state
+
     def script_attr(self, attr, handle_exceptions=True):
         if attr == "id":
             return self.uuid
@@ -369,7 +424,7 @@ class Character(Module):
             return "[ch:%s]" % self.uuid
         elif attr == "sex":
             return self.sex
-        elif attr == "mod":
+        elif attr == "mod" or attr == "modifiers":
             return self.modifiers
         elif attr == "anyperm":
             perms = self.call("auth.permissions", self.uuid)
@@ -378,6 +433,10 @@ class Character(Module):
             return self.inventory
         elif attr == "equip":
             return self.equip
+        elif attr == "combat":
+            return self.combat_id
+        elif attr == "combat_state":
+            return self.combat_state
         # parameters
         m = re_param_attr.match(attr)
         if m:
@@ -387,6 +446,10 @@ class Character(Module):
         if m:
             param = m.group(1)
             return self.param_html(param, handle_exceptions)
+        m = re_dyn_attr.match(attr)
+        if m:
+            param = m.group(1)
+            return self.param_dyn(param, handle_exceptions)
         # permissions
         m = re_perm_attr.match(attr)
         if m:
@@ -420,6 +483,9 @@ class Character(Module):
 
     __repr__ = __str__
 
+    def __unicode__(self):
+        return u"[char %s]" % str2unicode(self.name)
+
     @property
     def restraints(self):
         try:
@@ -430,36 +496,8 @@ class Character(Module):
             self._restraints = restraints
             return restraints
 
-    def _invalidate(self):
-        try:
-            delattr(self, "_param_cache")
-        except AttributeError:
-            pass
-
-    def param(self, key, handle_exceptions=True):
-        try:
-            cache = self._param_cache
-        except AttributeError:
-            cache = {}
-            self._param_cache = cache
-        try:
-            return cache[key]
-        except KeyError:
-            # 'param-value' handles cache storing automatically
-            return self.call("characters.param-value", self, key, handle_exceptions)
-
-    def param_html(self, key, handle_exceptions=True):
-        param = self.call("characters.param", key)
-        if not param:
-            return None
-        value = self.param(key, handle_exceptions)
-        return self.call("characters.param-html", param, value)
-
     def script_params(self):
         return {"char": self}
-
-    def set_param(self, key, val):
-        return self.call("characters.set-param", self, key, val)
 
     @property
     def inventory(self):
@@ -500,8 +538,15 @@ class Character(Module):
     def main_open(self, uri):
         self.call("stream.character", self, "game", "main_open", uri=uri)
 
-    def combat_member(self, combat):
-        return self.call("combats.character-member", combat, self)
+    def combat_member(self):
+        return {
+            "object": ["character", self.uuid],
+            "name": self.name,
+            "sex": self.sex
+        }
+
+    def deliverable_params(self):
+        return self.call("characters.deliverable-params", self)
 
 class Player(Module):
     def __init__(self, app, uuid, fqn="mg.constructor.players.Player"):
@@ -544,7 +589,7 @@ class Player(Module):
     def script_attr(self, attr, handle_exceptions=True):
         if attr == "id":
             return self.uuid
-        elif attr == "mod":
+        elif attr == "mod" or attr == "modifiers":
             return self.call("modifiers.obj", self.uuid)
         else:
             raise AttributeError(attr)

@@ -51,6 +51,20 @@ class CharactersMod(ConstructorModule):
         self.rhook("user-modifier.expired", self.modifier_expired)
         self.rhook("char-inventory.changed", self.inventory_changed, priority=10)
         self.rhook("admin-gameinterface.design-files", self.design_files)
+        self.rhook("character.public-info-menu", self.character_public_info_menu)
+        self.rhook("characters.context-menu-available", self.context_menu_available)
+        self.rhook("character.get", self.character_get)
+
+    def context_menu_available(self, menu):
+        menu.append({
+            "code": "charinfo",
+            "title": self._("Character info"),
+            "href": ["/character/info/", [".", ["glob", "char"], "id"]],
+            "order": 1.0,
+            "default_visible": True,
+            "image": "/st-mg/icons/character-pubinfo.png",
+            "visible": 1,
+        })
 
     def design_files(self, files):
         files.append({"filename": "character-info.html", "description": self._("Character page (external information)"), "doc": "/doc/design/character-info"})
@@ -101,7 +115,7 @@ class CharactersMod(ConstructorModule):
     def admin_characters_form(self):
         req = self.req()
         character_form = self.call("character.form")
-        self.call("admin.advice", {"title": self._("Character forms documentation"), "content": self._('How to setup character form you can read in the <a href="//www.%s/doc/character-form" target="_blank">character forms</a> manual page') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Character forms documentation"), "content": self._('How to setup character form you can read in the <a href="//www.%s/doc/character-form" target="_blank">character forms</a> manual page') % self.main_host})
         m = re_delete_recover.match(req.args)
         if m:
             op, code = m.group(1, 2)
@@ -396,7 +410,7 @@ class CharactersMod(ConstructorModule):
 
     def admin_characters_names(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Character names documentation"), "content": self._('You can find detailed information on the character names system in the <a href="//www.%s/doc/character-names" target="_blank">characer names page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Character names documentation"), "content": self._('You can find detailed information on the character names system in the <a href="//www.%s/doc/character-names" target="_blank">characer names page</a> in the reference manual.') % self.main_host})
         if req.args:
             pinfo = self.call("characters.name-purpose-%s" % req.args)
             if not pinfo:
@@ -470,7 +484,7 @@ class CharactersMod(ConstructorModule):
 
     def admin_validate_names(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Character names validation"), "content": self._('How to enforce character names validation you can read in the <a href="//www.%s/doc/auth" target="_blank">basic authentication settings</a> manual page') % self.app().inst.config["main_host"]})
+        self.call("admin.advice", {"title": self._("Character names validation"), "content": self._('How to enforce character names validation you can read in the <a href="//www.%s/doc/auth" target="_blank">basic authentication settings</a> manual page') % self.main_host})
         lst = self.objlist(UserList, query_index="check", query_equal="1")
         if req.ok():
             # auth params
@@ -557,7 +571,23 @@ class CharactersMod(ConstructorModule):
         self.call("characters.params-public", character, params)
         if params:
             vars["character"]["params"] = params
+        menu = []
+        self.call("character.public-info-menu", character, menu)
+        if len(menu) >= 2:
+            for ent in menu:
+                if ent["href"] == "/character/info/%s" % character.uuid:
+                    del ent["href"]
+            menu.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)))
+            menu[-1]["lst"] = True
+            vars["menu"] = menu
         self.call("game.response_external", "character-info.html", vars)
+
+    def character_public_info_menu(self, character, menu):
+        menu.append({
+            "href": "/character/info/%s" % character.uuid,
+            "html": self._("Character information"),
+            "order": -10,
+        })
 
     def character_page_avatar(self, character, vars):
         design = self.design("gameinterface")
@@ -654,9 +684,10 @@ class CharactersMod(ConstructorModule):
     def location_changed(self, character, old_location, new_location):
         character.name_invalidate(update_chat=False)
 
-    def characters_param_changed(self, uuid, param, old_value, new_value):
+    def characters_param_changed(self, uuid, param, value):
         character = self.character(uuid)
         character.name_invalidate()
+        character.send_param(param, value)
 
     def name_changed(self, user, old_name, new_name):
         character = self.character(user.uuid)
@@ -689,3 +720,6 @@ class CharactersMod(ConstructorModule):
                     self.qevent("expired-%s" % kind, char=character)
                 else:
                     self.qevent("expired-mod-%s" % kind, char=character)
+
+    def character_get(self, uuid):
+        return self.character(uuid)

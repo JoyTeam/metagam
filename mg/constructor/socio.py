@@ -10,6 +10,11 @@ class Socio(ConstructorModule):
         self.rhook("ext-admin-sociointerface.buttons", self.admin_sociointerface_buttons, priv="design")
         self.rhook("menu-admin-socio.index", self.menu_socio_index)
         self.rhook("web.setup_design", self.web_setup_design)
+        self.rhook("socio.render-form", self.render_form)
+
+    def render_form(self, vars):
+        design = self.design("sociointerface")
+        return self.call("design.parse", design, "form.html", None, vars)
 
     def blocks(self):
         blocks = []
@@ -302,7 +307,7 @@ class Socio(ConstructorModule):
         block = None
         if req.group == "socio" and req.hook == "image":
             pass
-        elif req.group == "forum" or req.group == "socio":
+        elif req.group == "forum" or req.group == "socio" or req.group == "news":
             vars["title_suffix"] = " - %s" % self.app().project.get("title_short")
             block = "forum"
         elif req.group == "library":

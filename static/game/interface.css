@@ -1,5 +1,6 @@
 /* COMMON */
 body { font-family: Verdana; font-size: 12px }
+select, input { font-size: 13px }
 td { font-size: 12px }
 img { vertical-align: middle; border: 0 none }
 .clickable { cursor: pointer }
@@ -42,6 +43,7 @@ area { border: none }
 .chat-msg-char-missing { text-decoration: line-through }
 .chat-msg-auth { color: #606060 }
 .chat-msg-move { color: #408040 }
+.char-combat { color: #c00000 }
 #chat-roster-header-content { text-align: center; overflow: auto }
 #chat-roster-buttons-content { text-align: center }
 #chat-channel-buttons img { vertical-align: top; margin: 0 auto 0 auto }
@@ -81,6 +83,7 @@ area { border: none }
 #page-external-2 { padding: 0 }
 #page-external-3 { margin: 0 auto 0 auto; border-collapse: collapse }
 #page-external-4 { padding: 0 }
+#external-menu { text-align: right; padding: 5px }
 
 /* FORM */
 .form-control { padding: 0 30px 0 0; vertical-align: top }
@@ -106,7 +109,7 @@ area { border: none }
 .progress-horizontal, .progress-horizontal-1, .progress-horizontal-2, .progress-horizontal-3, .progress-horizontal-4, .progress-horizontal-5, .progress-horizontal-6, .progress-horizontal-7, .progress-horizontal-8, .progress-horizontal-9 { height: 100% }
 .progress-vertical, .progress-vertical-1, .progress-vertical-2, .progress-vertical-3, .progress-vertical-4, .progress-vertical-5, .progress-vertical-6, .progress-vertical-7, .progress-vertical-8, .progress-vertical-9 { height: 100% }
 .progress-indicator { background-color: #202080 }
-.progress-indicator-horizontal { height: 100% }
+.progress-indicator-horizontal { height: 100%; font-size: 10px }
 .location-movement-full { background-color: #208020 }
 .location-movement-notfull { background-color: #802020 }
 .progress-bars-vertical-td { vertical-align: bottom }
@@ -147,7 +150,7 @@ area { border: none }
 .charinfo-avatar { text-align: center; padding: 20px 20px 20px 20px }
 .charinfo-motto { text-align: center; padding: 0 20px 20px 20px; font-size: 16px }
 .charinfo-layout-avatar { vertical-align: top; padding: 0 20px 0 20px }
-.charinfo-layout-info { padding: 60px 40px 0 20px; vertical-align: top }
+.charinfo-layout-info { padding: 60px 40px 60px 20px; vertical-align: top }
 .charinfo-param-name { vertical-align: top; padding: 0 20px 0 0 }
 .charinfo-param-value { vertical-align: top; font-weight: bold; padding: 0 0 0 0 }
 .charinfo-param-header { vertical-align: top; font-weight: bold; padding: 10px 0 10px 0 }
@@ -192,9 +195,10 @@ area { border: none }
 .chat-msg-quest-first-event { color: #4040c0; padding-top: 3px; border-top: solid 1px #808080; margin-top: 3px }
 .chat-msg-quest-event { color: #4040c0 }
 .chat-msg-quest-handler { color: #c95200 }
-.chat-msg-quest-condition { color: #d7d721 }
+.chat-msg-quest-condition { color: #676721 }
 .chat-msg-quest-action { color: #008000 }
 .chat-msg-quest-error { color: #c00000 }
+.chat-msg-quest-comment { color: #808080 }
 .quest-button-td { padding: 20px 40px 20px 0 }
 .quests-noquests { font-size: 18px }
 .quest-performed { margin-right: 30px }
@@ -242,10 +246,10 @@ area { border: none }
 /* ITEM HINTS */
 .quantity { color: #008000 }
 .item-hint-table .item-info-name { font-size: 13px }
-.item-hint-table .quantity { color: #80ff80 }
-.item-hint-table .money-amount { color: #80ff80 }
+.item-hint-table .quantity { color: #008000 }
+.item-hint-table .money-amount { color: #008000 }
 .item-hint-text { padding: 5px 0 5px 0 }
-.item-hint-table .item-description { color: #c0c0c0 }
+.item-hint-table .item-description { color: #606060 }
 .item-hint-table .param-mod-plus { color: #c0ffc0 }
 .item-hint-table .param-mod-minus { color: #ffc0c0 }
 
@@ -257,6 +261,12 @@ area { border: none }
 
 /* COMBATS */
 .chat-msg-combat { color: #0000a0 }
-.chat-msg-combat-condition { color: #d7d741 }
+.chat-msg-combat-condition { color: #575710 }
 .chat-msg-combat-action { color: #008020 }
 .chat-msg-combat-error { color: #c00020 }
+.chat-msg-combat-comment { color: #808080 }
+.chat-msg-combat-log { color: #808080 }
+.chat-msg-combat-start { color: red }
+.chat-msg-combat-started { color: #c08080 }
+.chat-msg-combat-joined { color: #c08080 }
+.chat-msg-combat-stopped { color: #c08080 }

@@ -1,0 +1,25 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+import mg
+import os
+import json
+import sys
+from mg.constructor.processes import ConstructorInstance
+
+def main():
+    inst = ConstructorInstance("conf_get", "metagam")
+    # parse cmdline
+    if len(inst.cmdline_args) != 2:
+        print "usage: mg_conf_get <app> <config.key>"
+        os._exit(1)
+    app_tag = inst.cmdline_args[0]
+    key = inst.cmdline_args[1]
+    # perform actions
+    app = inst.appfactory.get_by_tag(app_tag)
+    val = app.config.get(key)
+    print json.dumps(val, indent=4, sort_keys=True)
+    sys.stdout.flush()
+    os._exit(0)
+
+mg.dispatch(main)

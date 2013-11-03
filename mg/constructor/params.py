@@ -43,7 +43,8 @@ class ParamsAdmin(ConstructorModule):
 
     def admin_params(self):
         req = self.req()
-        self.call("admin.advice", {"title": self._("Parameters documentation"), "content": self._('You can find detailed information on the parameters system in the <a href="//www.%s/doc/parameters" target="_blank">parameters page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 30})
+        self.call("admin.advice", {"title": self._("Parameters documentation"), "content": self._('You can find detailed information on the parameters system in the <a href="//www.%s/doc/parameters" target="_blank">parameters page</a> in the reference manual.') % self.main_host, "order": 30})
+        self.call("admin.advice", {"title": self._("Parameters changing with time"), "content": self._('Parameters can change with time automatically. See <a href="//www.%s/doc/dynamic" target="_blank">parameters changing with time page</a> for detail.') % self.main_host, "order": 35})
         if req.args:
             m = re_del.match(req.args)
             if m:
@@ -326,12 +327,11 @@ class ParamsAdmin(ConstructorModule):
             if param["grp"] != "" and param["grp"] != grp:
                 params.append(['<strong>%s</strong>' % htmlescape(param["grp"]), None, None, None])
                 grp = param["grp"]
-            value = self.call("%s.param-value-rec" % self.kind, obj, param)
             rparam = [
                 param["code"],
                 htmlescape(param["name"]),
-                htmlescape(value),
-                htmlescape(self.call("%s.param-html" % self.kind, param, value)),
+                htmlescape(obj.param(param["code"])) + ((u' <img src="/st/icons/dyn-script.gif" alt="" title="%s" />' % self._("Parameter changing with time")) if obj.param_dyn(param["code"]) else ''),
+                htmlescape(obj.param_html(param["code"])),
             ]
             if may_edit and param["type"] == 0:
                 rparam.append('<hook:admin.link href="%s/paramedit/%s/%s" title="%s" />' % (self.kind, obj.uuid, param["code"], self._("change")))
@@ -366,15 +366,20 @@ class ParamsAdmin(ConstructorModule):
                     pass
                 old_value = db_obj.get(param["code"], param.get("default", 0))
                 errors = {}
-                value = req.param("value").strip()
-                if not value:
-                    errors["value"] = self._("This field is mandatory")
-                elif not valid_number(value):
-                    errors["value"] = self._("This doesn't look like a number")
+                if req.param("dynamic"):
+                    value = self.call("script.admin-expression", "dynamic_value", errors, keep_globs={"t": True})
+                    till = None if req.param("infinite") else floatz(req.param("till"))
+                    value = [till, value]
                 else:
-                    value = nn(value)
-                    if abs(value) > 1000000000:
-                        errors["value"] = self._("Absolute values greater than 1 billion are not supported")
+                    value = req.param("static_value").strip()
+                    if not value:
+                        errors["static_value"] = self._("This field is mandatory")
+                    elif not valid_number(value):
+                        errors["static_value"] = self._("This doesn't look like a number")
+                    else:
+                        value = nn(value)
+                        if abs(value) > 1000000000:
+                            errors["static_value"] = self._("Absolute values greater than 1 billion are not supported")
                 if require_security_comment:
                     comment = req.param("comment").strip()
                     if not comment:
@@ -385,14 +390,18 @@ class ParamsAdmin(ConstructorModule):
                     self.call("web.response_json", {"success": False, "errors": errors})
                 if old_value != value:
                     db_obj.set(param["code"], value)
-                    self.call("%s.param-changed" % self.kind, uuid=uuid, param=param, old_value=old_value, new_value=value)
+                    self.call("%s.param-changed" % self.kind, uuid=uuid, param=param, value=value)
                     self.call("%s.param-admin-changed" % self.kind, uuid=uuid, param=param, old_value=old_value, new_value=value, comment=comment)
                     db_obj.store()
                 self.call("%s.params-redirect" % self.kind, uuid)
                 self.call("admin.response", self._("Parameter value stored"), {})
         old_value = db_obj.get(param["code"], param.get("default", 0))
         fields = [
-            {"name": "value", "value": old_value, "label": htmlescape(param["name"])},
+            {"name": "dynamic", "type": "checkbox", "checked": type(old_value) is list, "label": self._("Parameter changing with time")},
+            {"name": "static_value", "value": "" if type(old_value) is list else old_value, "label": self._("Static value"), "condition": "![dynamic]"},
+            {"name": "infinite", "type": "checkbox", "label": self._("Infinite duration"), "checked": (not old_value[0]) if type(old_value) is list else True, "condition": "[dynamic]"},
+            {"name": "till", "label": self._("Stop at this time"), "value": old_value[0] if type(old_value) is list and old_value[0] else self.time(), "condition": "[dynamic] && ![infinite]"},
+            {"name": "dynamic_value", "value": self.call("script.unparse-expression", old_value[1]) if type(old_value) is list else "", "label": self._("Dynamic value expression") + self.call("script.help-icon-expressions", "dyn"), "condition": "[dynamic]"},
         ]
         if require_security_comment:
             fields.append({"name": "comment", "label": '%s%s' % (self._("Reason why do you change this parameter. Provide the real reason. It will be inspected by the MMO Constructor Security Dept"), self.call("security.icon") or "")})
@@ -411,6 +420,7 @@ class Params(ConstructorModule):
         self.rhook("%s.params-owner-important" % self.kind, self.params_owner_important)
         self.rhook("%s.params-owner-all" % self.kind, self.params_owner_all)
         self.rhook("%s.library-icon" % self.kind, self.library_icon)
+        self.rhook("%s.visibility-condition" % self.kind, self.visibility_condition)
 
     def params(self):
         return self.conf("%s.params" % self.kind, [])
@@ -510,6 +520,7 @@ class Params(ConstructorModule):
         for param in self.call("%s.params" % self.kind):
             if param.get("owner_visible") and param.get("public") and self.visibility_condition(param, obj):
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
+                value = self.call("script.evaluate-dynamic", value)
                 if value or param.get("zero_visible"):
                     if param["grp"] != "" and param["grp"] != grp:
                         params.append({"header": htmlescape(param["grp"])})
@@ -528,6 +539,7 @@ class Params(ConstructorModule):
         for param in self.call("%s.params" % self.kind):
             if param.get("owner_visible") and param.get("important") and self.visibility_condition(param, obj):
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
+                value = self.call("script.evaluate-dynamic", value)
                 if value or param.get("zero_visible"):
                     if param["grp"] != "" and param["grp"] != grp:
                         params.append({"header": htmlescape(param["grp"])})
@@ -546,6 +558,7 @@ class Params(ConstructorModule):
         for param in self.call("%s.params" % self.kind):
             if param.get("owner_visible") and self.visibility_condition(param, obj):
                 value = self.call("%s.param-value-rec" % self.kind, obj, param)
+                value = self.call("script.evaluate-dynamic", value)
                 if value or param.get("zero_visible"):
                     if param["grp"] != "" and param["grp"] != grp:
                         params.append({"header": htmlescape(param["grp"])})
@@ -569,7 +582,7 @@ class Params(ConstructorModule):
         if not param.get("condition"):
             return True
         try:
-            return self.call("script.evaluate-expression", param["condition"], obj.script_params(), description=self._("Evaluation of '{cls}.{uuid}.{param}' visibility condition").format(cls=self.kind, param=param["code"], uuid=obj.uuid))
+            return self.call("script.evaluate-expression", param["condition"], obj.script_params(), description=lambda: self._("Evaluation of '{cls}.{uuid}.{param}' visibility condition").format(cls=self.kind, param=str2unicode(param["code"]), uuid=obj.uuid))
         except Exception as e:
             self.exception(e)
             return False

@@ -1,8 +1,56 @@
 from mg import *
 from mg.constructor import *
 from mg.core.money_classes import *
+from mg.core.money import re_valid_code
+from mg.core.projects import Project, ProjectList
+from mg.core.auth import User, UserList
 
 operations_per_page = 50
+
+class AdminDonate(ConstructorModule):
+    def register(self):
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("admin-money.donate-admins", self.donate_admins)
+
+    def schedule(self, sched):
+        sched.add("admin-money.donate-admins", "0 3 * * *", priority=9)
+
+    def donate_admins(self):
+        self.debug("Evaluating game administrators monthly donate")
+        objlist = self.int_app().objlist(ProjectList, query_index="published")
+        self.debug("Number of games: %d" % len(objlist))
+        # gather statistics
+        admins = {}
+        cnt = 0
+        for lstent in objlist:
+            cnt += 1
+            if (cnt % 1000) == 0:
+                self.debug("Processing project %d" % cnt)
+            try:
+                project = self.int_app().obj(Project, lstent.uuid)
+            except ObjectNotFoundException:
+                continue
+            donate = project.get("monthly_donate", 0)
+            if donate > 0:
+                try:
+                    admins[project.get("owner")] += donate
+                except KeyError:
+                    admins[project.get("owner")] = donate
+        # store admins powers
+        self.debug("Loading list of administrators")
+        objlist = self.main_app().objlist(UserList, query_index="created")
+        self.debug("Number of administrators: %d" % len(objlist))
+        cnt = 0
+        for lstent in objlist:
+            cnt += 1
+            if (cnt % 1000) == 0:
+                self.debug("Processing user %d" % cnt)
+            try:
+                user = self.main_app().obj(User, lstent.uuid)
+            except ObjectNotFoundException:
+                continue
+            user.set("monthly_donate", admins.get(user.uuid, 0))
+            user.store()
 
 class Money(ConstructorModule):
     def register(self):
@@ -13,6 +61,14 @@ class Money(ConstructorModule):
         self.rhook("game.dashboard", self.game_dashboard)
         self.rhook("advice-admin-game.dashboard", self.advice_game_dashboard)
         self.rhook("advice-admin-money.index", self.advice_money)
+        self.rhook("queue-gen.schedule", self.schedule)
+        self.rhook("admin-money.donate-stats", self.donate_stats)
+        self.rhook("money-event.credit", self.event_credit)
+        self.rhook("money-event.debit", self.event_debit)
+        self.rhook("hook-character.money", self.hook_money)
+
+    def schedule(self, sched):
+        sched.add("admin-money.donate-stats", "0 1 * * *", priority=10)
 
     def payment_args(self, args, options):
         character = options.get("character")
@@ -206,5 +262,41 @@ class Money(ConstructorModule):
             advice.append({"title": self._("Payments structure"), "content": self._("Payments structure chart shows your gross receipt by single payment size. If you see some payment sizes are not very popular it means you should add some offers requiring such payments and promote them to the players"), "order": 5})
 
     def advice_money(self, hook, args, advice):
-        advice.append({"title": self._("Money system documentation"), "content": self._('Detailed description of the currency setup you can read in the <a href="//www.%s/doc/newgame#money" target="_blank">reference manual page</a>.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Money system documentation"), "content": self._('Detailed description of the currency setup you can read in the <a href="//www.%s/doc/newgame#money" target="_blank">reference manual page</a>.') % self.main_host})
 
+    def donate_stats(self):
+        try:
+            project = self.app().project
+        except AttributeError:
+            return
+        amount = self.sql_read.selectall("select sum(income_amount-chargebacks_amount) from donate where app=? and period > date_sub(now(), interval 1 month)", self.app().tag)[0][0]
+        amount = nn(amount)
+        project.set("monthly_donate", amount)
+        project.store()
+
+    def event_credit(self, member, amount, currency, description):
+        self.money_event(member, amount, currency, description)
+
+    def event_debit(self, member, amount, currency, description):
+        self.money_event(member, -amount, currency, description)
+
+    def money_event(self, member, amount, currency, description):
+        if member.member_type == "user":
+            char = self.character(member.member)
+            if not char.valid:
+                return
+            balance = member.balance(currency)
+            self.call("stream.character", char, "characters", "money_changed", amount=amount, balance=balance, currency=currency, description=description)
+            self.qevent("money-changed", char=char, amount=amount, balance=balance, currency=currency, description=description)
+
+    def hook_money(self, vars, currency):
+        if not re_valid_code.match(currency):
+            return ''
+        try:
+            req = self.req()
+        except AttributeError:
+            return ''
+        money = self.call("money.obj", "user", req.user())
+        if not money:
+            return ''
+        return '<span class="char-money-balance-%s">%s</span>' % (currency, money.balance(currency))

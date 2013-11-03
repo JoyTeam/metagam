@@ -1,12 +1,14 @@
 from mg.constructor import *
 from mg.mmorpg.quest_parser import *
 from mg.core.money_classes import MoneyError
-from mg.mmorpg.combats.daemon import CombatRequest
-from mg.mmorpg.combats.core import CombatRunError, CombatMemberBusyError
+from mg.mmorpg.combats.daemon import CombatRequest, CombatInterface
+from mg.mmorpg.combats.core import CombatRunError, CombatMemberBusyError, CombatUnavailable
+from mg.constructor.script_classes import ScriptMemoryObject
 from uuid import uuid4
 import re
 import random
 import stackless
+from concurrence import Tasklet
 
 re_info = re.compile(r'^([a-z0-9_]+)/(.+)$', re.IGNORECASE)
 re_state = re.compile(r'^state/(.+)$', re.IGNORECASE)
@@ -17,6 +19,8 @@ re_mod_timer = re.compile(r'^timer-(.+)-(.+)$')
 re_mod_lock = re.compile(r'^q_(.+)_locked$')
 re_remove_dialog = re.compile(r'^([a-z0-9]+)/([a-z0-9]+)$')
 re_remove_lock = re.compile(r'^user/([a-f0-9]{32})/(.+)$')
+re_arg_param = re.compile(r'^arg_(.+)$')
+re_valid_identifier = re.compile(r'^[a-z_][a-z0-9\_]*$', re.IGNORECASE)
 
 class DBCharQuests(CassandraObject):
     clsname = "CharQuests"
@@ -160,9 +164,22 @@ class CharQuests(ConstructorModule):
                     "text": self._("Close")
                 }
             ]
-        # removing other dialogs from the same quest
+        # remove other dialogs from the same quest
         dialogs = self.dialogs
-        dialogs = [ent for ent in dialogs if ent.get("quest") != quest]
+        if quest:
+            dialogs = [ent for ent in dialogs if ent.get("quest") != quest or ent.get("type") != None]
+        dialogs.insert(0, dialog)
+        self._quests.set(":dialogs", dialogs)
+
+    def itemselector(self, dialog, quest=None):
+        dialog["uuid"] = uuid4().hex
+        dialog["type"] = "itemselector"
+        if quest:
+            dialog["quest"] = quest
+        # remove other dialogs from the same quest
+        dialogs = self.dialogs
+        if quest:
+            dialogs = [ent for ent in dialogs if ent.get("quest") != quest or ent.get("type") != "itemselector"]
         dialogs.insert(0, dialog)
         self._quests.set(":dialogs", dialogs)
 
@@ -187,11 +204,10 @@ class CharQuest(object):
             if m:
                 param = m.group(1)
                 return self.quests.get(self.qid, param)
+            if handle_exceptions:
+                return None
             else:
-                if handle_exceptions:
-                    return None
-                else:
-                    raise AttributeError(attr)
+                raise AttributeError(attr)
 
     def script_set_attr(self, attr, val, env):
         if attr == "state":
@@ -234,6 +250,7 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-root.index", self.menu_root_index)
         self.rhook("menu-admin-quests.index", self.menu_quests_index)
+        self.rhook("menu-admin-inventory.index", self.menu_inventory_index)
         self.rhook("headmenu-admin-quests.editor", self.headmenu_quests_editor)
         self.rhook("ext-admin-quests.editor", self.admin_quests_editor, priv="quests.editor")
         self.rhook("advice-admin-quests.index", self.advice_quests)
@@ -253,9 +270,11 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("admin-interface.button-action", self.interface_button_action)
         self.rhook("ext-admin-quests.remove-lock", self.admin_remove_lock, priv="quests.remove-locks")
         self.rhook("admin-gameinterface.design-files", self.design_files)
+        self.rhook("quest-admin.update-quest-handlers", self.update_quest_handlers)
 
     def design_files(self, files):
         files.append({"filename": "dialog.html", "description": self._("Quest dialog"), "doc": "/doc/quests"})
+        files.append({"filename": "quests.html", "description": self._("Quests list"), "doc": "/doc/quests"})
 
     def interface_button_action(self, btn):
         if btn.get("qevent"):
@@ -341,13 +360,16 @@ class QuestsAdmin(ConstructorModule):
         req = self.req()
         if req.has_access("quests.editor"):
             menu.append({"id": "quests/editor", "text": self._("Quests editor"), "order": 20, "leaf": True})
+
+    def menu_inventory_index(self, menu):
         if self.conf("module.inventory"):
+            req = self.req()
             if req.has_access("quests.inventory"):
-                menu.append({"id": "inventory/actions", "text": self._("Actions for items"), "order": 30, "leaf": True}) 
+                menu.append({"id": "inventory/actions", "text": self._("Actions for items"), "order": 30, "leaf": True})
 
     def advice_quests(self, hook, args, advice):
-        advice.append({"title": self._("Scripts documentation"), "content": self._('You can find detailed information on the scripting engine in the <a href="//www.%s/doc/script" target="_blank">scripting engine page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 10})
-        advice.append({"title": self._("Quests documentation"), "content": self._('You can find detailed information on the quests engine in the <a href="//www.%s/doc/quests" target="_blank">quests engine page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 20})
+        advice.append({"title": self._("Scripts documentation"), "content": self._('You can find detailed information on the scripting engine in the <a href="//www.%s/doc/script" target="_blank">scripting engine page</a> in the reference manual.') % self.main_host, "order": 10})
+        advice.append({"title": self._("Quests documentation"), "content": self._('You can find detailed information on the quests engine in the <a href="//www.%s/doc/quests" target="_blank">quests engine page</a> in the reference manual.') % self.main_host, "order": 20})
 
     def headmenu_quests_editor(self, args):
         if args == "new":
@@ -500,6 +522,8 @@ class QuestsAdmin(ConstructorModule):
                         raise RuntimeError(self._("Invalid quest states object. Expected {expected}. Found: {found}").format(expected="state", found=script[0]))
                     if "hdls" in script[1]:
                         for handler in script[1]["hdls"]:
+                            if handler[0] == "comment":
+                                continue
                             if handler[0] != "hdl":
                                 raise RuntimeError(self._("Invalid quest states object. Expected {expected}. Found: {found}").format(expected="hdl", found=script[0]))
                             tp = handler[1]["type"]
@@ -675,6 +699,8 @@ class QuestsAdmin(ConstructorModule):
         if objtype == "state":
             if val[1].get("hdls"):
                 for handler in val[1]["hdls"]:
+                    if handler[0] == "comment":
+                        continue
                     if handler[0] != "hdl":
                         raise ScriptError(self._("Handler expected in the handlers list. Received: %s") % handler[0], env)
                     self.quest_script_validate(handler, env)
@@ -683,6 +709,33 @@ class QuestsAdmin(ConstructorModule):
                 for act in val[1]["act"]:
                     self.quest_script_validate(act, env)
 
+    def unparse_member(self, member):
+        mtype = member["type"]
+        if mtype[0] == "virtual":
+            mtype = "virtual"
+        elif mtype[0] == "expr":
+            mtype = self.call("script.unparse-expression", mtype[1])
+        else:
+            mtype = "??? (%s)" % mtype[0]
+        result = "member %s" % mtype
+        if "team" in member:
+            result += " team=%s" % self.call("script.unparse-expression", member["team"])
+        if "control" in member:
+            result += " control=%s" % self.call("script.unparse-expression", member["control"])
+        if "name" in member:
+            result += " name=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", member["name"]))
+        if "sex" in member:
+            result += " sex=%s" % self.call("script.unparse-expression", member["sex"])
+        if "ai" in member:
+            result += " ai=%s" % self.call("script.unparse-expression", member["ai"])
+        if "image" in member:
+            result += " image=%s" % self.call("script.unparse-expression", member["image"])
+        if "params" in member:
+            params = member["params"]
+            for key in sorted(params.keys()):
+                result += " %s=%s" % (key, self.call("script.unparse-expression", params[key]))
+        return result
+
     def quest_admin_unparse_script(self, val, indent=0):
         if val is None:
             return ""
@@ -690,18 +743,51 @@ class QuestsAdmin(ConstructorModule):
             raise ScriptParserError(self._("Script unparse error. Expected list, received %s") % type(val).__name__)
         if len(val) == 0 or type(val[0]) == list:
             # list of objects
-            return u"".join([self.quest_admin_unparse_script(ent, indent) for ent in val])
+            result = u""
+            last_comment = False
+            for ent in val:
+                is_comment = type(ent) is list and ent[0] == "comment"
+                if is_comment and len(result) and not last_comment:
+                    result += "\n"
+                last_comment = is_comment
+                result += self.quest_admin_unparse_script(ent, indent)
+            return result
         else:
             objtype = val[0]
             if val[0] == "state":
                 return self.quest_admin_unparse_script(val[1].get("hdls"))
+            elif val[0] == "comment":
+                return "%s#%s%s\n" % (
+                    "  " * indent,
+                    " " if len(val[1]) and val[1][0] != " " else "", # at least 1 space after "#"
+                    val[1]
+                )
             elif val[0] == "hdl":
                 result = "  " * indent + self.quest_admin_unparse_script(val[1]["type"])
+                evtype = val[1]["type"][0]
                 attrs = val[1].get("attrs")
                 if attrs:
+                    attrs = attrs.copy()
+                    if evtype == "oncombat":
+                        events = attrs["events"]
+                        del attrs["events"]
+                        if events.get("start"):
+                            result += " start"
+                        if events.get("victory"):
+                            result += " victory"
+                        if events.get("defeat"):
+                            result += " defeat"
+                        if events.get("draw"):
+                            result += " draw"
+                        if "flags" in attrs:
+                            if attrs.get("flags"):
+                                attrs["flags"] = u','.join(attrs["flags"])
+                            else:
+                                del attrs["flags"]
                     attrs = [(k, v) for k, v in attrs.iteritems()]
                     attrs.sort(cmp=lambda x, y: cmp(x[0], y[0]))
-                    result += u"".join([" %s=%s" % (k, self.call("script.unparse-expression", v)) for k, v in attrs])
+                    for k, v in attrs:
+                        result += u" %s=%s" % (k, self.call("script.unparse-expression", v))
                 actions = val[1].get("act")
                 if actions:
                     result += " {\n" + self.quest_admin_unparse_script(actions, indent + 1) + "  " * indent + "}\n\n"
@@ -712,6 +798,8 @@ class QuestsAdmin(ConstructorModule):
                 return u"event %s" % self.call("script.unparse-expression", val[1])
             elif val[0] == "teleported":
                 return "teleported"
+            elif val[0] == "money-changed":
+                return "money changed"
             elif val[0] == "expired":
                 if val[1] == "mod":
                     return "expired %s" % self.call("script.unparse-expression", val[2])
@@ -733,6 +821,8 @@ class QuestsAdmin(ConstructorModule):
                 return "class selected"
             elif val[0] == "paidservice":
                 return "paidservice"
+            elif val[0] == "oncombat":
+                return "combat"
             elif val[0] == "shop-bought":
                 return "shop bought"
             elif val[0] == "shop-sold":
@@ -744,7 +834,12 @@ class QuestsAdmin(ConstructorModule):
             elif val[0] == "equip-drop":
                 return "equip drop"
             elif val[0] == "require":
-                return "  " * indent + u"require %s\n" % self.call("script.unparse-expression", val[1])
+                result = "  " * indent + u"require %s" % self.call("script.unparse-expression", val[1])
+                if len(val) >= 4:
+                    if val[2] == "error":
+                        result += " else error %s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[3]))
+                result += "\n"
+                return result
             elif val[0] == "call":
                 if len(val) == 2:
                     return "  " * indent + u"call event=%s\n" % self.call("script.unparse-expression", val[1])
@@ -812,6 +907,22 @@ class QuestsAdmin(ConstructorModule):
                 return result
             elif val[0] == "set":
                 return "  " * indent + ("set %s.%s = %s\n" % (self.call("script.unparse-expression", val[1]), val[2], self.call("script.unparse-expression", val[3])))
+            elif val[0] == "setdynamic":
+                add = ""
+                if val[4] is not None:
+                    add += " till=%s" % self.call("script.unparse-expression", val[4])
+                return "  " * indent + ("set dynamic %s.%s = %s%s\n" % (self.call("script.unparse-expression", val[1]), val[2], self.call("script.unparse-expression", val[3]), add))
+            elif val[0] == "slide":
+                result = "  " * indent + "slide"
+                result += " %s.%s" % (self.call("script.unparse-expression", val[1]), val[2])
+                if val[3] is not None:
+                    result += " from=%s" % self.call("script.unparse-expression", val[3])
+                result += " to=%s" % self.call("script.unparse-expression", val[4])
+                result += " time=%s" % self.call("script.unparse-expression", val[5])
+                if val[6] is not None:
+                    result += " round=%s" % self.call("script.unparse-expression", val[6])
+                result += "\n"
+                return result
             elif val[0] == "destroy":
                 return "  " * indent + "%s\n" % ("finish" if val[1] else "fail")
             elif val[0] == "lock":
@@ -833,6 +944,43 @@ class QuestsAdmin(ConstructorModule):
                         return "  " * indent + 'modifier id="%s" add=%s%s\n' % (val[1], self.call("script.unparse-expression", val[3]), modval)
                 elif op == "prolong":
                     return "  " * indent + 'modifier id="%s" prolong=%s%s\n' % (val[1], self.call("script.unparse-expression", val[3]), modval)
+            elif val[0] == "selectitem":
+                options = val[1]
+                result = "  " * indent + "selectitem {\n"
+                if "title" in options:
+                    result += "  " * (indent + 1) + "title %s\n" % self.call("script.unparse-expression", self.call("script.unparse-text", options["title"]))
+                if "show" in options:
+                    result += "  " * (indent + 1) + "show %s\n" % self.call("script.unparse-expression", options["show"])
+                if "fields" in options:
+                    result += "  " * (indent + 1) + "fields {\n"
+                    for field in options["fields"]:
+                        add = ""
+                        if "visible" in field:
+                            add += " visible=%s" % self.call("script.unparse-expression", field["visible"])
+                        result += "  " * (indent + 2) + "field name=%s value=%s%s\n" % (
+                            self.call("script.unparse-expression", self.call("script.unparse-text", field["name"])),
+                            self.call("script.unparse-expression", self.call("script.unparse-text", field["value"])),
+                            add,
+                        )
+                    result += "  " * (indent + 1) + "}\n"
+                if "actions" in options:
+                    result += "  " * (indent + 1) + "actions {\n"
+                    for action in options["actions"]:
+                        add = ""
+                        if "available" in action:
+                            add += " available=%s" % self.call("script.unparse-expression", action["available"])
+                        result += u"  " * (indent + 2) + "action name=%s event=%s%s\n" % (
+                            self.call("script.unparse-expression", self.call("script.unparse-text", action["name"])),
+                            self.call("script.unparse-expression", action["event"]),
+                            add
+                        )
+                    result += "  " * (indent + 1) + "}\n"
+                if "oncancel" in options:
+                    result += "  " * (indent + 1) + "oncancel %s\n" % self.call("script.unparse-expression", options["oncancel"])
+                if "template" in options:
+                    result += "  " * (indent + 1) + "template %s\n" % self.call("script.unparse-expression", options["template"])
+                result += "  " * indent + "}\n"
+                return result
             elif val[0] == "dialog":
                 options = val[1]
                 result = "  " * indent + "dialog {\n"
@@ -851,12 +999,14 @@ class QuestsAdmin(ConstructorModule):
                 if "buttons" in options:
                     for btn in options["buttons"]:
                         default = "default " if btn.get("default") else ""
-                        result += "  " * (indent + 1) + "%sbutton {" % default;
+                        result += "  " * (indent + 1) + "%sbutton {\n" % default;
                         if "text" in btn:
-                            result += " text %s" % self.call("script.unparse-expression", self.call("script.unparse-text", btn["text"]))
+                            result += "%stext %s\n" % ("  " * (indent + 2), self.call("script.unparse-expression", self.call("script.unparse-text", btn["text"])))
                         if "event" in btn:
-                            result += ' event "%s"' % btn["event"]
-                        result += " }\n"
+                            result += '%sevent "%s"\n' % ("  " * (indent + 2), btn["event"])
+                        if "available" in btn:
+                            result += '%savailable %s\n' % ("  " * (indent + 2), self.call("script.unparse-expression", btn["available"]))
+                        result += "  " * (indent + 1) + "}\n"
                 result += "  " * indent + "}\n"
                 return result
             elif val[0] == "random":
@@ -869,43 +1019,79 @@ class QuestsAdmin(ConstructorModule):
                 result += "  " * indent + "}\n"
                 return result
             elif val[0] == "chat":
-                result = "  " * indent + "chat text=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
+                result = "  " * indent + "chat %s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
                 args = val[2]
                 if "channel" in args:
                     result += " channel=%s" % self.call("script.unparse-expression", args["channel"])
                 if "public" in args:
                     result += " public=%s" % self.call("script.unparse-expression", args["public"])
+                if "cls" in args:
+                    result += " cls=%s" % self.call("script.unparse-expression", args["cls"])
                 result += "\n"
                 return result
+            elif val[0] == "combatlog":
+                args = u''
+                if len(val) >= 3:
+                    for key in sorted(val[2].keys()):
+                        args += u" %s=%s" % (key, self.call("script.unparse-expression", val[2][key]))
+                return u"%scombat log %s%s\n" % ("  " * indent, self.call("script.unparse-expression", self.call("script.unparse-text", val[1])), args)
+            elif val[0] == "combatjoin":
+                return u"%scombat join %s %s\n" % ("  " * indent, self.call("script.unparse-expression", val[1]), self.unparse_member(val[2]))
+            elif val[0] == "combatsyslog":
+                args = u''
+                if len(val) >= 3:
+                    for key in sorted(val[2].keys()):
+                        args += u" %s=%s" % (key, self.call("script.unparse-expression", val[2][key]))
+                return u"%scombat syslog %s%s\n" % ("  " * indent, self.call("script.unparse-expression", self.call("script.unparse-text", val[1])), args)
             elif val[0] == "javascript":
                 return "  " * indent + "javascript %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "teleport":
                 return "  " * indent + "teleport %s\n" % self.call("script.unparse-expression", val[1])
+            elif val[0] == "equipbreak":
+                return "  " * indent + "equipbreak %s\n" % self.call("script.unparse-expression", val[1])
             elif val[0] == "combat":
                 options = val[1]
                 result = "  " * indent + "combat"
                 if "rules" in options:
                     result += " rules=%s" % self.call("script.unparse-expression", options["rules"])
+                if "title" in options:
+                    result += " ctitle=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", options["title"]))
+                if "flags" in options:
+                    result += " flags=%s" % self.call("script.unparse-expression", u','.join(options["flags"]))
                 result += " {\n"
                 for member in options.get("members", []):
-                    mtype = member["type"]
-                    if mtype[0] == "virtual":
-                        mtype = "virtual"
-                    elif mtype[0] == "expr":
-                        mtype = self.call("script.unparse-expression", mtype[1])
-                    else:
-                        mtype = "??? (%s)" % mtype[0]
-                    result += "  " * indent + "  member %s" % mtype
-                    if "team" in member:
-                        result += " team=%s" % self.call("script.unparse-expression", member["team"])
-                    if "control" in member:
-                        result += " control=%s" % self.call("script.unparse-expression", member["control"])
-                    if "name" in member:
-                        result += " name=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", member["name"]))
-                    if "sex" in member:
-                        result += " sex=%s" % self.call("script.unparse-expression", member["sex"])
+                    result += "  " * indent + "  "
+                    result += self.unparse_member(member)
                     result += "\n"
                 result += "  " * indent + "}\n"
+                return result
+            elif val[0] == "sound":
+                result = "  " * indent + "sound %s" % self.call("script.unparse-expression", self.call("script.unparse-text", val[1]))
+                options = val[2]
+                if "mode" in options:
+                    result += " mode=%s" % self.call("script.unparse-expression", options["mode"])
+                if "volume" in options:
+                    result += " volume=%s" % self.call("script.unparse-expression", options["volume"])
+                result += "\n"
+                return result
+            elif val[0] == "music":
+                result = "  " * indent + "music %s" % self.call("script.unparse-expression", val[1])
+                options = val[2]
+                if "fade" in options:
+                    result += " fade=%s" % self.call("script.unparse-expression", options["fade"])
+                if "volume" in options:
+                    result += " volume=%s" % self.call("script.unparse-expression", options["volume"])
+                result += "\n"
+                return result
+            elif val[0] == "musicstop":
+                result = "  " * indent + "music stop"
+                options = val[1]
+                if "fade" in options:
+                    result += " fade=%s" % self.call("script.unparse-expression", options["fade"])
+                result += "\n"
+                return result
+            elif val[0] == "sendchar":
+                result = "  " * indent + "sendchar " + ", ".join([self.call("script.unparse-expression", v) for v in val[1]]) + "\n"
                 return result
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
@@ -922,6 +1108,7 @@ class QuestsAdmin(ConstructorModule):
     def admin_inventory_actions(self):
         req = self.req()
         actions = [act.copy() for act in self.conf("quest-item-actions.list", [])]
+        self.call("admin.advice", {"title": self._("Quests and triggers subsystem documentation"), "content": self._('This is the coremost part of the MMO Constructor. It can be used to assign arbitrary actions to various game events. You can find detailed information on the quests engine in the <a href="//www.%s/doc/quests" target="_blank">quests engine page</a> in the reference manual.') % self.main_host, "order": 20})
         if req.args:
             m = re_del.match(req.args)
             if m:
@@ -1046,7 +1233,11 @@ class QuestsAdmin(ConstructorModule):
                                 quest_name = htmlescape(quest.get("name"))
                             state = []
                             for key, val in character.quests.state(qid).iteritems():
-                                state.append(u'quest.p_%s = <strong>%s</strong>' % (htmlescape(key), htmlescape(val)))
+                                if type(val) is list:
+                                    val = htmlescape(self.call("script.unparse-expression", val[1])) + u' <img class="inline-icon" src="/st/icons/dyn-script.gif" alt="{title}" title="{title}" />'.format(title=self._("Parameter changing with time"))
+                                else:
+                                    val = htmlescape(val)
+                                state.append(u'quest.p_%s = <strong>%s</strong>' % (htmlescape(key), val))
                             state.sort()
                             cur_quests.append([
                                 "char.q_%s" % qid,
@@ -1072,7 +1263,7 @@ class QuestsAdmin(ConstructorModule):
                     rdialog = [
                         htmlescape(dialog.get("title")),
                         quest,
-                        htmlescape(dialog.get("template", "dialog.html")),
+                        htmlescape(dialog.get("template", self._("default"))),
                     ]
                     if may_dialogs:
                         rdialog.append(u'<hook:admin.link href="quests/removedialog/%s/%s" title="%s" />' % (character.uuid, dialog.get("uuid"), self._("remove")))
@@ -1158,9 +1349,23 @@ class Quests(ConstructorModule):
         self.rhook("ext-quest.event", self.ext_quest_event, priv="logged")
         self.rhook("locations.map-zone-event-render", self.location_map_zone_event_render)
         self.rhook("interface.render-button", self.interface_render_button)
+        self.rhook("modules.list", self.modules_list)
 
     def child_modules(self):
-        return ["mg.mmorpg.quests.QuestsAdmin"]
+        modules = ["mg.mmorpg.quests.QuestsAdmin"]
+        if self.conf("module.combats"):
+            modules.extend(["mg.mmorpg.combats.interfaces.Combats"])
+        return modules
+
+    def modules_list(self, modules):
+        modules.extend([
+            {
+                "id": "combats",
+                "name": self._("Combats engine"),
+                "description": self._("Creating highly customizable combats"),
+                "parent": "quests",
+            }
+        ])
 
     @property
     def general_parser_spec(self):
@@ -1193,7 +1398,27 @@ class Quests(ConstructorModule):
             return e.val
 
     def quest_event(self, event, **kwargs):
-        # loading list of quests handling this type of event
+        char = kwargs.get("char")
+        if not char:
+            return
+        tasklet = Tasklet.current()
+        # avoid recursive call of the same events
+        try:
+            events = tasklet.quest_processing_events
+        except AttributeError:
+            events = set()
+            tasklet.quest_processing_events = events
+        key = "%s-%s" % (char.uuid, event)
+        if key in events:
+            return
+        events.add(key)
+        try:
+            self.execute_quest_event(event, **kwargs)
+        finally:
+            events.discard(key)
+
+    def execute_quest_event(self, event, **kwargs):
+        # load list of quests handling this type of event
         char = kwargs.get("char")
         if not char:
             return
@@ -1217,6 +1442,8 @@ class Quests(ConstructorModule):
                 self.call("debug-channel.character", char, event_str, cls="quest-first-event", indent=indent)
             else:
                 self.call("debug-channel.character", char, event_str, cls="quest-event", indent=indent)
+            if not "local" in kwargs:
+                kwargs["local"] = ScriptMemoryObject()
             # loading list of handlers
             quests_states = self.conf("qevent-%s.handlers" % event)
             if not quests_states:
@@ -1280,6 +1507,21 @@ class Quests(ConstructorModule):
                                 continue
                             if attrs and attrs.get("from") and kwargs["old_loc"].uuid != attrs.get("from"):
                                 continue
+                        elif event == "money-changed":
+                            if attrs and attrs.get("currency") and kwargs["currency"] != attrs.get("currency"):
+                                continue
+                        elif event == "oncombat":
+                            if attrs and attrs.get("events") and kwargs["cevent"] not in attrs["events"]:
+                                continue
+                            if attrs and attrs.get("flags"):
+                                match = False
+                                cflags = kwargs["combat"].flags
+                                for flag in attrs.get("flags"):
+                                    if flag in cflags:
+                                        match = True
+                                        break
+                                if not match:
+                                    continue
                         act = handler.get("act")
                         if not act:
                             continue
@@ -1298,14 +1540,64 @@ class Quests(ConstructorModule):
                                 env.description = self._("Quest '{quest}', event '{event}'").format(quest=quest, event=event)
                                 raise ScriptRuntimeError(self._("Max recursion depth exceeded"), env)
                             for cmd in actions:
+
                                 def env():
                                     env = ScriptEnvironment()
                                     env.globs = kwargs
                                     env.description = self._("Quest '{quest}', event '{event}', command '{command}'").format(quest=quest, event=event, command=self.call("quest-admin.unparse-script", cmd).strip())
                                     return env
+
+                                def evaluate_member(member):
+                                    mtype = member["type"]
+                                    if mtype[0] == "virtual":
+                                        cmember = {
+                                            "object": ["virtual"]
+                                        }
+                                    elif mtype[0] == "expr":
+                                        cmemberobj = self.call("script.evaluate-expression", mtype[1], globs=kwargs, description=lambda: self._("Combat member type"))
+                                        makemember = getattr(cmemberobj, "combat_member", None)
+                                        if makemember is None:
+                                            raise QuestError(self._("'%s' is not a valid combat member") % self.call("script.unparse-expression", mtype[1]))
+                                        cmember = makemember()
+                                    else:
+                                        raise QuestError(self._("Unknown combat type %s") % mtype[0])
+                                    rmember = cmember
+                                    team = self.call("script.evaluate-expression", member["team"], globs=kwargs, description=lambda: self._("Combat member team"))
+                                    if type(team) != int:
+                                        raise QuestError(self._("Team number must be integer. Got: %s") % type(team))
+                                    else:
+                                        team = int(team)
+                                        if team < 1 or team > 1000:
+                                            raise QuestError(self._("Team number must be in range 1 .. 1000. Got: %s") % team)
+                                        else:
+                                            rmember["team"] = team
+                                    if "control" in member:
+                                        rmember["control"] = self.call("script.evaluate-expression", member["control"], globs=kwargs, description=lambda: self._("Combat member control"))
+                                    elif cmember["object"][0] == "character":
+                                        rmember["control"] = "web"
+                                    else:
+                                        rmember["control"] = "ai"
+                                    if "name" in member:
+                                        rmember["name"] = self.call("script.evaluate-text", member["name"], globs=kwargs, description=lambda: self._("Combat member name"))
+                                    if "sex" in member:
+                                        rmember["sex"] = self.call("script.evaluate-expression", member["sex"], globs=kwargs, description=lambda: self._("Combat member sex"))
+                                    if "ai" in member:
+                                        rmember["ai"] = self.call("script.evaluate-expression", member["ai"], globs=kwargs, description=lambda: self._("Combat member AI"))
+                                    if "image" in member:
+                                        rmember["image"] = self.call("script.evaluate-expression", member["image"], globs=kwargs, description=lambda: self._("Combat member image"))
+                                    if "params" in member:
+                                        params = {}
+                                        rmember["params"] = params
+                                        for key, val in member["params"].iteritems():
+                                            params[key] = self.call("script.evaluate-expression", val, globs=kwargs, description=lambda: self._("Combat member parameter '%s'") % key)
+                                    return rmember
+
                                 try:
                                     cmd_code = cmd[0]
-                                    if cmd_code == "message" or cmd_code == "error":
+                                    if cmd_code == "comment":
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: u'# %s' % cmd[1], cls="quest-comment", indent=indent+2)
+                                    elif cmd_code == "message" or cmd_code == "error":
                                         message = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=eval_description)
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: u'%s %s' % (cmd_code, self.call("script.unparse-expression", message)), cls="quest-action", indent=indent+2)
@@ -1315,6 +1607,12 @@ class Quests(ConstructorModule):
                                         if not res:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: u'%s: %s' % (self.call("script.unparse-expression", cmd[1]), self._("false")), cls="quest-condition", indent=indent+2)
+                                            if len(cmd) >= 4:
+                                                if cmd[2] == "error":
+                                                    error = self.call("script.evaluate-text", cmd[3], globs=kwargs, description=lambda: self._("Error text for 'require' statement"))
+                                                    if debug:
+                                                        self.call("debug-channel.character", char, lambda: self._("Error message: %s") % error, cls="quest-condition", indent=indent+2)
+                                                    char.error(error)
                                             raise AbortHandler()
                                     elif cmd_code == "call":
                                         if len(cmd) == 2:
@@ -1332,7 +1630,7 @@ class Quests(ConstructorModule):
                                         ev = "event-%s-%s" % (target_quest, target_event)
                                         args = cmd[3]
                                         if "char" in args:
-                                            char_id = utf2str(unicode(self.call("script.evaluate-expression", args["char"])))
+                                            char_id = utf2str(unicode(self.call("script.evaluate-expression", args["char"], globs=kwargs, description=lambda: self._("target character for call"))))
                                             target_char = self.character(char_id)
                                             if target_char.valid:
                                                 if debug:
@@ -1390,6 +1688,7 @@ class Quests(ConstructorModule):
                                         if cmd[1]:
                                             item_type = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                             it_obj = self.item_type(item_type)
+                                            print "quantity=%s, fractions=%s" % (quantity, fractions)
                                             if fractions is not None:
                                                 if fractions >= 1:
                                                     max_fractions = it_obj.get("fractions", 0)
@@ -1399,6 +1698,7 @@ class Quests(ConstructorModule):
                                                 else:
                                                     deleted = 0
                                             elif quantity is None or quantity >= 1:
+                                                print "quantity=%s" % quantity
                                                 deleted = char.inventory.take_type(item_type, quantity, "quest.take", quest=quest, any_dna=True)
                                             else:
                                                 deleted = 0
@@ -1419,9 +1719,14 @@ class Quests(ConstructorModule):
                                                 raise AbortHandler()
                                         elif cmd[2]:
                                             dna = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
-                                            it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
-                                            if debug:
+                                            if quantity is None or quantity >= 1:
+                                                it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
+                                                if it_obj is None:
+                                                    it_obj = self.item_type(dna)
+                                            else:
+                                                deleted = 0
                                                 it_obj = self.item_type(dna)
+                                            if debug:
                                                 if it_obj.valid():
                                                     name = it_obj.name
                                                 else:
@@ -1463,15 +1768,13 @@ class Quests(ConstructorModule):
                                         money_opts = {}
                                         if len(cmd) >= 5 and cmd[4]:
                                             money_opts["override"] = cmd[4]
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
                                         try:
                                             res = char.money.debit(amount, currency, "quest-take", quest=quest, **money_opts)
                                         except MoneyError as e:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
                                             raise QuestError(e.val)
                                         else:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency} ({result})").format(amount=amount, currency=currency, result=self._("successfully") if res else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
                                             if not res:
                                                 if cmd[3] is not None:
                                                     self.qevent("event-%s-%s" % (quest, cmd[3]), char=char, amount=amount, currency=currency)
@@ -1486,18 +1789,101 @@ class Quests(ConstructorModule):
                                         else:
                                             if len(cmd) >= 4:
                                                 execute_actions(cmd[3], indent+1)
-                                    elif cmd_code == "set":
+                                    elif cmd_code == "set" or cmd_code == "setdynamic" or cmd_code == "slide":
                                         obj = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                         attr = cmd[2]
-                                        val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(val)), cls="quest-action", indent=indent+2)
+                                        if cmd_code == "slide":
+                                            # from
+                                            fr = cmd[3]
+                                            if fr is None:
+                                                getter = getattr(obj, "script_attr", None)
+                                                if getter is None:
+                                                    raise ScriptTypeError(self._("Object '{val}' has no attributes").format(val=self.unparse_expression(cmd[1])), env)
+                                                try:
+                                                    fr = getter(attr, handle_exceptions=False)
+                                                except AttributeError as e:
+                                                    raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(cmd[1]), att=attr), env)
+                                            else:
+                                                fr = self.call("script.evaluate-expression", fr, globs=kwargs, description=eval_description)
+                                            # to
+                                            to = self.call("script.evaluate-expression", cmd[4], globs=kwargs, description=eval_description)
+                                            # time
+                                            time = floatz(self.call("script.evaluate-expression", cmd[5], globs=kwargs, description=eval_description))
+                                            now = self.time()
+                                            if time > 0:
+                                                cmd_code = "setdynamic"
+                                                val = [
+                                                    "+",
+                                                    fr,
+                                                    [
+                                                        "*",
+                                                        [
+                                                            "-",
+                                                            ["glob", "t"],
+                                                            now
+                                                        ],
+                                                        [
+                                                            "/",
+                                                            [
+                                                                "-",
+                                                                to,
+                                                                fr
+                                                            ],
+                                                            time
+                                                        ]
+                                                    ]
+                                                ]
+                                                # rounding
+                                                if cmd[6] is not None:
+                                                    rnd = self.call("script.evaluate-expression", cmd[6], globs=kwargs, description=eval_description)
+                                                    if (type(rnd) is int or type(rnd) is float) and rnd > 0:
+                                                        val = [
+                                                            "*",
+                                                            [
+                                                                "call",
+                                                                "round",
+                                                                [
+                                                                    "/",
+                                                                    val,
+                                                                    rnd
+                                                                ]
+                                                            ],
+                                                            rnd
+                                                        ]
+                                                val = [now + time, val]
+                                                val[1] = self.call("script.evaluate-expression", val[1], keep_globs={"t": True})
+                                            else:
+                                                cmd_code = "set"
+                                                val = to
+                                            val = self.call("script.encode-objects", val)
+                                        elif cmd_code == "setdynamic":
+                                            till = cmd[4]
+                                            if till is not None:
+                                                till = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                                if type(till) != int and type(till) != float:
+                                                    till = None
+                                            val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description, keep_globs={"t": True})
+                                            val = [till, val]
+                                        else:
+                                            val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
                                         set_attr = getattr(obj, "script_set_attr", None)
                                         if not set_attr:
                                             if getattr(obj, "script_attr", None):
                                                 raise ScriptRuntimeError(self._("'%s' has no settable attributes") % self.call("script.unparse-expression", cmd[1]), env)
                                             else:
                                                 raise ScriptRuntimeError(self._("'%s' is not an object") % self.call("script.unparse-expression", cmd[1]), env)
+                                        tval = type(val)
+                                        if not getattr(obj, "allow_compound", False):
+                                            if tval != str and tval != type(None) and tval != unicode and tval != long and tval != float and tval != bool and tval != int and tval != list:
+                                                raise ScriptRuntimeError(self._("Can't assign compound values ({val}) to the attributes").format(val=tval.__name__ if tval else None), env)
+                                        if debug:
+                                            if cmd_code == "setdynamic":
+                                                if val[0] is None:
+                                                    self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val[1]))), cls="quest-action", indent=indent+2)
+                                                else:
+                                                    self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val} till {till} ({till_human})").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val[1])), till=val[0], till_human=self.call("l10n.time_local", from_unixtime(val[0]))), cls="quest-action", indent=indent+2)
+                                            else:
+                                                self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val))), cls="quest-action", indent=indent+2)
                                         try:
                                             set_attr(attr, val, env)
                                             modified_objects.add(obj)
@@ -1543,23 +1929,33 @@ class Quests(ConstructorModule):
                                     elif cmd_code == "modifier":
                                         mid = cmd[1]
                                         op = cmd[2]
-                                        modval = self.call("script.evaluate-expression", cmd[4]) if len(cmd) >= 5 else 1
-                                        timeout = intz(self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description))
+                                        modval = self.call("script.evaluate-expression", cmd[4], globs=kwargs, description=lambda: self._("modifier value")) if len(cmd) >= 5 else 1
+                                        timeout = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
                                         if timeout is None:
                                             if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("setting modifier '{modifier}' infinitely").format(modifier=mid), cls="quest-action", indent=indent+2)
+                                                self.call("debug-channel.character", char, lambda: self._("setting modifier '{modifier}'={modval} infinitely").format(modifier=mid, modval=modval), cls="quest-action", indent=indent+2)
                                             char.modifiers.add(mid, modval, None)
-                                        elif timeout > 0:
-                                            if timeout > 100e6:
-                                                timeout = 100e6
-                                            if op == "add":
-                                                if debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("adding modifier '{modifier}' for {sec} sec").format(modifier=mid, sec=timeout), cls="quest-action", indent=indent+2)
-                                                char.modifiers.add(mid, modval, self.now(timeout))
-                                            elif op == "prolong":
-                                                if debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("prolonging modifier '{modifier}' for {sec} sec").format(modifier=mid, sec=timeout), cls="quest-action", indent=indent+2)
-                                                char.modifiers.prolong(mid, modval, timeout)
+                                        else:
+                                            timeout = intz(timeout)
+                                            if timeout > 0:
+                                                if timeout > 100e6:
+                                                    timeout = 100e6
+                                                if op == "add":
+                                                    if debug:
+                                                        self.call("debug-channel.character", char, lambda: self._("adding modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
+                                                    char.modifiers.add(mid, modval, self.now(timeout))
+                                                elif op == "prolong":
+                                                    if debug:
+                                                        self.call("debug-channel.character", char, lambda: self._("prolonging modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
+                                                    char.modifiers.prolong(mid, modval, timeout)
+                                    elif cmd_code == "selectitem":
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("opening item selector"), cls="quest-action", indent=indent+2)
+                                        itemselector = cmd[1].copy()
+                                        if itemselector.get("title"):
+                                            itemselector["title"] = self.call("script.evaluate-text", itemselector["title"], globs=kwargs, description=eval_description)
+                                        char.quests.itemselector(itemselector, quest)
+                                        modified_objects.add(char.quests)
                                     elif cmd_code == "dialog":
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("opening dialog"), cls="quest-action", indent=indent+2)
@@ -1608,6 +2004,32 @@ class Quests(ConstructorModule):
                                         else:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("no cases in random with positive weights"), cls="quest-error", indent=indent+2)
+                                    elif cmd_code == "combatlog":
+                                        if not kwargs.get("combat"):
+                                            raise QuestError(self._("'combat log' operator can be used in combat events only"))
+                                        text = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of log text"))
+                                        args = {
+                                            "text": text
+                                        }
+                                        if len(cmd) >= 3:
+                                            for key in cmd[2].keys():
+                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat log {key} attribute").format(key=key))
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("writing to combat log: {text}").format(text=text), cls="quest-action", indent=indent+2)
+                                        kwargs["combat"].textlog(args)
+                                    elif cmd_code == "combatsyslog":
+                                        if not kwargs.get("combat"):
+                                            raise QuestError(self._("'combat syslog' operator can be used in combat events only"))
+                                        text = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of system log text"))
+                                        args = {
+                                            "text": text
+                                        }
+                                        if len(cmd) >= 3:
+                                            for key in cmd[2].keys():
+                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat system log {key} attribute").format(key=key))
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("writing to combat system log: {text}").format(text=text), cls="quest-action", indent=indent+2)
+                                        kwargs["combat"].syslog(args)
                                     elif cmd_code == "javascript":
                                         script = cmd[1]
                                         if debug:
@@ -1624,17 +2046,24 @@ class Quests(ConstructorModule):
                                             channel = self.call("script.evaluate-expression", args["channel"], globs=kwargs, description=eval_description)
                                             channel = utf2str(unicode(channel))
                                         else:
-                                            channel = "loc"
+                                            channel = "wld"
+                                        if "cls" in args:
+                                            cls = self.call("script.evaluate-expression", args["cls"], globs=kwargs, description=eval_description)
+                                        else:
+                                            cls = "quest"
                                         if public:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("sending public chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
-                                            self.call("chat.message", html=html, cls="quest", hide_time=True, hl=True, channel=channel)
+                                            self.call("chat.message", html=html, cls=cls, hide_time=True, hl=True, channel=channel)
                                         else:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
-                                            self.call("chat.message", html=html, cls="quest", private=True, recipients=[char], hide_time=True, hl=True, channel=channel)
+                                            self.call("chat.message", html=html, cls=cls, private=True, recipients=[char], hide_time=True, hl=True, channel=channel)
                                     elif cmd_code == "teleport":
-                                        loc = self.call("location.info", cmd[1])
+                                        locid = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                        if type(locid) != str and type(locid) != unicode:
+                                            raise QuestError(self._("Location id must be a string. Found %s" % type(locid).__name__))
+                                        loc = self.call("location.info", locid)
                                         if loc:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("teleporting %s") % htmlescape(loc.name_t), cls="quest-action", indent=indent+2)
@@ -1645,7 +2074,33 @@ class Quests(ConstructorModule):
                                                 tasklet.quest_teleported = set()
                                                 tasklet.quest_teleported.add(char.uuid)
                                         else:
-                                            raise QuestError(self._("Missing location %s") % cmd[1])
+                                            raise QuestError(self._("Missing location %s") % locid)
+                                    elif cmd_code == "equipbreak":
+                                        globs = kwargs.copy()
+                                        changed = False
+                                        if char.equip:
+                                            for slot_id, item in char.equip.equipped_slots():
+                                                globs["slot"] = slot_id
+                                                globs["item"] = item
+                                                fractions = intz(self.call("script.evaluate-expression", cmd[1], globs=globs, description=lambda: self._("Evaluation of damage to the equip")))
+                                                if debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("breaking item {item} in slot {slot}. damage={damage}").format(item=htmlescape(item.name), slot=slot_id, damage=fractions), cls="quest-action", indent=indent+2)
+                                                if fractions > 0:
+                                                    spent, destroyed = char.equip.break_item(slot_id, fractions, "break", quest=quest)
+                                                    if not spent and debug:
+                                                        self.call("debug-channel.character", char, lambda: self._("could not break item {item} in slot {slot}").format(item=htmlescape(item.name), slot=slot_id), cls="quest-error", indent=indent+3)
+                                                    if spent and destroyed:
+                                                        if debug:
+                                                            self.call("debug-channel.character", char, lambda: self._("item {item} in slot {slot} has broken completely").format(item=htmlescape(item.name), slot=slot_id), cls="quest-action", indent=indent+3)
+                                                        if kwargs.get("combat") and kwargs.get("member"):
+                                                            kwargs["combat"].textlog({
+                                                                "text": self._('<span class="combat-log-item">{item}</span> of character <span class="combat-log-member">{name}</span> has been broken').format(item=htmlescape(item.name), name=htmlescape(kwargs["member"].name)),
+                                                                "cls": "combat-log-equipbreak",
+                                                            })
+                                                    changed = True
+                                        if changed:
+                                            char.equip.validate()
+                                            char.inventory.store()
                                     elif cmd_code == "combat":
                                         options = cmd[1]
                                         # prepare combat request
@@ -1654,36 +2109,37 @@ class Quests(ConstructorModule):
                                         rules = options.get("rules")
                                         if rules is None:
                                             raise QuestError(self._("Combat rules not specified. Specify default combat rules in the combat comfiguration"))
-                                        creq.rules = rules
+                                        creq.set_rules(rules)
+                                        # combat title
+                                        title = options.get("title")
+                                        if title:
+                                            title = self.call("script.evaluate-text", title, globs=kwargs, description=lambda: self._("Combat title"))
+                                            creq.set_title(title)
+                                        # combat flags
+                                        flags = options.get("flags")
+                                        if flags:
+                                            creq.set_flags(flags)
                                         # members
+                                        n_char = 0
+                                        n_npc = 0
                                         for member in options["members"]:
-                                            mtype = member["type"]
-                                            if mtype[0] == "virtual":
-                                                mtype = "virtual"
-                                            elif mtype[0] == "expr":
-                                                mtype = self.call("script.evaluate-expression", mtype[1], globs=kwargs, description=lambda: self._("Combat member type"))
-                                            else:
-                                                raise QuestError(self._("Unknown combat type %s") % mtype[0])
-                                            rmember = {
-                                                "type": mtype,
-                                            }
-                                            team = self.call("script.evaluate-expression", member["team"], globs=kwargs, description=lambda: self._("Combat member team"))
-                                            if type(team) != int:
-                                                raise QuestError(self._("Team number must be integer. Got: %s") % type(team))
-                                            else:
-                                                team = int(team)
-                                                if team < 1 or team > 1000:
-                                                    raise QuestError(self._("Team number must be in range 1 .. 1000. Got: %s") % team)
+                                            rmember = evaluate_member(member)
+                                            try:
+                                                if rmember["object"][0] == "character":
+                                                    n_char += 1
                                                 else:
-                                                    rmember["team"] = team
-                                            if "control" in member:
-                                                rmember["control"] = self.call("script.evaluate-expression", member["control"], globs=kwargs, description=lambda: self._("Combat member control"))
-                                            if "name" in member:
-                                                rmember["name"] = self.call("script.evaluate-text", member["name"], globs=kwargs, description=lambda: self._("Combat member name"))
-                                            if "sex" in member:
-                                                rmember["sex"] = self.call("script.evaluate-expression", member["sex"], globs=kwargs, description=lambda: self._("Combat member sex"))
+                                                    n_npc += 1
+                                            except KeyError:
+                                                n_npc += 1
                                             creq.add_member(rmember)
+                                        # npc combat check
+                                        if not n_char:
+                                            raise QuestError(self._("Combats without character members are forbidden"))
+                                        if n_npc > n_char * 10:
+                                            raise QuestError(self._("Number of NPC characters in a combat can't be more then 10x number of player members"))
                                         # launch combat
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("launching combat"), cls="quest-action", indent=indent+2)
                                         try:
                                             creq.run()
                                         except CombatMemberBusyError as e:
@@ -1692,6 +2148,92 @@ class Quests(ConstructorModule):
                                             raise AbortHandler()
                                         except CombatRunError as e:
                                             raise QuestError(e.val)
+                                        else:
+                                            for member in creq.members:
+                                                if member["object"][0] == "character":
+                                                    char_uuid = member["object"][1]
+                                                    try:
+                                                        tasklet.quest_combat_started[char_uuid] = creq.uuid
+                                                    except AttributeError:
+                                                        tasklet.quest_combat_started = {char_uuid: creq.uuid}
+                                    elif cmd_code == "combatjoin":
+                                        combat_id = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the combat id"))
+                                        rmember = evaluate_member(cmd[2])
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("joining {name} to combat {combat} for team {team}").format(name=rmember.get("name"), combat=combat_id, team=rmember.get("team")), cls="quest-action", indent=indent+2)
+                                        try:
+                                            combat = CombatInterface(self.app(), combat_id)
+                                            result = combat.join(rmember)
+                                        except CombatUnavailable:
+                                            self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
+                                            char.error(self._("Combat is unavailable"))
+                                            raise AbortHandler()
+                                        else:
+                                            if result.get("error"):
+                                                self.call("debug-channel.character", char, result["error"], cls="quest-error", indent=indent+2)
+                                                char.error(self._("Unable to join the combat"))
+                                                raise AbortHandler()
+                                            else:
+                                                if rmember["object"][0] == "character":
+                                                    char_uuid = rmember["object"][1]
+                                                    try:
+                                                        tasklet.quest_combat_started[char_uuid] = combat_id
+                                                    except AttributeError:
+                                                        tasklet.quest_combat_started = {char_uuid: combat_id}
+                                    elif cmd_code == "sound":
+                                        url = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the sound URL to play"))
+                                        options = cmd[2]
+                                        attrs = {}
+                                        if "mode" in options:
+                                            mode = self.call("script.evaluate-expression", options["mode"], globs=kwargs, description=lambda: self._("Evaluation of 'mode' argument"))
+                                            if mode != "wait" and mode != "overlap" and mode != "stop":
+                                                raise QuestError(self._("Invalid value for 'mode' attribute: '%s'") % mode)
+                                            attrs["mode"] = mode
+                                        if "volume" in options:
+                                            volume = self.call("script.evaluate-expression", options["volume"], globs=kwargs, description=lambda: self._("Evaluation of 'volume' argument"))
+                                            if type(volume) != int:
+                                                raise QuestError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__)
+                                            attrs["volume"] = volume
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("playing sound {url}").format(url=url.split("/")[-1]), cls="quest-action", indent=indent+2)
+                                        self.call("sound.play", char, url, **attrs)
+                                    elif cmd_code == "music":
+                                        playlist = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the music playlist identifier"))
+                                        options = cmd[2]
+                                        attrs = {}
+                                        if "fade" in options:
+                                            fade = self.call("script.evaluate-expression", options["fade"], globs=kwargs, description=lambda: self._("Evaluation of 'fade' argument"))
+                                            if type(fade) != int:
+                                                raise QuestError(self._("Invalid value type for 'fade' attribute: '%s'") % type(fade).__name__)
+                                            attrs["fade"] = fade
+                                        if "volume" in options:
+                                            volume = self.call("script.evaluate-expression", options["volume"], globs=kwargs, description=lambda: self._("Evaluation of 'volume' argument"))
+                                            if type(volume) != int:
+                                                raise QuestError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__)
+                                            attrs["volume"] = volume
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("playing music {playlist}").format(playlist=playlist), cls="quest-action", indent=indent+2)
+                                        self.call("sound.music", char, playlist, **attrs)
+                                    elif cmd_code == "musicstop":
+                                        options = cmd[1]
+                                        attrs = {}
+                                        if "fade" in options:
+                                            fade = self.call("script.evaluate-expression", options["fade"], globs=kwargs, description=lambda: self._("Evaluation of 'fade' argument"))
+                                            if type(fade) != int:
+                                                raise QuestError(self._("Invalid value type for 'fade' attribute: '%s'") % type(fade).__name__)
+                                            attrs["fade"] = fade
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("stopping music"), cls="quest-action", indent=indent+2)
+                                        self.call("sound.music", char, None, **attrs)
+                                    elif cmd_code == "sendchar":
+                                        for param_code in cmd[1]:
+                                            param, val = char.find_param_and_eval(param_code)
+                                            if param:
+                                                char.send_param_force(param, val)
+                                                if debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("sending parameter %s") % param_code, cls="quest-action", indent=indent+2)
+                                            else:
+                                                raise QuestError(self._("Parameter '%s' not found") % param_code)
                                     else:
                                         raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                                 except QuestError as e:
@@ -1706,7 +2248,7 @@ class Quests(ConstructorModule):
                                 except Exception as e:
                                     self.exception(e)
                                     self.call("debug-channel.character", char, self._("System exception: %s") % e.__class__.__name__, cls="quest-error", indent=indent+2)
-                                stackless.schedule()
+                                Tasklet.yield_()
                         try:
                             execute_actions(act, indent)
                         except AbortHandler:
@@ -1730,10 +2272,12 @@ class Quests(ConstructorModule):
                     for key, val in quest_given_items.iteritems():
                         name = '<span style="font-weight: bold">%s</span> &mdash; %s' % (htmlescape(key), self._("%d pcs") % val)
                         tokens.append(name)
+                    delattr(char, "quest_given_items")
                 quest_given_money = getattr(char, "quest_given_money", None)
                 if quest_given_money:
                     for currency, amount in quest_given_money.iteritems():
                         tokens.append(self.call("money.price-html", amount, currency))
+                    delattr(char, "quest_given_money")
                 if tokens:
                     char.message(u"<br />".join(tokens), title=self._("You have got:"))
         # processing character redirects after processing quest operation
@@ -1742,6 +2286,18 @@ class Quests(ConstructorModule):
                 req = self.req()
             except AttributeError:
                 req = None
+            quest_combat_started = getattr(tasklet, "quest_combat_started", None)
+            if quest_combat_started:
+                for char_uuid, combat_id in quest_combat_started.iteritems():
+                    uri = "/combat/interface/%s" % combat_id
+                    if req and req.user() == char_uuid:
+                        try:
+                            req.quest_redirects[char_uuid] = uri
+                        except AttributeError:
+                            req.quest_redirects = {char_uuid: uri}
+                    else:
+                        char = self.character(char_uuid)
+                        char.main_open(uri)
             quest_teleported = getattr(tasklet, "quest_teleported", None)
             if quest_teleported:
                 for char_uuid in quest_teleported:
@@ -1751,6 +2307,7 @@ class Quests(ConstructorModule):
                         except AttributeError:
                             req.quest_redirects = {char.uuid: "/location"}
                     else:
+                        char = self.character(char_uuid)
                         char.main_open("/location")
                 del tasklet.quest_teleported
             if char.quests.dialogs:
@@ -1772,7 +2329,7 @@ class Quests(ConstructorModule):
                 globs = {"char": character, "item": item_type}
             available = self.call("script.evaluate-expression", action["available"], globs=globs, description=lambda: self._("Item action: %s") % action["code"])
             if available:
-                menu.append({"href": "/item/action/%s/%s" % (action["code"], item_type.dna), "html": htmlescape(action["text"]), "order": action["order"]})
+                menu.append({"href": "/item/action/%s/%s" % (utf2str(action["code"]), utf2str(item_type.dna)), "html": htmlescape(action["text"]), "order": action["order"]})
 
     def action(self):
         req = self.req()
@@ -1829,10 +2386,10 @@ class Quests(ConstructorModule):
         redirs = getattr(req, "quest_redirects", None)
         if redirs:
             user = req.user()
-            for char_uuid, uri in redirs.iteritems():
-                if user == char_uuid:
-                    del redirs[char_uuid]
-                    self.call("web.redirect", uri)
+            uri = redirs.get(user)
+            if uri:
+                del redirs[user]
+                self.call("web.redirect", uri)
 
     def dialog(self):
         req = self.req()
@@ -1841,67 +2398,190 @@ class Quests(ConstructorModule):
         if not dialogs:
             self.call("web.redirect", self.call("game-interface.default-location") or "/location")
         dialog = dialogs[0]
-        if req.ok():
-            if utf2str(dialog.get("uuid", "")) != utf2str(req.args):
-                self.call("web.redirect", "/quest/dialog")
-            event = req.param("event")
-            found = False
-            for btn in dialog["buttons"]:
-                if btn.get("event", "") == event:
-                    found = True
-                    break
-            if found:
-                # closing dialog
+        globs = {"char": character}
+        if "quest" in dialog:
+            globs["quest"] = character.quests.quest(dialog["quest"])
+        if dialog.get("type") == "itemselector":
+            # item selector dialog
+            vars = {}
+            def cancel():
+                # close dialog
                 del dialogs[0]
                 character.quests.touch()
                 character.quests.store()
-                # sending event
-                if event:
-                    params = {}
-                    if "inputs" in dialog:
-                        for inp in dialog["inputs"]:
-                            params["inp_%s" % inp["id"]] = req.param("input-%s" % inp["id"])
-                    self.qevent("event-%s-%s" % (dialog.get("quest"), event), char=character, **params)
+                # send event
+                if "oncancel" in dialog:
+                    self.qevent("event-%s-%s" % (dialog.get("quest"), dialog["oncancel"]), char=character)
                 self.call("quest.check-redirects")
-                self.call("web.redirect", self.call("game-interface.default-location") or "/location")
-            else:
-                character.error(self._("This button is unavailable"))
-        buttons = []
-        default_button = None
-        default_event = None
-        href = "/quest/dialog/%s" % dialog.get("uuid", "")
-        btn_id = 0
-        if len(dialog["buttons"]) == 1:
-            dialog["buttons"][0]["default"] = True
-        for btn in dialog["buttons"]:
-            btn_id += 1
-            buttons.append({
-                "id": btn_id,
-                "text": htmlescape(btn.get("text")),
-                "event": btn.get("event"),
+            def grep(item_type):
+                if "show" not in dialog:
+                    return True
+                globs["item"] = item_type
+                try:
+                    available = self.call("script.evaluate-expression", dialog["show"], globs=globs, description=lambda: self._("Item %s availability") % item_type.dna)
+                except ScriptError as e:
+                    # Send only one exception report to admin (avoid flooding)
+                    if "script_exception_shown" not in vars:
+                        self.call("exception.report", e)
+                        vars["script_exception_shown"] = True
+                    available = False
+                return available
+            if req.param("dialog") == dialog["uuid"]:
+                if req.param("cancel"):
+                    cancel()
+                    self.call("web.redirect", self.call("game-interface.default-location") or "/location")
+                elif req.param("item"):
+                    # search item
+                    item_type, quantity = character.inventory.find_dna(req.param("item"))
+                    if item_type and quantity > 0:
+                        if grep(item_type):
+                            globs["item"] = item_type
+                            # search action
+                            sel_action = req.param("action")
+                            for action in dialog.get("actions", []):
+                                if action["event"] == sel_action:
+                                    # check action availability
+                                    try:
+                                        available = self.call("script.evaluate-expression", action.get("available", 1), globs=globs, description=lambda: self._("Action %s availability") % action["event"])
+                                    except ScriptError as e:
+                                        # Send only one exception report to admin (avoid flooding)
+                                        if "script_exception_shown" not in vars:
+                                            self.call("exception.report", e)
+                                            vars["script_exception_shown"] = True
+                                        available = False
+                                    if available:
+                                        # close dialog
+                                        del dialogs[0]
+                                        character.quests.touch()
+                                        character.quests.store()
+                                        # execute action
+                                        self.qevent("event-%s-%s" % (dialog.get("quest"), action["event"]), char=character, item=item_type)
+                                        self.call("quest.check-redirects")
+                                        self.call("web.redirect", self.call("game-interface.default-location") or "/location")
+            # looking for items to select
+            def render(item_type, ritem):
+                globs["item"] = item_type
+                if dialog.get("actions"):
+                    menu = []
+                    for action in dialog["actions"]:
+                        if not self.call("script.evaluate-expression", action.get("available", 1), globs=globs, description=lambda: self._("Action %s availability") % action["event"]):
+                            continue
+                        menu.append({
+                            "href": "/quest/dialog?dialog=%s&amp;action=%s&amp;item=%s" % (
+                                dialog["uuid"],
+                                action["event"],
+                                item_type.dna,
+                            ),
+                            "html": self.call("script.evaluate-text", action["name"], globs=globs, description=lambda: self._("Action %s text") % action["event"]),
+                        })
+                    ritem["menu"] = menu
+                    # don't show item if no actions are available
+                    if not menu:
+                        ritem.clear()
+                        return
+                if dialog.get("fields"):
+                    if "params" not in ritem:
+                        ritem["params"] = []
+                    for field in dialog["fields"]:
+                        if not self.call("script.evaluate-expression", field.get("visible", 1), globs=globs, description=lambda: self._("Field visibility")):
+                            continue
+                        ritem["params"].append({
+                            "name": self.call("script.evaluate-text", field["name"], globs=globs, description=lambda: self._("Field name")),
+                            "value": self.call("script.evaluate-text", field["value"], globs=globs, description=lambda: self._("Field value")),
+                        })
+            self.call("inventory.render", character.inventory, vars, grep=grep, render=render, viewer=character)
+            vars["title"] = dialog.get("title")
+            vars["menu_left"] = [
+                {
+                    "href": "/quest/dialog?dialog=%s&amp;cancel=1" % dialog["uuid"],
+                    "html": self._("Cancel"),
+                    "lst": True
+                }
+            ]
+            if not vars["categories"]:
+                cancel()
+                self.call("game.internal-error", self._("No items available"))
+            self.call("game.response_internal", dialog.get("template", "inventory.html"), vars)
+        else:
+            # general dialog
+            if req.ok():
+                if utf2str(dialog.get("uuid", "")) != utf2str(req.args):
+                    self.call("web.redirect", "/quest/dialog")
+                event = req.param("event")
+                found = False
+                for btn in dialog["buttons"]:
+                    if btn.get("event", "") == event:
+                        try:
+                            available = self.call("script.evaluate-expression", btn.get("available", 1), globs=globs, description=self._("Button '%s' availability") % event)
+                        except ScriptError as e:
+                            self.exception(e)
+                        else:
+                            if available:
+                                found = True
+                        break
+                if found:
+                    # close dialog
+                    del dialogs[0]
+                    character.quests.touch()
+                    character.quests.store()
+                    # send event
+                    if event:
+                        params = {}
+                        if "inputs" in dialog:
+                            for inp in dialog["inputs"]:
+                                params["inp_%s" % inp["id"]] = req.param("input-%s" % inp["id"])
+                        self.qevent("event-%s-%s" % (dialog.get("quest"), event), char=character, **params)
+                    self.call("quest.check-redirects")
+                    self.call("web.redirect", self.call("game-interface.default-location") or "/location")
+                else:
+                    character.error(self._("This button is unavailable"))
+            buttons = []
+            default_button = None
+            default_event = None
+            href = "/quest/dialog/%s" % dialog.get("uuid", "")
+            btn_id = 0
+            for btn in dialog["buttons"]:
+                try:
+                    available = self.call("script.evaluate-expression", btn.get("available", 1), globs=globs, description=self._("Button '%s' availability") % btn.get("event"))
+                except ScriptError as e:
+                    self.exception(e)
+                    continue
+                else:
+                    if not available:
+                        continue
+                btn_id += 1
+                buttons.append({
+                    "id": btn_id,
+                    "text": htmlescape(btn.get("text")),
+                    "event": btn.get("event"),
+                    "href": href,
+                    "default": btn.get("default"),
+                })
+            if len(buttons) == 1:
+                buttons[0]["default"] = True
+            for btn in buttons:
+                if btn.get("default"):
+                    default_button = btn.get("id")
+                    default_event = btn.get("event")
+                    break
+            vars = {
+                "title": htmlescape(dialog.get("title")),
+                "buttons": buttons,
                 "href": href,
-            })
-            if btn.get("default"):
-                default_button = btn_id
-                default_event = btn.get("event")
-        vars = {
-            "title": htmlescape(dialog.get("title")),
-            "buttons": buttons,
-            "href": href,
-            "default_button": default_button,
-            "default_event": default_event,
-        }
-        if "inputs" in dialog:
-            inputs = []
-            vars["inputs"] = inputs
-            for inp in dialog["inputs"]:
-                inputs.append(inp)
-        try:
-            content = self.call("game.parse_internal", dialog.get("template", "dialog.html"), vars, dialog.get("text"))
-        except TemplateException as e:
-            self.exception(e)
-            content = self.call("game.parse_internal", "dialog.html", vars, dialog.get("text"))
-        self.call("game.response_internal", "dialog-scripts.html", vars, content)
+                "default_button": default_button,
+                "default_event": default_event,
+            }
+            if "inputs" in dialog:
+                inputs = []
+                vars["inputs"] = inputs
+                for inp in dialog["inputs"]:
+                    inputs.append(inp)
+            try:
+                content = self.call("game.parse_internal", dialog.get("template", "dialog.html"), vars, dialog.get("text"))
+            except TemplateException as e:
+                self.exception(e)
+                content = self.call("game.parse_internal", "dialog.html", vars, dialog.get("text"))
+            self.call("game.response_internal", "dialog-scripts.html", vars, content)
 
     def money_description_quest(self):
         return {
@@ -1953,7 +2633,7 @@ class Quests(ConstructorModule):
                 if state:
                     # description
                     if state.get("description"):
-                        rquest["description"] = self.call("script.evaluate-text", state.get("description"), globs={"char": character, "quest": character.quests.quest(qid)}, description=self._("Quest %s description") % qid)
+                        rquest["description"] = self.call("script.evaluate-text", state.get("description"), globs={"char": character, "quest": character.quests.quest(qid)}, description=lambda: self._("Quest %s description") % qid)
                     cur_quests.append(rquest)
                     # buttons
                     rbuttons = []
@@ -1963,13 +2643,15 @@ class Quests(ConstructorModule):
                             raise RuntimeError(self._("Invalid quest states object. Expected {expected}. Found: {found}").format(expected="state", found=script[0]))
                         if "hdls" in script[1]:
                             for handler in script[1]["hdls"]:
+                                if handler[0] == "comment":
+                                    continue
                                 if handler[0] != "hdl":
                                     raise RuntimeError(self._("Invalid quest states object. Expected {expected}. Found: {found}").format(expected="hdl", found=script[0]))
                                 tp = handler[1]["type"]
                                 if tp[0] == "button":
                                     rbuttons.append({
                                         "id": tp[1],
-                                        "text": self.call("script.evaluate-text", tp[2], globs={"char": character, "quest": character.quests.quest(qid)}, description=self._("Button '{button}' text in the quest '{quest}'").format(quest=qid, button=tp[1])),
+                                        "text": self.call("script.evaluate-text", tp[2], globs={"char": character, "quest": character.quests.quest(qid)}, description=lambda: self._("Button '{button}' text in the quest '{quest}'").format(quest=qid, button=tp[1])),
                                         "href": "/quests#%s" % qid,
                                     })
                                     # handling button press
@@ -2030,7 +2712,21 @@ class Quests(ConstructorModule):
             elif not re_valid_identifier.match(ev):
                 character.error(self._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
             else:
-                self.qevent("clicked-%s" % ev, char=character)
+                globs = {}
+                for k, v in req.param_dict().iteritems():
+                    if k.startswith("targetchar") and re_valid_identifier.match(k):
+                        targetchar = self.character(v[0])
+                        if targetchar.valid:
+                            globs[k] = targetchar
+                    elif re_arg_param.match(k):
+                        globs[k] = str2unicode(v[0])
+                self.qevent("clicked-%s" % ev, char=character, **globs)
+                redirs = getattr(req, "quest_redirects", None)
+                if redirs:
+                    uri = redirs.get(character.uuid)
+                    if uri:
+                        del redirs[character.uuid]
+                        self.call("web.response_json", {"ok": True, "redirect": uri})
                 self.call("web.response_json", {"ok": True})
         self.call("web.response_json", {"error": True})
 

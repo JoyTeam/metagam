@@ -29,7 +29,6 @@ class ConstructorProject(Module):
             "mg.constructor.domains.Domains",
             "mg.constructor.auth.Auth",
             "mg.constructor.players.CharactersMod",
-            "mg.core.daemons.Daemons",
             "mg.constructor.logo.LogoAdmin",
             "mg.core.dbexport.Export",
         ]
@@ -90,8 +89,11 @@ class ConstructorProject(Module):
                 lst.extend(["mg.constructor.globfunc.GlobalFunctions"])
             if self.conf("module.emailsender"):
                 lst.extend(["mg.core.emails.EmailSender", "mg.constructor.emails.EmailSender"])
-            if self.conf("module.combats"):
-                lst.extend(["mg.mmorpg.combats.interfaces.Combats"])
+            if self.conf("module.sound"):
+                lst.extend(["mg.constructor.sound.Sound"])
+            if self.conf("module.locobjects"):
+                lst.extend(["mg.mmorpg.locobjects.LocationObjects"])
+        lst.extend(self.conf("modules.custom", []))
         return lst
 
     def modules_list(self, modules):
@@ -151,9 +153,14 @@ class ConstructorProject(Module):
             "description": self._("Administrator interface to have an ability of sending emails to all registered players"),
         })
         modules.append({
-            "id": "combats",
-            "name": self._("Combats engine"),
-            "description": self._("Creating highly customizable combats"),
+            "id": "sound",
+            "name": self._("Sound"),
+            "description": self._("Ability to play sounds in the game"),
+        })
+        modules.append({
+            "id": "locobjects",
+            "name": self._("Static objects on the locations"),
+            "description": self._("Ability to place static visual objects to the locations"),
         })
 
     def project_title(self):
@@ -165,7 +172,7 @@ class ConstructorProject(Module):
     def project_logo(self):
         image = self.app().project.get("logo")
         if image and image.startswith("//"):
-            image = "http:" + image
+            image = ("%s:" % self.main_app().protocol) + image
         return image
 
     def web_setup_design(self, vars):
@@ -177,13 +184,13 @@ class ConstructorProject(Module):
                 vars["global_html"] = "constructor/admin_global.html"
             else:
                 vars["global_html"] = "game/global.html"
-        vars["main_host"] = self.app().inst.config.get("main_host")
+        vars["main_host"] = self.main_host
 
     def email_sender(self, params):
         project = self.app().project
         params["name"] = project.get("title_short")
         params["prefix"] = u"[%s] " % project.get("title_code").lower()
-        params["signature"] = u"%s - http://www.%s" % (project.get("title_full"), project.get("domain"))
+        params["signature"] = u"%s - %s://www.%s" % (project.get("title_full"), self.app().protocol, project.get("domain"))
 
 class ConstructorProjectAdmin(Module):
     def register(self):
@@ -197,6 +204,7 @@ class ConstructorProjectAdmin(Module):
         self.rhook("advice.all", self.advice_all)
         self.rhook("ext-admin-game.moderation", self.game_moderation, priv="project.admin")
         self.rhook("menu-admin-root.index", self.menu_root_index)
+        self.rhook("gameprofile.moderation-form", self.moderation_form)
 
     def menu_top_list(self, topmenu):
         req = self.req()
@@ -210,12 +218,12 @@ class ConstructorProjectAdmin(Module):
         else:
             req = self.req()
             if req.has_access("project.admin"):
-                menu.append({"id": "game/dashboard", "text": self._("Game dashboard"), "leaf": True, "admin_index": True, "order": -20, "icon": "/st-mg/menu/dashboard.png", "even_unpublished": True})
+                menu.append({"id": "game/dashboard", "text": self._("Game dashboard"), "leaf": True, "admin_index": True, "order": -20, "icon": "/st-mg/menu/dashboard.png?3", "even_unpublished": True})
 
     def project_destroy(self):
         if self.app().project.get("inactive"):
             self.main_app().hooks.call("project.cleanup", self.app().project.uuid)
-        redirect = "//www.%s/cabinet" % self.app().inst.config["main_host"]
+        redirect = "//www.%s/cabinet" % self.main_host
         req = self.req()
         if req.args == "admin":
             self.call("web.response_json", {"success": True, "redirect_top": redirect})
@@ -264,7 +272,7 @@ class ConstructorProjectAdmin(Module):
             else:
                 before_launch.append({"icon": "/st/img/arrow-right.png", "content": u'<strong>%s</strong> <hook:admin.link href="game/moderation" title="%s" />' % (self._("Congratulations! Your game is ready to be published."), self._("game///Send it to moderation"))})
         if not project.get("published") and not project.get("moderation") and project.get("moderation_reject"):
-            before_launch.insert(0, {"icon": "/st/img/application-exit.png", "content": htmlescape(project.get("moderation_reject"))})
+            self.call("admin.redirect", "game/moderation")
         if len(before_launch):
             vars["before_launch"] = before_launch
         if len(others) and (project.get("published") or project.get("moderation")):
@@ -273,7 +281,7 @@ class ConstructorProjectAdmin(Module):
             vars["published"] = True
             self.call("game.dashboard", vars)
         else:
-            self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about preparing the game to launch you can read in the <a href="//www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.app().inst.config["main_host"]})
+            self.call("admin.advice", {"title": self._("How to launch the game"), "content": self._('Step-by-step tutorial about preparing the game to launch you can read in the <a href="//www.%s/doc/newgame" target="_blank">reference manual</a>.') % self.main_host})
         self.call("admin.response_template", "admin/game/dashboard.html", vars)
 
     def advice_all(self, group, hook, args, advice):
@@ -311,11 +319,13 @@ class ConstructorProjectAdmin(Module):
             with self.lock(["project.%s" % project.uuid]):
                 project.load()
                 if not project.get("moderation"):
+                    if project.get("moderation_cooldown") and self.now() < project.get("moderation_cooldown"):
+                        self.call("admin.response", self._("The moderator has rejected your game many times. Please spend some time checking your game settings. Remember that your game will be published in lot of places (game catalogs, payments systems, and so on). Read all your titles, all descriptions, all names and fix them carefully. Every wrong attempt will increase cooldown. If you can't do it yourself ask somebody on the forum. Please wait till %s before you can send your game to moderation next time.") % self.call("l10n.time_local", project.get("moderation_cooldown")), {})
                     project.set("moderation", 1)
                     # message to the moderator
                     email = self.main_app().config.get("constructor.moderator-email")
                     if email:
-                        content = self._("New project has been registered: {0}\nPlease perform required moderation actions: http://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.app().inst.config["main_host"], project.uuid)
+                        content = self._("New project has been registered: {0}\nPlease perform required moderation actions: {3}://www.{1}/admin#constructor/project-dashboard/{2}").format(project.get("title_full"), self.main_host, project.uuid, self.main_app().protocol)
                         self.main_app().hooks.call("email.send", email, self._("Constructor moderator"), self._("Project moderation: %s") % project.get("title_short"), content)
                     project.store()
                     self.app().store_config_hooks()
@@ -323,14 +333,6 @@ class ConstructorProjectAdmin(Module):
         project = self.app().project
         description = re_newline.sub('<br />', htmlescape(self.conf("gameprofile.description")))
         vars = {
-            "TitleFull": self._("Full title"),
-            "TitleShort": self._("Short title"),
-            "TitleEn": self._("Title in English"),
-            "TitleCode": self._("Title code"),
-            "GameDescription": self._("Game description"),
-            "Domain": self._("Game domain"),
-            "Logo": self._("Logo"),
-            "Recheck": self._("Recheck all settings thoroughly. After sending data to moderation you won't have an ability to change fields with red border and game logo"),
             "Submit": self._("Everything is correct. Send to moderation"),
             "edit": self._("edit"),
             "project": {
@@ -343,8 +345,31 @@ class ConstructorProjectAdmin(Module):
                 "logo": htmlescape(project.get("logo")),
             },
         }
+        if project.get("moderation_reject"):
+            vars["TopIcon"] = "/st/img/application-exit.png"
+            vars["TopNote"] = htmlescape(project.get("moderation_reject"))
+        else:
+            vars["TopIcon"] = "/st/img/exclamation.png"
+            vars["TopNote"] = self._("Recheck all settings thoroughly. After sending data to moderation you won't have an ability to change fields with red border and game logo")
+        self.call("gameprofile.moderation-form", vars)
         params = []
         self.call("constructor.project-params", params)
         if len(params):
             vars["project"]["params"] = params
         self.call("admin.response_template", "admin/game/moderation.html", vars)
+
+    def moderation_form(self, vars):
+        vars["Id"] = self._("Game id")
+        vars["Owner"] = self._("Game owner")
+        vars["TitleFull"] = self._("Full title")
+        vars["TitleFullHint"] = self._("Must start with capital letter, may not be written in caps, words must be delimited by space, may not be an abbreviation. All game titles must correspond to each other")
+        vars["TitleShort"] = self._("Short title")
+        vars["TitleShortHint"] = self._("Must start with capital letter, may not be written in caps, words must be delimited by space, may not be an abbreviation")
+        vars["TitleEn"] = self._("Title in English")
+        vars["TitleEnHint"] = self._("Must start with capital letter, may not be written in caps, words must be delimited by space, may not be an abbreviation")
+        vars["TitleCode"] = self._("Title code")
+        vars["TitleCodeHint"] = self._("Should be an abbreviation of the game title")
+        vars["GameDescription"] = self._("Game description")
+        vars["Domain"] = self._("Game domain")
+        vars["Logo"] = self._("Logo")
+        vars["LogoHint"] = self._("Title on the logo must match game title")

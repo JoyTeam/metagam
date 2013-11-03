@@ -176,7 +176,7 @@ class InventoryAdmin(ConstructorModule):
                 tables.append(tbl)
 
     def advice_inventory(self, hook, args, advice):
-        advice.append({"title": self._("Inventory documentation"), "content": self._('You can find detailed information on the inventory system in the <a href="//www.%s/doc/inventory" target="_blank">inventory page</a> in the reference manual.') % self.app().inst.config["main_host"]})
+        advice.append({"title": self._("Inventory documentation"), "content": self._('You can find detailed information on the inventory system in the <a href="//www.%s/doc/inventory" target="_blank">inventory page</a> in the reference manual.') % self.main_host})
 
     def objclasses_list(self, objclasses):
         objclasses["MemberInventory"] = (DBMemberInventory, DBMemberInventoryList)
@@ -428,31 +428,38 @@ class InventoryAdmin(ConstructorModule):
                     errors["v_exp_mode"] = self._("Make a valid selection")
                 elif exp_mode == 0:
                     obj.delkey("exp-mode")
-                elif exp_mode == 1:
-                    obj.set("exp-mode", 1)
-                    dt = self.call("l10n.parse_date", req.param("exp_till").strip(), dayend=True)
-                    if dt is None:
-                        errors["exp_till"] = self._("Invalid date format")
-                    else:
-                        obj.set("exp-till", dt)
-                elif exp_mode == 2:
-                    obj.set("exp-mode", 2)
-                    exp_interval = req.param("exp_interval")
-                    if not valid_nonnegative_int(exp_interval):
-                        errors["exp_interval"] = self._("Invalid number format")
-                    else:
-                        exp_interval = int(exp_interval)
-                        if exp_interval < 60:
-                            errors["exp_interval"] = self._("Minimal item lifetime is %d seconds") % 60
-                        elif exp_interval > 31536000:
-                            errors["exp_interval"] = self._("Maximal item lifetime is %d seconds") % 31536000
+                else:
+                    if exp_mode == 1:
+                        obj.set("exp-mode", 1)
+                        dt = self.call("l10n.parse_date", req.param("exp_till").strip(), dayend=True)
+                        if dt is None:
+                            errors["exp_till"] = self._("Invalid date format")
                         else:
-                            obj.set("exp-interval", exp_interval)
-                    exp_round = intz(req.param("v_exp_round"))
-                    if exp_round < 0 or exp_round > 3:
-                        errors["v_exp_round"] = self._("Make a valid selection")
+                            obj.set("exp-till", dt)
+                    elif exp_mode == 2:
+                        obj.set("exp-mode", 2)
+                        exp_interval = req.param("exp_interval")
+                        if not valid_nonnegative_int(exp_interval):
+                            errors["exp_interval"] = self._("Invalid number format")
+                        else:
+                            exp_interval = int(exp_interval)
+                            if exp_interval < 60:
+                                errors["exp_interval"] = self._("Minimal item lifetime is %d seconds") % 60
+                            elif exp_interval > 31536000:
+                                errors["exp_interval"] = self._("Maximal item lifetime is %d seconds") % 31536000
+                            else:
+                                obj.set("exp-interval", exp_interval)
+                        exp_round = intz(req.param("v_exp_round"))
+                        if exp_round < 0 or exp_round > 3:
+                            errors["v_exp_round"] = self._("Make a valid selection")
+                        else:
+                            obj.set("exp-round", exp_round)
+                    # exp_title
+                    exp_title = req.param("exp_title").strip()
+                    if not exp_title:
+                        errors["exp_title"] = self._("This field is mandatory")
                     else:
-                        obj.set("exp-round", exp_round)
+                        obj.set("exp-title", exp_title)
                 # prices
                 price = req.param("price").strip()
                 currency = req.param("v_currency")
@@ -485,7 +492,7 @@ class InventoryAdmin(ConstructorModule):
                     else:
                         fractions = int(fractions)
                         if fractions < 2:
-                            errors["max_fractions"] = self._("Minimal value is %d") % fractions
+                            errors["max_fractions"] = self._("Minimal value is %d") % 2
                         elif fractions > 1000000:
                             errors["max_fractions"] = self._("Maximal value is %d") % 1000000
                         else:
@@ -620,6 +627,7 @@ class InventoryAdmin(ConstructorModule):
             fields.append({"name": "exp_till", "label": self._("Absolute expiration time (format: {datetime_sample} or {date_sample}, last date inclusive)").format(datetime_sample=self.call("l10n.datetime_sample"), date_sample=self.call("l10n.date_sample")), "value": self.call("l10n.unparse_date", obj.get("exp-till"), dayend=True), "condition": "[exp_mode]==1"})
             fields.append({"name": "exp_interval", "label": self._("Lifetime interval (in seconds)"), "value": obj.get("exp-interval"), "condition": "[exp_mode]==2"})
             fields.append({"name": "exp_round", "label": self._("Expiration rounding"), "value": obj.get("exp-round", 0), "type": "combo", "values": [(0, self._("End of day")), (1, self._("End of week")), (2, self._("End of month")), (3, self._("No rounding"))], "condition": "[exp_mode]==2"})
+            fields.append({"name": "exp_title", "label": self._("Expiration label text"), "value": obj.get("exp-title", self._("itemparam///Expiration")), "condition": "[exp_mode]"})
             # images
             fields.append({"type": "header", "html": self._("Item images")})
             if req.args == "new":
@@ -1036,9 +1044,9 @@ class InventoryAdmin(ConstructorModule):
                 item_type = self.item_type(ent.get("type"))
                 item_name = htmlescape(item_type.name)
                 if col_owner:
-                    row.append(u'<hook:admin.link href="inventory/track/item-type/{type}/{date}/00:00:00/{next_date}/00:00:00" title="{title}" />'.format(title=item_name, type=item_type.uuid, date=date, next_date=next_date(date)))
+                    row.append('<hook:admin.link href="inventory/track/item-type/{type}/{date}/00:00:00/{next_date}/00:00:00" title="{title}" />'.format(title=utf2str(item_name), type=utf2str(item_type.uuid), date=date, next_date=next_date(date)))
                 else:
-                    row.append(u'<hook:admin.link href="inventory/track/type-owner/{type}/{owtype}/{owner}/{month}-01/00:00:00/{next_month}-01/00:00:00" title="{title}" />'.format(owtype=owtype, owner=ent.get("owner"), title=item_name, type=item_type.uuid, month=month, next_month=next_month(month)))
+                    row.append('<hook:admin.link href="inventory/track/type-owner/{type}/{owtype}/{owner}/{month}-01/00:00:00/{next_month}-01/00:00:00" title="{title}" />'.format(owtype=owtype, owner=utf2str(ent.get("owner")), title=utf2str(item_name), type=utf2str(item_type.uuid), month=month, next_month=next_month(month)))
             if ent.get("dna"):
                 mod = ent.get("mod")
                 if mod:
@@ -1137,7 +1145,11 @@ class InventoryAdmin(ConstructorModule):
                 mod = item_type.mods.items()
                 mod.sort(cmp=lambda x, y: cmp(x[0], y[0]))
                 for m in mod:
-                    tokens.append(u'%s=<span class="value quantity">%s</span>' % (m[0], htmlescape(m[1])))
+                    if type(m[1]) is list:
+                        val = htmlescape(self.call("script.unparse-expression", m[1][1])) + u' <img class="inline-icon" src="/st/icons/dyn-script.gif" alt="{title}" title="{title}" />'.format(title=self._("Parameter changing with time"))
+                    else:
+                        val = htmlescape(m[1])
+                    tokens.append(u'%s=<span class="value quantity">%s</span>' % (m[0], val))
             row = [
                 u'<br />'.join(tokens),
                 quantity,
@@ -1664,7 +1676,6 @@ class MemberInventory(ConstructorModule):
         # removing expired items
         if self.expired:
             for dna, expired in self.expired.iteritems():
-                #self._take_dna(dna, None, "expired", performed=expired)
                 self._take_dna(dna, None, "expired")
             self.expired = {}
         if self.worn:
@@ -2147,6 +2158,7 @@ class Inventory(ConstructorModule):
         self.rhook("item-types.item", self.item_types_item)
 
     def item_types_item_type(self, uuid, dna_suffix=None, mods=None, db_item_type=None, db_params=None):
+        uuid = utf2str(uuid)
         if dna_suffix is None:
             dna_suffix = dna_make(mods)
         dna = dna_join(uuid, dna_suffix)
@@ -2341,7 +2353,6 @@ class Inventory(ConstructorModule):
             self.call("item-types.params-owner-important", item_type, params, viewer=viewer)
             params = [par for par in params if par.get("value_raw") is not None or par.get("important")]
             if params:
-                params[-1]["lst"] = True
                 ritem["params"] = params
             cat = item_type.get("cat-inventory")
             misc = None
@@ -2360,6 +2371,13 @@ class Inventory(ConstructorModule):
                 continue
             if render:
                 render(item_type, ritem)
+                # empty ritem means "skip after rendering stage"
+                if not ritem:
+                    continue
+            if ritem.get("menu"):
+                ritem["menu"][-1]["lst"] = True
+            if ritem.get("params"):
+                ritem["params"][-1]["lst"] = True
             try:
                 ritems[cat].append(ritem)
             except KeyError:
@@ -2486,7 +2504,7 @@ class Inventory(ConstructorModule):
         if value is not None:
             value_html = htmlescape(value)
             params.append({
-                "name": '<span class="item-types-page-expiration-name">%s</span>' % self._("itemparam///Expiration"),
+                "name": '<span class="item-types-page-expiration-name">%s</span>' % obj.get("exp-title", self._("itemparam///Expiration")),
                 "value_raw": value,
                 "value": '<span class="item-types-page-expiration-value">%s</span>' % value_html,
             })

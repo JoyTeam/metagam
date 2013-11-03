@@ -9,6 +9,7 @@ re_sell_item = re.compile(r'^sell-([a-f0-9]{32})$')
 re_request_item = re.compile(r'^([a-f0-9_]+)/(\d+\.\d+|\d+)/([A-Z0-9]+)/(\d+)$')
 
 re_stats_arg = re.compile(r'^(sell|buy)/([A-Z0-9a-z]+)/(\d\d\d\d-\d\d-\d\d)$')
+re_valid_template = re.compile(r'^[a-zA-Z][a-zA-Z0-9\-]*\.html$')
 
 class DBShopOperation(CassandraObject):
     clsname = "ShopOperation"
@@ -43,7 +44,7 @@ class ShopsAdmin(ConstructorModule):
         files.append({"filename": "shop-items-layout.html", "description": self._("Shop assortment template"), "doc": "/doc/shops"})
 
     def advice(self):
-        return {"title": self._("Shops documentation"), "content": self._('You can find detailed information on the shops system in the <a href="//www.%s/doc/shops" target="_blank">shops page</a> in the reference manual.') % self.app().inst.config["main_host"], "order": 50}
+        return {"title": self._("Shops documentation"), "content": self._('You can find detailed information on the shops system in the <a href="//www.%s/doc/shops" target="_blank">shops page</a> in the reference manual.') % self.main_host, "order": 50}
 
     def advice_shops(self, hook, args, advice):
         advice.append(self.advice())
@@ -74,6 +75,9 @@ class ShopsAdmin(ConstructorModule):
         fields.append({"name": "shop_sell_price", "label": self._("Sell price correction") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("shop_sell_price", default_sell_price)), "condition": "[tp]=='shop' && [shop_sell]"})
         fields.append({"name": "shop_buy", "label": self._("This shop buys goods"), "type": "checkbox", "checked": func.get("shop_buy"), "condition": "[tp] == 'shop'"})
         fields.append({"name": "shop_buy_price", "label": self._("Buy price correction") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", func.get("shop_buy_price", default_buy_price)), "condition": "[tp]=='shop' && [shop_buy]"})
+        fields.append({"type": "header", "html": self._("Shop design"), "condition": "[tp]=='shop'"})
+        fields.append({"name": "shop_template_default", "label": self._("Use default html template"), "type": "checkbox", "checked": func.get("shop_template") is None, "condition": "[tp]=='shop'"})
+        fields.append({"name": "shop_template", "label": self._("Template name"), "value": func.get("shop_template", "shop-items-layout.html"), "condition": "[tp]=='shop' && ![shop_template_default]"})
 
     def form_store(self, func, errors):
         req = self.req()
@@ -106,6 +110,18 @@ class ShopsAdmin(ConstructorModule):
             func["default_action"] = "buy"
         else:
             func["default_action"] = "sell"
+        # design template
+        if req.param("shop_template_default"):
+            if "shop_template" in func:
+                del func["shop_template"]
+        else:
+            tpl = req.param("shop_template").strip()
+            if not tpl:
+                errors["shop_template"] = self._("This field is mandatory")
+            elif not re_valid_template.match(tpl):
+                errors["shop_template"] = self._("Template name must start with latin letter. Other symbols may be latin letters, digits or '-'. File name extension must be .html")
+            else:
+                func["shop_template"] = tpl
 
     def actions(self, func_id, func, actions):
         req = self.req()
@@ -158,10 +174,12 @@ class ShopsAdmin(ConstructorModule):
             if req.ok():
                 new_assortment = assortment.copy()
                 errors = {}
+                item = self.call("admin-inventory.sample-item")
+                char = self.character(req.user())
                 for item_type in item_types:
                     uuid = item_type.uuid
                     for tp in ["sell", "buy"]:
-                        for key in ["%s-%s", "%s-store-%s", "%s-price-%s", "%s-currency-%s"]:
+                        for key in ["%s-%s", "%s-store-%s", "%s-price-%s", "%s-currency-%s", "%s-available-%s"]:
                             key2 = key % (tp, uuid)
                             if key2 in new_assortment:
                                 del new_assortment[key2]
@@ -187,6 +205,8 @@ class ShopsAdmin(ConstructorModule):
                                         new_assortment["%s-price-%s" % (tp, uuid)] = price
                                 if curr == "":
                                     errors["v_%s-currency-%s" % (tp, uuid)] = self._("Currency is not specified")
+                            key = "%s-available-%s" % (tp, uuid)
+                            new_assortment[key] = self.call("script.admin-expression", key, errors, globs={"char": char, "item": item})
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 config = self.app().config_updater()
@@ -205,10 +225,12 @@ class ShopsAdmin(ConstructorModule):
                     fields.append({"name": "sell-store-%s" % uuid, "type": "checkbox", "checked": assortment.get("sell-store-%s" % uuid), "label": self._("Sell from the store only"), "condition": "[sell-%s]" % uuid})
                     fields.append({"name": "sell-price-%s" % uuid, "value": assortment.get("sell-price-%s" % uuid), "label": self._("Sell price"), "condition": "[sell-%s]" % uuid})
                     fields.append({"name": "sell-currency-%s" % uuid, "value": assortment.get("sell-currency-%s" % uuid), "label": self._("Sell currency"), "type": "combo", "values": currencies_list, "inline": True, "condition": "[sell-%s]" % uuid})
+                    fields.append({"name": "sell-available-%s" % uuid, "value": self.call("script.unparse-expression", assortment.get("sell-available-%s" % uuid, 1)), "label": self._("Availability for sell") + self.call("script.help-icon-expressions"), "condition": "[sell-%s]" % uuid, "inline": True})
                 if func.get("shop_buy"):
                     fields.append({"name": "buy-store-%s" % uuid, "type": "checkbox", "checked": assortment.get("buy-store-%s" % uuid), "label": self._("Put bought items to the store"), "condition": "[buy-%s]" % uuid})
                     fields.append({"name": "buy-price-%s" % uuid, "value": assortment.get("buy-price-%s" % uuid), "label": self._("Buy price"), "condition": "[buy-%s]" % uuid})
                     fields.append({"name": "buy-currency-%s" % uuid, "value": assortment.get("buy-currency-%s" % uuid), "label": self._("Buy currency"), "type": "combo", "values": currencies_list, "inline": True, "condition": "[buy-%s]" % uuid})
+                    fields.append({"name": "buy-available-%s" % uuid, "value": self.call("script.unparse-expression", assortment.get("buy-available-%s" % uuid, 1)), "label": self._("Availability for buy") + self.call("script.help-icon-expressions"), "condition": "[buy-%s]" % uuid, "inline": True})
             self.call("admin.advice", {"title": self._("Shop prices"), "content": self._("If a price is not specified balance price will be used. If currency is specified but price not then the balance price will be converted to the currency given")})
             self.call("admin.form", fields=fields)
         rows = []
@@ -539,12 +561,16 @@ class Shops(ConstructorModule):
                     cat = misc
                 if cat is None:
                     continue
+                # item availability
+                available = assortment.get("%s-available-%s" % (mode, item_type.uuid), 1)
+                if not self.call("script.evaluate-expression", available, globs={"char": character, "item": item_type}, description=lambda: self._("Evaluation of availability of item %s") % item_type.name):
+                    continue
                 # item price
                 price = assortment.get("%s-price-%s" % (mode, item_type.uuid))
                 if price is None:
                     price = item_type.get("balance-price")
                     balance_currency = item_type.get("balance-currency")
-                    # items without balance price and without shop price are ignores
+                    # items without balance price and without shop price are ignored
                     if price is None:
                         continue
                     currency = assortment.get("%s-currency-%s" % (mode, item_type.uuid), balance_currency)
@@ -759,7 +785,7 @@ class Shops(ConstructorModule):
             else:
                 vars["Submit"] = self._("Sell selected items")
             vars["pcs"] = self._("pcs")
-            content = self.call("game.parse_internal", "shop-items-layout.html", vars)
+            content = self.call("game.parse_internal", func.get("shop_template", "shop-items-layout.html"), vars)
             content = self.call("game.parse_internal", "shop-items.html", vars, content)
         elif mode == "sell":
             content = self._("There are no items for sell at the moment")

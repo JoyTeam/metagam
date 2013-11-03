@@ -3,7 +3,7 @@
 
 import unittest
 from concurrence import dispatch, Tasklet
-from mg.core import *
+from mg import *
 from mg.core.cass import CassandraPool
 from mg.core.memcached import MemcachedPool
 from cassandra.ttypes import *
@@ -96,9 +96,9 @@ class TestJoin(Module):
 
 class TestCore(unittest.TestCase):
     def setUp(self):
-        self.inst = Instance()
-        self.inst.dbpool = CassandraPool((("director-db", 9160),))
-        self.inst.mcpool = MemcachedPool(("director-mc", 11211))
+        self.inst = Instance("test", "test")
+        self.inst._dbpool = CassandraPool((("localhost", 9160),))
+        self.inst._mcpool = MemcachedPool()
 
     def test00(self):
         conn = self.inst.dbpool.cget()

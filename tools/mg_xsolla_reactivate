@@ -1,0 +1,21 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+import mg
+import os
+import json
+import sys
+from mg.constructor.processes import ConstructorInstance
+from mg.core.money import DBXsollaActivationRequest, DBXsollaActivationRequestList
+from mg.core.projects import ProjectList
+
+def main():
+    inst = ConstructorInstance("xsolla_activate", "metagam")
+    lst = inst.int_app.objlist(ProjectList, query_index="created")
+    for project in lst:
+        app = inst.appfactory.get_by_tag(project.uuid)
+        app.call("xsolla.check-activation")
+    sys.stdout.flush()
+    os._exit(0)
+
+mg.dispatch(main)
