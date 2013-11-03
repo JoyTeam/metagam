@@ -11,6 +11,10 @@ import re
 
 re_newline = re.compile(r'\n')
 
+name_blacklist_limit = 200
+name_blacklist_pattern_limit = 30
+re_name_blacklist_pattern = re.compile(ur'^[A-Za-z0-9_\-\*\?абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ]+$')
+
 class AppSession(CassandraObject):
     clsname = "AppSession"
     indexes = {
@@ -178,6 +182,13 @@ class Auth(ConstructorModule):
         self.rhook("auth.name-changed", self.name_changed)
         self.rhook("user.email", self.user_email, priority=10)
         self.rhook("advice-admin-auth.index", self.advice_auth)
+        self.rhook("menu-admin-characters.index", self.menu_characters_index)
+        self.rhook("ext-admin-characters.name-blacklist", self.ext_name_blacklist, priv="characters.name-blacklist")
+        self.rhook("headmenu-admin-characters.name-blacklist", self.headmenu_name_blacklist)
+        self.rhook("ext-admin-characters.blacklist-check", self.ext_blacklist_check, priv="characters.name-blacklist")
+        self.rhook("headmenu-admin-characters.blacklist-check", self.headmenu_blacklist_check)
+        self.rhook("characters.check-name-blacklist", self.check_name_blacklist)
+        self.rhook("advice-admin-characters.name-blacklist", self.advice_name_blacklist)
 
     def advice_auth(self, hook, args, advice):
         advice.append({"title": self._("Authentication documentation"), "content": self._('You can find detailed information on the authentication system in the <a href="//www.%s/doc/auth" target="_blank">authentication page</a> in the reference manual.') % self.main_host})
@@ -399,6 +410,7 @@ class Auth(ConstructorModule):
         perms.append({"id": "users.authorized", "name": self._("Viewing list of authorized users")})
         perms.append({"id": "auth.close-project", "name": self._("Game login closing")})
         perms.append({"id": "auth.enter-closed", "name": self._("May enter even closed game")})
+        perms.append({"id": "characters.name-blacklist", "name": self._("List of restricted character names")})
 
     def menu_auth_index(self, menu):
         req = self.req()
@@ -406,7 +418,7 @@ class Auth(ConstructorModule):
             menu.append({"id": "players/auth", "text": self._("Authentication configuration"), "leaf": True, "order": 1})
         if req.has_access("users.authorized"):
             menu.append({"id": "characters/online", "text": self._("List of characters online"), "leaf": True, "order": 5})
-
+    
     def headmenu_players_auth(self, args):
         return self._("Players authentication settings")
 
@@ -584,6 +596,8 @@ class Auth(ConstructorModule):
                     errors[code] = params["name_invalid_re"]
                 elif self.call("session.find_user", val):
                     errors[code] = self._("This name is taken already")
+                elif self.call("characters.check-name-blacklist", val):
+                    errors[code] = self._("This name is not allowed")
             elif fld.get("type") == 1:
                 if not val and not fld.get("std") and not fld.get("mandatory_level"):
                     # empty value is ok
@@ -1393,3 +1407,101 @@ class Auth(ConstructorModule):
             "condition": [".", ["glob", "char"], "anyperm"],
             "order": 90,
         })
+    
+    def headmenu_name_blacklist(self, args):
+        return self._("List of restricted character names")
+        
+    def parse_blacklist(self, data):
+        if len(data):
+            lst = data.split("\n")
+            lst = map(lambda pattern: pattern.strip(), filter(lambda pattern: True if len(pattern) > 0 else False, lst))
+            return lst
+        else:
+            return []
+            
+    def unparse_blacklist(self, lst):
+        if len(lst):
+            return "\n".join(lst)
+    
+    def ext_name_blacklist(self):
+        req = self.req()
+        if req.ok():
+            blacklist_raw = req.param("blacklist")
+            config = self.app().config_updater()
+            errors = {}
+            blacklist = self.parse_blacklist(blacklist_raw)
+            err = self.validate_name_blacklist(blacklist)
+            if err:
+                errors["blacklist"] = err
+            if len(blacklist) > name_blacklist_limit:
+                errors["blacklist"] = self._("The list is too big. Maximal number of entries is %d") %  name_blacklist_limit
+            if len(errors) == 0:
+                config.set("characters.names-blacklist", blacklist)
+                config.store()
+                self.call("admin.response", self._("Blacklist saved"), {})
+            else:
+                self.call("web.response_json", {"success": False, "errors": errors})
+        blacklist = self.unparse_blacklist(self.conf("characters.names-blacklist", []))
+        
+        fields =[
+            {"name": "blacklist", "label": '%s<br/><h2>%s</h2><ul><li>%s</li><li>%s</li><li>%s</li></ul><br /><h2>%s</h2><ul><li>%s</li><li>%s</li></ul>' % (
+                self._("List of restricted character names, one per line"),
+                self._("Special symbols"),
+                self._("'?' - matches any symbol"),
+                self._("'*' - matches any number of symbols"),
+                self._("'_' - matches whitespace"),
+                self._("Examples"),
+                self._("*admin*"),
+                self._("*anybadword*"),
+            ), "type": "textarea", "height": 350, "value": blacklist, "value": blacklist, "remove_label_separator": True},
+        ]
+        self.call("admin.form", fields=fields)
+    
+    def menu_characters_index(self, menu):
+        req = self.req()
+        if req.has_access("characters.name-blacklist"):
+            menu.append({"id": "characters/name-blacklist", "text": self._("List of restricted character names"), "leaf": True, "order": 21})
+
+
+    def headmenu_blacklist_check(self, args):
+        return [self._("Blacklist checker"), "characters/name-blacklist"]
+        
+    def validate_name_blacklist(self, blacklist):
+        for pattern in blacklist:
+            if len(pattern) > name_blacklist_pattern_limit:
+                return self._("Incorrect pattern '%s'. Maximal length of pattern is %d characters.") % (pattern, name_blacklist_pattern_limit)
+            elif not re_name_blacklist_pattern.match(pattern):
+                return self._("Incorrect pattern '%s'. Patterns must contain only latin and russian letters, numbers, spaces, symbols '_', '-', '+' and '*'") % pattern
+        
+    def ext_blacklist_check(self):
+        req = self.req()
+        name = req.param("name")
+        fields = [{"name": "name", "label": self._("Enter a name to check"), "value": name}]
+        if req.ok():
+            errors = {}
+            if not name:    
+                errors["name"] = self._('This field is mandatory')
+            if len(errors) == 0:
+                if self.call("characters.check-name-blacklist", name):
+                    msg = self._("This name is NOT allowed")
+                else:
+                    msg = self._("This name is allowed")
+                fields.append({"type": "html", "html": "<strong>%s</strong>" % msg })
+            else:
+                self.call("web.response_json", {"success": False, "errors": errors})
+        buttons = [{"text": self._("Check")}]
+        self.call("admin.form", fields=fields, buttons=buttons)
+        
+    def check_name_blacklist(self, name):
+        "Returns True if 'name' matches any blacklist pattern(case insensitive)"
+        blacklist = self.conf("characters.names-blacklist", [])
+        for pattern in blacklist:
+            pattern = pattern.replace("?", ".").replace("*", ".*").replace("_", "\\s+")
+            reg = ur'^' + pattern + ur'$'
+            if re.match(reg, name, re.UNICODE | re.IGNORECASE):
+                return True
+    
+    def advice_name_blacklist(self, args, advice):
+        advice.append({"title": self._("Restricted character names"), "content": self._("This list contain names(one per line) which could not be used when creating character.")})
+        advice.append({"title": self._("Wildcards"), "content": self._('There are special symbols that can be used in this list: <strong>+</strong>(any character) and <strong>*</strong>(any characters). I.e. "adm+n" will block "admin", "adm1n", "adman", "admen", etc. and "admin*" will block "admin", "admin12345", "adminabcdef", etc.')})
+        advice.append({"title": self._("Blacklist checker"), "content": self._('You can check any name for matching blacklist patterns on <hook:admin.link href="characters/blacklist-check" title="special page" />.')})
