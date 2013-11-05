@@ -1093,6 +1093,14 @@ class QuestsAdmin(ConstructorModule):
             elif val[0] == "sendchar":
                 result = "  " * indent + "sendchar " + ", ".join([self.call("script.unparse-expression", v) for v in val[1]]) + "\n"
                 return result
+            elif val[0] == "activity":
+                attrs = ""
+                for k in sorted(val[2].keys()):
+                    attrs += " %s=%s" % (k, self.call("script.unparse-expression", v))
+                result = "  " * indent + "activity%s {\n" % attrs
+                result += self.quest_admin_unparse_script(val[1], indent + 1).rstrip() + "\n"
+                result += "  " * indent + "}\n"
+                return result
             return "  " * indent + "<<<%s: %s>>>\n" % (self._("Invalid script parse tree"), val)
 
     def headmenu_inventory_actions(self, args):
@@ -1444,10 +1452,8 @@ class Quests(ConstructorModule):
                 self.call("debug-channel.character", char, event_str, cls="quest-event", indent=indent)
             if not "local" in kwargs:
                 kwargs["local"] = ScriptMemoryObject()
-            # loading list of handlers
-            quests_states = self.conf("qevent-%s.handlers" % event)
-            if not quests_states:
-                return
+            # loading list of quest handlers
+            quests_states = self.conf("qevent-%s.handlers" % event, [])
             # checking for character states and choosing quests
             quests = set()
             for ent in quests_states:
@@ -1462,6 +1468,817 @@ class Quests(ConstructorModule):
             # executing quests scripts
             def eval_description():
                 return self._("Quest '{quest}', event '{event}'").format(quest=quest, event=event)
+            # check list of handlers for matching events
+            def execute_handlers(hdls, quest, kwargs):
+                if not hdls:
+                    return
+                for hdl in hdls:
+                    if hdl[0] != "hdl":
+                        continue
+                    handler = hdl[1]
+                    tp = handler.get("type")
+                    if not tp:
+                        continue
+                    tp = parse_quest_tp(quest, tp)
+                    if event != tp:
+                        continue
+                    attrs = handler.get("attrs")
+                    if event == "teleported":
+                        if attrs and attrs.get("to") and kwargs["new_loc"].uuid != attrs.get("to"):
+                            continue
+                        if attrs and attrs.get("from") and kwargs["old_loc"].uuid != attrs.get("from"):
+                            continue
+                    elif event == "money-changed":
+                        if attrs and attrs.get("currency") and kwargs["currency"] != attrs.get("currency"):
+                            continue
+                    elif event == "oncombat":
+                        if attrs and attrs.get("events") and kwargs["cevent"] not in attrs["events"]:
+                            continue
+                        if attrs and attrs.get("flags"):
+                            match = False
+                            cflags = kwargs["combat"].flags
+                            for flag in attrs.get("flags"):
+                                if flag in cflags:
+                                    match = True
+                                    break
+                            if not match:
+                                continue
+                    act = handler.get("act")
+                    if not act:
+                        continue
+                    modified_objects = set()
+                    def execute_actions(actions, indent):
+                        # testing stack overflows
+                        try:
+                            sys._getframe(900)
+                        except ValueError:
+                            pass
+                        else:
+                            # this is a real error
+                            env = ScriptEnvironment()
+                            env.globs = kwargs
+                            env.description = self._("Quest '{quest}', event '{event}'").format(quest=quest, event=event)
+                            raise ScriptRuntimeError(self._("Max recursion depth exceeded"), env)
+                        for cmd in actions:
+
+                            def env():
+                                env = ScriptEnvironment()
+                                env.globs = kwargs
+                                env.description = self._("Quest '{quest}', event '{event}', command '{command}'").format(quest=quest, event=event, command=self.call("quest-admin.unparse-script", cmd).strip())
+                                return env
+
+                            def evaluate_member(member):
+                                mtype = member["type"]
+                                if mtype[0] == "virtual":
+                                    cmember = {
+                                        "object": ["virtual"]
+                                    }
+                                elif mtype[0] == "expr":
+                                    cmemberobj = self.call("script.evaluate-expression", mtype[1], globs=kwargs, description=lambda: self._("Combat member type"))
+                                    makemember = getattr(cmemberobj, "combat_member", None)
+                                    if makemember is None:
+                                        raise QuestError(self._("'%s' is not a valid combat member") % self.call("script.unparse-expression", mtype[1]))
+                                    cmember = makemember()
+                                else:
+                                    raise QuestError(self._("Unknown combat type %s") % mtype[0])
+                                rmember = cmember
+                                team = self.call("script.evaluate-expression", member["team"], globs=kwargs, description=lambda: self._("Combat member team"))
+                                if type(team) != int:
+                                    raise QuestError(self._("Team number must be integer. Got: %s") % type(team))
+                                else:
+                                    team = int(team)
+                                    if team < 1 or team > 1000:
+                                        raise QuestError(self._("Team number must be in range 1 .. 1000. Got: %s") % team)
+                                    else:
+                                        rmember["team"] = team
+                                if "control" in member:
+                                    rmember["control"] = self.call("script.evaluate-expression", member["control"], globs=kwargs, description=lambda: self._("Combat member control"))
+                                elif cmember["object"][0] == "character":
+                                    rmember["control"] = "web"
+                                else:
+                                    rmember["control"] = "ai"
+                                if "name" in member:
+                                    rmember["name"] = self.call("script.evaluate-text", member["name"], globs=kwargs, description=lambda: self._("Combat member name"))
+                                if "sex" in member:
+                                    rmember["sex"] = self.call("script.evaluate-expression", member["sex"], globs=kwargs, description=lambda: self._("Combat member sex"))
+                                if "ai" in member:
+                                    rmember["ai"] = self.call("script.evaluate-expression", member["ai"], globs=kwargs, description=lambda: self._("Combat member AI"))
+                                if "image" in member:
+                                    rmember["image"] = self.call("script.evaluate-expression", member["image"], globs=kwargs, description=lambda: self._("Combat member image"))
+                                if "params" in member:
+                                    params = {}
+                                    rmember["params"] = params
+                                    for key, val in member["params"].iteritems():
+                                        params[key] = self.call("script.evaluate-expression", val, globs=kwargs, description=lambda: self._("Combat member parameter '%s'") % key)
+                                return rmember
+
+                            try:
+                                cmd_code = cmd[0]
+                                if cmd_code == "comment":
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: u'# %s' % cmd[1], cls="quest-comment", indent=indent+2)
+                                elif cmd_code == "message" or cmd_code == "error":
+                                    message = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=eval_description)
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: u'%s %s' % (cmd_code, self.call("script.unparse-expression", message)), cls="quest-action", indent=indent+2)
+                                    getattr(char, cmd_code)(message)
+                                elif cmd_code == "require":
+                                    res = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                    if not res:
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: u'%s: %s' % (self.call("script.unparse-expression", cmd[1]), self._("false")), cls="quest-condition", indent=indent+2)
+                                        if len(cmd) >= 4:
+                                            if cmd[2] == "error":
+                                                error = self.call("script.evaluate-text", cmd[3], globs=kwargs, description=lambda: self._("Error text for 'require' statement"))
+                                                if debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("Error message: %s") % error, cls="quest-condition", indent=indent+2)
+                                                char.error(error)
+                                        raise AbortHandler()
+                                elif cmd_code == "call":
+                                    if len(cmd) == 2:
+                                        ev = "event-%s-%s" % (quest, cmd[1])
+                                    else:
+                                        ev = "event-%s-%s" % (cmd[1], cmd[2])
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("calling event %s") % ev, cls="quest-action", indent=indent+2)
+                                    self.qevent(ev, char=char)
+                                elif cmd_code == "call2":
+                                    target_quest = cmd[1]
+                                    target_event = cmd[2]
+                                    if target_quest is None:
+                                        target_quest = quest
+                                    ev = "event-%s-%s" % (target_quest, target_event)
+                                    args = cmd[3]
+                                    if "char" in args:
+                                        char_id = utf2str(unicode(self.call("script.evaluate-expression", args["char"], globs=kwargs, description=lambda: self._("target character for call"))))
+                                        target_char = self.character(char_id)
+                                        if target_char.valid:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("calling event {event} for character {character}").format(event=ev, character=target_char), cls="quest-action", indent=indent+2)
+                                            self.qevent(ev, char=target_char)
+                                        else:
+                                            raise ScriptRuntimeError(self._("Character with id '%s' doesn't exist") % htmlescape(char_id), env)
+                                    else:
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("calling event %s") % ev, cls="quest-action", indent=indent+2)
+                                        self.qevent(ev, char=char)
+                                elif cmd_code == "giveitem":
+                                    item_type_uuid = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                    mods = {}
+                                    mods_list = []
+                                    for param, value in cmd[2].iteritems():
+                                        val = self.call("script.evaluate-expression", value, globs=kwargs, description=eval_description)
+                                        mods[param] = val
+                                        mods_list.append((param, val))
+                                    quantity = intz(self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description))
+                                    if quantity > 0:
+                                        if quantity > 1e9:
+                                            quantity = 1e9
+                                        item_type = self.item_type(item_type_uuid, mods=mods)
+                                        if item_type and item_type.valid():
+                                            def message():
+                                                res = self._("giving {item_name}, quantity={quantity}").format(item_name=item_type.name, quantity=quantity)
+                                                if mods_list:
+                                                    mods_list.sort(cmp=lambda x, y: cmp(x[0], y[0]))
+                                                    res += ", %s" % ", ".join([u"p_%s=%s" % (k, v) for k, v in mods_list])
+                                                return res
+                                            if debug:
+                                                self.call("debug-channel.character", char, message, cls="quest-action", indent=indent+2)
+                                            char.inventory.give(item_type_uuid, quantity, "quest.give", quest=quest, mod=mods)
+                                            # information message: 'You have got ...'
+                                            item_name = item_type.name
+                                            try:
+                                                char.quest_given_items[item_name] += quantity
+                                            except AttributeError:
+                                                char.quest_given_items = {item_name: quantity}
+                                            except KeyError:
+                                                char.quest_given_items[item_name] = quantity
+                                elif cmd_code == "takeitem":
+                                    quantity = cmd[3]
+                                    if len(cmd) >= 6:
+                                        fractions = cmd[5]
+                                    else:
+                                        fractions = None
+                                    if quantity is not None:
+                                        quantity = self.call("script.evaluate-expression", quantity, globs=kwargs, description=eval_description)
+                                        quantity = intz(quantity)
+                                    if fractions is not None:
+                                        fractions = self.call("script.evaluate-expression", fractions, globs=kwargs, description=eval_description)
+                                        fractions = intz(fractions)
+                                    if cmd[1]:
+                                        item_type = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                        it_obj = self.item_type(item_type)
+                                        print "quantity=%s, fractions=%s" % (quantity, fractions)
+                                        if fractions is not None:
+                                            if fractions >= 1:
+                                                max_fractions = it_obj.get("fractions", 0)
+                                                if not max_fractions:
+                                                    max_fractions = 1
+                                                deleted = char.inventory.take_type(item_type, fractions, "quest.take", quest=quest, any_dna=True, fractions=max_fractions)
+                                            else:
+                                                deleted = 0
+                                        elif quantity is None or quantity >= 1:
+                                            print "quantity=%s" % quantity
+                                            deleted = char.inventory.take_type(item_type, quantity, "quest.take", quest=quest, any_dna=True)
+                                        else:
+                                            deleted = 0
+                                        if debug:
+                                            if it_obj.valid():
+                                                name = it_obj.name
+                                            else:
+                                                name = "??? (%s)" % item_type
+                                            if fractions is not None:
+                                                self.call("debug-channel.character", char, self._("taking {quantity} fractions of items with type '{type}' and any DNA ({result})").format(quantity=fractions, type=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
+                                            elif quantity is None:
+                                                self.call("debug-channel.character", char, self._("taking all ({quantity}) items with type '{type}' and any DNA").format(type=name, quantity=deleted), cls="quest-action", indent=indent+2)
+                                            else:
+                                                self.call("debug-channel.character", char, self._("taking {quantity} items with type '{type}' and any DNA ({result})").format(quantity=quantity, type=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
+                                        if (quantity is not None or fractions is not None) and not deleted:
+                                            if len(cmd) >= 5 and cmd[4] is not None and it_obj.valid:
+                                                self.qevent("event-%s-%s" % (quest, cmd[4]), char=char, item=it_obj)
+                                            raise AbortHandler()
+                                    elif cmd[2]:
+                                        dna = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
+                                        if quantity is None or quantity >= 1:
+                                            it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
+                                            if it_obj is None:
+                                                it_obj = self.item_type(dna)
+                                        else:
+                                            deleted = 0
+                                            it_obj = self.item_type(dna)
+                                        if debug:
+                                            if it_obj.valid():
+                                                name = it_obj.name
+                                            else:
+                                                name = "??? (%s)" % dna
+                                            if quantity is None:
+                                                self.call("debug-channel.character", char, self._("taking all ({quantity}) items with exact DNA '{dna}'").format(dna=name, quantity=deleted or 0), cls="quest-action", indent=indent+2)
+                                            else:
+                                                self.call("debug-channel.character", char, self._("taking {quantity} items with exact DNA '{dna}' ({result})").format(quantity=quantity, dna=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
+                                        if quantity is not None and not deleted:
+                                            if len(cmd) >= 5 and cmd[4] is not None and it_obj.valid:
+                                                self.qevent("event-%s-%s" % (quest, cmd[4]), char=char, item=it_obj)
+                                            raise AbortHandler()
+                                    else:
+                                        raise ScriptRuntimeError(self._("Neither item type nor DNA specified in 'take'"), env)
+                                elif cmd_code == "givemoney":
+                                    amount = floatz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
+                                    currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
+                                    if amount > 1e9:
+                                        amount = 1e9
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("giving money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
+                                    money_opts = {}
+                                    if len(cmd) >= 4 and cmd[3]:
+                                        money_opts["override"] = cmd[3]
+                                    try:
+                                        char.money.credit(amount, currency, "quest-give", quest=quest, **money_opts)
+                                    except MoneyError as e:
+                                        raise QuestError(e.val)
+                                    # information message: 'You have got ...'
+                                    try:
+                                        char.quest_given_money[currency] += amount
+                                    except AttributeError:
+                                        char.quest_given_money = {currency: amount}
+                                    except KeyError:
+                                        char.quest_given_money[currency] = amount
+                                elif cmd_code == "takemoney":
+                                    amount = floatz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
+                                    currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
+                                    money_opts = {}
+                                    if len(cmd) >= 5 and cmd[4]:
+                                        money_opts["override"] = cmd[4]
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
+                                    try:
+                                        res = char.money.debit(amount, currency, "quest-take", quest=quest, **money_opts)
+                                    except MoneyError as e:
+                                        raise QuestError(e.val)
+                                    else:
+                                        if not res:
+                                            if cmd[3] is not None:
+                                                self.qevent("event-%s-%s" % (quest, cmd[3]), char=char, amount=amount, currency=currency)
+                                            raise AbortHandler()
+                                elif cmd_code == "if":
+                                    expr = cmd[1]
+                                    val = self.call("script.evaluate-expression", expr, globs=kwargs, description=eval_description)
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("if {condition}: {result}").format(condition=self.call("script.unparse-expression", expr), result=self._("true") if val else self._("false")), cls="quest-condition", indent=indent+2)
+                                    if val:
+                                        execute_actions(cmd[2], indent+1)
+                                    else:
+                                        if len(cmd) >= 4:
+                                            execute_actions(cmd[3], indent+1)
+                                elif cmd_code == "set" or cmd_code == "setdynamic" or cmd_code == "slide":
+                                    obj = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                    attr = cmd[2]
+                                    if cmd_code == "slide":
+                                        # from
+                                        fr = cmd[3]
+                                        if fr is None:
+                                            getter = getattr(obj, "script_attr", None)
+                                            if getter is None:
+                                                raise ScriptTypeError(self._("Object '{val}' has no attributes").format(val=self.unparse_expression(cmd[1])), env)
+                                            try:
+                                                fr = getter(attr, handle_exceptions=False)
+                                            except AttributeError as e:
+                                                raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(cmd[1]), att=attr), env)
+                                        else:
+                                            fr = self.call("script.evaluate-expression", fr, globs=kwargs, description=eval_description)
+                                        # to
+                                        to = self.call("script.evaluate-expression", cmd[4], globs=kwargs, description=eval_description)
+                                        # time
+                                        time = floatz(self.call("script.evaluate-expression", cmd[5], globs=kwargs, description=eval_description))
+                                        now = self.time()
+                                        if time > 0:
+                                            cmd_code = "setdynamic"
+                                            val = [
+                                                "+",
+                                                fr,
+                                                [
+                                                    "*",
+                                                    [
+                                                        "-",
+                                                        ["glob", "t"],
+                                                        now
+                                                    ],
+                                                    [
+                                                        "/",
+                                                        [
+                                                            "-",
+                                                            to,
+                                                            fr
+                                                        ],
+                                                        time
+                                                    ]
+                                                ]
+                                            ]
+                                            # rounding
+                                            if cmd[6] is not None:
+                                                rnd = self.call("script.evaluate-expression", cmd[6], globs=kwargs, description=eval_description)
+                                                if (type(rnd) is int or type(rnd) is float) and rnd > 0:
+                                                    val = [
+                                                        "*",
+                                                        [
+                                                            "call",
+                                                            "round",
+                                                            [
+                                                                "/",
+                                                                val,
+                                                                rnd
+                                                            ]
+                                                        ],
+                                                        rnd
+                                                    ]
+                                            val = [now + time, val]
+                                            val[1] = self.call("script.evaluate-expression", val[1], keep_globs={"t": True})
+                                        else:
+                                            cmd_code = "set"
+                                            val = to
+                                        val = self.call("script.encode-objects", val)
+                                    elif cmd_code == "setdynamic":
+                                        till = cmd[4]
+                                        if till is not None:
+                                            till = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                            if type(till) != int and type(till) != float:
+                                                till = None
+                                        val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description, keep_globs={"t": True})
+                                        val = [till, val]
+                                    else:
+                                        val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
+                                    set_attr = getattr(obj, "script_set_attr", None)
+                                    if not set_attr:
+                                        if getattr(obj, "script_attr", None):
+                                            raise ScriptRuntimeError(self._("'%s' has no settable attributes") % self.call("script.unparse-expression", cmd[1]), env)
+                                        else:
+                                            raise ScriptRuntimeError(self._("'%s' is not an object") % self.call("script.unparse-expression", cmd[1]), env)
+                                    tval = type(val)
+                                    if not getattr(obj, "allow_compound", False):
+                                        if tval != str and tval != type(None) and tval != unicode and tval != long and tval != float and tval != bool and tval != int and tval != list:
+                                            raise ScriptRuntimeError(self._("Can't assign compound values ({val}) to the attributes").format(val=tval.__name__ if tval else None), env)
+                                    if debug:
+                                        if cmd_code == "setdynamic":
+                                            if val[0] is None:
+                                                self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val[1]))), cls="quest-action", indent=indent+2)
+                                            else:
+                                                self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val} till {till} ({till_human})").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val[1])), till=val[0], till_human=self.call("l10n.time_local", from_unixtime(val[0]))), cls="quest-action", indent=indent+2)
+                                        else:
+                                            self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val))), cls="quest-action", indent=indent+2)
+                                    try:
+                                        set_attr(attr, val, env)
+                                        modified_objects.add(obj)
+                                    except AttributeError as e:
+                                        raise ScriptRuntimeError(self._("'{obj}.{attr}' of the {cls} object is not settable").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], cls=type(obj).__name__), env)
+                                elif cmd_code == "destroy":
+                                    if quest == ":activity":
+                                        if char.busy and char.busy["tp"] == "activity":
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("activity finished"), cls="quest-action", indent=indent+2)
+                                            char.unset_busy()
+                                        else:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("activity not finished"), cls="quest-error", indent=indent+2)
+                                    else:
+                                        if cmd[1]:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("quest finished"), cls="quest-action", indent=indent+2)
+                                            char.quests.add_finished(quest)
+                                        else:
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("quest failed"), cls="quest-action", indent=indent+2)
+                                            char.error(self._("Quest failed"))
+                                        char.quests.destroy(quest)
+                                        modified_objects.add(char.quests)
+                                elif cmd_code == "lock":
+                                    if cmd[1] is None:
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("locking quest infinitely"), cls="quest-action", indent=indent+2)
+                                        char.quests.lock(quest)
+                                    else:
+                                        timeout = intz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
+                                        if timeout > 100e6:
+                                            timeout = 100e6
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("locking quest for %s sec") % timeout, cls="quest-action", indent=indent+2)
+                                        char.quests.lock(quest, timeout)
+                                elif cmd_code == "timer":
+                                    tid = cmd[1]
+                                    timeout = intz(self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description))
+                                    if timeout > 100e6:
+                                        timeout = 100e6
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("setting timer '{timer}' for {sec} sec").format(timer=tid, sec=timeout), cls="quest-action", indent=indent+2)
+                                    if timeout > 0:
+                                        char.modifiers.add("timer-%s-%s" % (quest, tid), 1, self.now(timeout))
+                                elif cmd_code == "modremove":
+                                    mid = cmd[1]
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("removing modifier '{modifier}'").format(modifier=mid), cls="quest-action", indent=indent+2)
+                                    char.modifiers.destroy(mid)
+                                elif cmd_code == "modifier":
+                                    mid = cmd[1]
+                                    op = cmd[2]
+                                    modval = self.call("script.evaluate-expression", cmd[4], globs=kwargs, description=lambda: self._("modifier value")) if len(cmd) >= 5 else 1
+                                    timeout = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
+                                    if timeout is None:
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("setting modifier '{modifier}'={modval} infinitely").format(modifier=mid, modval=modval), cls="quest-action", indent=indent+2)
+                                        char.modifiers.add(mid, modval, None)
+                                    else:
+                                        timeout = intz(timeout)
+                                        if timeout > 0:
+                                            if timeout > 100e6:
+                                                timeout = 100e6
+                                            if op == "add":
+                                                if debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("adding modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
+                                                char.modifiers.add(mid, modval, self.now(timeout))
+                                            elif op == "prolong":
+                                                if debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("prolonging modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
+                                                char.modifiers.prolong(mid, modval, timeout)
+                                elif cmd_code == "selectitem":
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("opening item selector"), cls="quest-action", indent=indent+2)
+                                    itemselector = cmd[1].copy()
+                                    if itemselector.get("title"):
+                                        itemselector["title"] = self.call("script.evaluate-text", itemselector["title"], globs=kwargs, description=eval_description)
+                                    char.quests.itemselector(itemselector, quest)
+                                    modified_objects.add(char.quests)
+                                elif cmd_code == "dialog":
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("opening dialog"), cls="quest-action", indent=indent+2)
+                                    dialog = cmd[1].copy()
+                                    if dialog.get("title"):
+                                        dialog["title"] = self.call("script.evaluate-text", dialog["title"], globs=kwargs, description=eval_description)
+                                    if dialog.get("text"):
+                                        dialog["text"] = self.call("script.evaluate-text", dialog["text"], globs=kwargs, description=eval_description)
+                                    if dialog.get("inputs"):
+                                        inputs = [inp.copy() for inp in dialog["inputs"]]
+                                        dialog["inputs"] = inputs
+                                        for inp in inputs:
+                                            if inp.get("text"):
+                                                inp["text"] = self.call("script.evaluate-text", inp["text"], globs=kwargs, description=eval_description)
+                                    if dialog.get("buttons"):
+                                        buttons = [btn.copy() for btn in dialog["buttons"]]
+                                        dialog["buttons"] = buttons
+                                        for btn in buttons:
+                                            if btn.get("text"):
+                                                btn["text"] = self.call("script.evaluate-text", btn["text"], globs=kwargs, description=eval_description)
+                                    char.quests.dialog(dialog, quest)
+                                    modified_objects.add(char.quests)
+                                elif cmd_code == "random":
+                                    sum_weight = 0
+                                    actions = []
+                                    for act in cmd[1]:
+                                        weight = self.call("script.evaluate-expression", act[0], globs=kwargs, description=eval_description)
+                                        if weight > 0:
+                                            sum_weight += weight
+                                            actions.append((act, weight))
+                                    if sum_weight > 0:
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("selecting random execution branch"), cls="quest-action", indent=indent+2)
+                                        rnd = random.random() * sum_weight
+                                        sum_weight = 0
+                                        selected = None
+                                        for act, weight in actions:
+                                            sum_weight += weight
+                                            if sum_weight >= rnd:
+                                                selected = act
+                                                break
+                                        # floating point rounding
+                                        if selected is None:
+                                            selected = actions[-1]
+                                        execute_actions(selected[1], indent+1)
+                                    else:
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("no cases in random with positive weights"), cls="quest-error", indent=indent+2)
+                                elif cmd_code == "combatlog":
+                                    if not kwargs.get("combat"):
+                                        raise QuestError(self._("'combat log' operator can be used in combat events only"))
+                                    text = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of log text"))
+                                    args = {
+                                        "text": text
+                                    }
+                                    if len(cmd) >= 3:
+                                        for key in cmd[2].keys():
+                                            args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat log {key} attribute").format(key=key))
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("writing to combat log: {text}").format(text=text), cls="quest-action", indent=indent+2)
+                                    kwargs["combat"].textlog(args)
+                                elif cmd_code == "combatsyslog":
+                                    if not kwargs.get("combat"):
+                                        raise QuestError(self._("'combat syslog' operator can be used in combat events only"))
+                                    text = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of system log text"))
+                                    args = {
+                                        "text": text
+                                    }
+                                    if len(cmd) >= 3:
+                                        for key in cmd[2].keys():
+                                            args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat system log {key} attribute").format(key=key))
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("writing to combat system log: {text}").format(text=text), cls="quest-action", indent=indent+2)
+                                    kwargs["combat"].syslog(args)
+                                elif cmd_code == "javascript":
+                                    script = cmd[1]
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("sending javascript %s") % self.call("script.unparse-expression", script), cls="quest-action", indent=indent+2)
+                                    char.javascript(script)
+                                elif cmd_code == "chat":
+                                    html = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=eval_description)
+                                    args = cmd[2]
+                                    if "public" in args:
+                                        public = self.call("script.evaluate-expression", args["public"], globs=kwargs, description=eval_description)
+                                    else:
+                                        public = False
+                                    if "channel" in args:
+                                        channel = self.call("script.evaluate-expression", args["channel"], globs=kwargs, description=eval_description)
+                                        channel = utf2str(unicode(channel))
+                                    else:
+                                        channel = "wld"
+                                    if "cls" in args:
+                                        cls = self.call("script.evaluate-expression", args["cls"], globs=kwargs, description=eval_description)
+                                    else:
+                                        cls = "quest"
+                                    if public:
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("sending public chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
+                                        self.call("chat.message", html=html, cls=cls, hide_time=True, hl=True, channel=channel)
+                                    else:
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
+                                        self.call("chat.message", html=html, cls=cls, private=True, recipients=[char], hide_time=True, hl=True, channel=channel)
+                                elif cmd_code == "teleport":
+                                    locid = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
+                                    if type(locid) != str and type(locid) != unicode:
+                                        raise QuestError(self._("Location id must be a string. Found %s" % type(locid).__name__))
+                                    loc = self.call("location.info", locid)
+                                    if loc:
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("teleporting %s") % htmlescape(loc.name_t), cls="quest-action", indent=indent+2)
+                                        char.teleport(loc, char.instance, [self.now(), self.now()])
+                                        try:
+                                            tasklet.quest_teleported.add(char.uuid)
+                                        except AttributeError:
+                                            tasklet.quest_teleported = set()
+                                            tasklet.quest_teleported.add(char.uuid)
+                                    else:
+                                        raise QuestError(self._("Missing location %s") % locid)
+                                elif cmd_code == "equipbreak":
+                                    globs = kwargs.copy()
+                                    changed = False
+                                    if char.equip:
+                                        for slot_id, item in char.equip.equipped_slots():
+                                            globs["slot"] = slot_id
+                                            globs["item"] = item
+                                            fractions = intz(self.call("script.evaluate-expression", cmd[1], globs=globs, description=lambda: self._("Evaluation of damage to the equip")))
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("breaking item {item} in slot {slot}. damage={damage}").format(item=htmlescape(item.name), slot=slot_id, damage=fractions), cls="quest-action", indent=indent+2)
+                                            if fractions > 0:
+                                                spent, destroyed = char.equip.break_item(slot_id, fractions, "break", quest=quest)
+                                                if not spent and debug:
+                                                    self.call("debug-channel.character", char, lambda: self._("could not break item {item} in slot {slot}").format(item=htmlescape(item.name), slot=slot_id), cls="quest-error", indent=indent+3)
+                                                if spent and destroyed:
+                                                    if debug:
+                                                        self.call("debug-channel.character", char, lambda: self._("item {item} in slot {slot} has broken completely").format(item=htmlescape(item.name), slot=slot_id), cls="quest-action", indent=indent+3)
+                                                    if kwargs.get("combat") and kwargs.get("member"):
+                                                        kwargs["combat"].textlog({
+                                                            "text": self._('<span class="combat-log-item">{item}</span> of character <span class="combat-log-member">{name}</span> has been broken').format(item=htmlescape(item.name), name=htmlescape(kwargs["member"].name)),
+                                                            "cls": "combat-log-equipbreak",
+                                                        })
+                                                changed = True
+                                    if changed:
+                                        char.equip.validate()
+                                        char.inventory.store()
+                                elif cmd_code == "combat":
+                                    options = cmd[1]
+                                    # prepare combat request
+                                    creq = CombatRequest(self.app())
+                                    # combat system
+                                    rules = options.get("rules")
+                                    if rules is None:
+                                        raise QuestError(self._("Combat rules not specified. Specify default combat rules in the combat comfiguration"))
+                                    creq.set_rules(rules)
+                                    # combat title
+                                    title = options.get("title")
+                                    if title:
+                                        title = self.call("script.evaluate-text", title, globs=kwargs, description=lambda: self._("Combat title"))
+                                        creq.set_title(title)
+                                    # combat flags
+                                    flags = options.get("flags")
+                                    if flags:
+                                        creq.set_flags(flags)
+                                    # members
+                                    n_char = 0
+                                    n_npc = 0
+                                    for member in options["members"]:
+                                        rmember = evaluate_member(member)
+                                        try:
+                                            if rmember["object"][0] == "character":
+                                                n_char += 1
+                                            else:
+                                                n_npc += 1
+                                        except KeyError:
+                                            n_npc += 1
+                                        creq.add_member(rmember)
+                                    # npc combat check
+                                    if not n_char:
+                                        raise QuestError(self._("Combats without character members are forbidden"))
+                                    if n_npc > n_char * 10:
+                                        raise QuestError(self._("Number of NPC characters in a combat can't be more then 10x number of player members"))
+                                    # launch combat
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("launching combat"), cls="quest-action", indent=indent+2)
+                                    try:
+                                        creq.run()
+                                    except CombatMemberBusyError as e:
+                                        self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
+                                        char.error(e.val)
+                                        raise AbortHandler()
+                                    except CombatRunError as e:
+                                        raise QuestError(e.val)
+                                    else:
+                                        for member in creq.members:
+                                            if member["object"][0] == "character":
+                                                char_uuid = member["object"][1]
+                                                try:
+                                                    tasklet.quest_combat_started[char_uuid] = creq.uuid
+                                                except AttributeError:
+                                                    tasklet.quest_combat_started = {char_uuid: creq.uuid}
+                                elif cmd_code == "combatjoin":
+                                    combat_id = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the combat id"))
+                                    rmember = evaluate_member(cmd[2])
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("joining {name} to combat {combat} for team {team}").format(name=rmember.get("name"), combat=combat_id, team=rmember.get("team")), cls="quest-action", indent=indent+2)
+                                    try:
+                                        combat = CombatInterface(self.app(), combat_id)
+                                        result = combat.join(rmember)
+                                    except CombatUnavailable:
+                                        self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
+                                        char.error(self._("Combat is unavailable"))
+                                        raise AbortHandler()
+                                    else:
+                                        if result.get("error"):
+                                            self.call("debug-channel.character", char, result["error"], cls="quest-error", indent=indent+2)
+                                            char.error(self._("Unable to join the combat"))
+                                            raise AbortHandler()
+                                        else:
+                                            if rmember["object"][0] == "character":
+                                                char_uuid = rmember["object"][1]
+                                                try:
+                                                    tasklet.quest_combat_started[char_uuid] = combat_id
+                                                except AttributeError:
+                                                    tasklet.quest_combat_started = {char_uuid: combat_id}
+                                elif cmd_code == "sound":
+                                    url = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the sound URL to play"))
+                                    options = cmd[2]
+                                    attrs = {}
+                                    if "mode" in options:
+                                        mode = self.call("script.evaluate-expression", options["mode"], globs=kwargs, description=lambda: self._("Evaluation of 'mode' argument"))
+                                        if mode != "wait" and mode != "overlap" and mode != "stop":
+                                            raise QuestError(self._("Invalid value for 'mode' attribute: '%s'") % mode)
+                                        attrs["mode"] = mode
+                                    if "volume" in options:
+                                        volume = self.call("script.evaluate-expression", options["volume"], globs=kwargs, description=lambda: self._("Evaluation of 'volume' argument"))
+                                        if type(volume) != int:
+                                            raise QuestError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__)
+                                        attrs["volume"] = volume
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("playing sound {url}").format(url=url.split("/")[-1]), cls="quest-action", indent=indent+2)
+                                    self.call("sound.play", char, url, **attrs)
+                                elif cmd_code == "music":
+                                    playlist = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the music playlist identifier"))
+                                    options = cmd[2]
+                                    attrs = {}
+                                    if "fade" in options:
+                                        fade = self.call("script.evaluate-expression", options["fade"], globs=kwargs, description=lambda: self._("Evaluation of 'fade' argument"))
+                                        if type(fade) != int:
+                                            raise QuestError(self._("Invalid value type for 'fade' attribute: '%s'") % type(fade).__name__)
+                                        attrs["fade"] = fade
+                                    if "volume" in options:
+                                        volume = self.call("script.evaluate-expression", options["volume"], globs=kwargs, description=lambda: self._("Evaluation of 'volume' argument"))
+                                        if type(volume) != int:
+                                            raise QuestError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__)
+                                        attrs["volume"] = volume
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("playing music {playlist}").format(playlist=playlist), cls="quest-action", indent=indent+2)
+                                    self.call("sound.music", char, playlist, **attrs)
+                                elif cmd_code == "musicstop":
+                                    options = cmd[1]
+                                    attrs = {}
+                                    if "fade" in options:
+                                        fade = self.call("script.evaluate-expression", options["fade"], globs=kwargs, description=lambda: self._("Evaluation of 'fade' argument"))
+                                        if type(fade) != int:
+                                            raise QuestError(self._("Invalid value type for 'fade' attribute: '%s'") % type(fade).__name__)
+                                        attrs["fade"] = fade
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("stopping music"), cls="quest-action", indent=indent+2)
+                                    self.call("sound.music", char, None, **attrs)
+                                elif cmd_code == "sendchar":
+                                    for param_code in cmd[1]:
+                                        param, val = char.find_param_and_eval(param_code)
+                                        if param:
+                                            char.send_param_force(param, val)
+                                            if debug:
+                                                self.call("debug-channel.character", char, lambda: self._("sending parameter %s") % param_code, cls="quest-action", indent=indent+2)
+                                        else:
+                                            raise QuestError(self._("Parameter '%s' not found") % param_code)
+                                elif cmd_code == "activity":
+                                    variables = {}
+                                    for key, val in cmd[2].items():
+                                        variables[key] = self.call("script.evaluate-expression", val, globs=kwargs, description=lambda: self._("Evaluation of '%s' argument") % key)
+                                    options = {
+                                        "hdls": cmd[1],
+                                        "vars": variables,
+                                        "debug": debug,
+                                    }
+                                    if "priority" in variables:
+                                        options["priority"] = variables["priority"]
+                                        del variables["priority"]
+                                        tp = type(options["priority"])
+                                        if tp != int and tp != long and tp != float:
+                                            raise QuestError(self._("Activity priority must be a number. Got: %s") % tp.__name__)
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("starting activity"), cls="quest-action", indent=indent+2)
+                                    if not char.set_busy("activity", options):
+                                        char.error(self._("You are busy"))
+                                        if debug:
+                                            self.call("debug-channel.character", char, lambda: self._("activity not started (character is busy)"), cls="quest-error", indent=indent+3)
+                                        raise AbortHandler()
+                                        self.qevent("event-:activity-start", char=char)
+                                else:
+                                    raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
+                            except QuestError as e:
+                                e = ScriptError(e.val, env)
+                                self.call("exception.report", e)
+                                self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
+                            except ScriptError as e:
+                                self.call("exception.report", e)
+                                self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
+                            except AbortHandler:
+                                raise
+                            except Exception as e:
+                                self.exception(e)
+                                self.call("debug-channel.character", char, self._("System exception: %s") % e.__class__.__name__, cls="quest-error", indent=indent+2)
+                            Tasklet.yield_()
+                    try:
+                        execute_actions(act, indent)
+                    except AbortHandler:
+                        pass
+                    for obj in modified_objects:
+                        obj.store()
+            # check activity
+            if char.busy and char.busy.get("tp") == "activity":
+                try:
+                    # TODO: pass "activity" object to the handler
+                    debug = char.busy.get("debug", True)
+                    kwargs["activity"] = None
+                    execute_handlers(char.busy.get("hdls"), ":activity", kwargs)
+                except QuestError as e:
+                    raise ScriptError(e.val, env)
+                finally:
+                    del kwargs["activity"]
+            # check quests
             for quest in quests:
                 try:
                     debug = self.conf("quests.debug_%s" % quest)
@@ -1488,775 +2305,12 @@ class Quests(ConstructorModule):
                     if script[0] != "state":
                         continue
                     script = script[1]
-                    hdls = script.get("hdls")
-                    if not hdls:
-                        continue
-                    for hdl in hdls:
-                        if hdl[0] != "hdl":
-                            continue
-                        handler = hdl[1]
-                        tp = handler.get("type")
-                        if not tp:
-                            continue
-                        tp = parse_quest_tp(quest, tp)
-                        if event != tp:
-                            continue
-                        attrs = handler.get("attrs")
-                        if event == "teleported":
-                            if attrs and attrs.get("to") and kwargs["new_loc"].uuid != attrs.get("to"):
-                                continue
-                            if attrs and attrs.get("from") and kwargs["old_loc"].uuid != attrs.get("from"):
-                                continue
-                        elif event == "money-changed":
-                            if attrs and attrs.get("currency") and kwargs["currency"] != attrs.get("currency"):
-                                continue
-                        elif event == "oncombat":
-                            if attrs and attrs.get("events") and kwargs["cevent"] not in attrs["events"]:
-                                continue
-                            if attrs and attrs.get("flags"):
-                                match = False
-                                cflags = kwargs["combat"].flags
-                                for flag in attrs.get("flags"):
-                                    if flag in cflags:
-                                        match = True
-                                        break
-                                if not match:
-                                    continue
-                        act = handler.get("act")
-                        if not act:
-                            continue
-                        kwargs["quest"] = CharQuest(char.quests, quest)
-                        modified_objects = set()
-                        def execute_actions(actions, indent):
-                            # testing stack overflows
-                            try:
-                                sys._getframe(900)
-                            except ValueError:
-                                pass
-                            else:
-                                # this is a real error
-                                env = ScriptEnvironment()
-                                env.globs = kwargs
-                                env.description = self._("Quest '{quest}', event '{event}'").format(quest=quest, event=event)
-                                raise ScriptRuntimeError(self._("Max recursion depth exceeded"), env)
-                            for cmd in actions:
-
-                                def env():
-                                    env = ScriptEnvironment()
-                                    env.globs = kwargs
-                                    env.description = self._("Quest '{quest}', event '{event}', command '{command}'").format(quest=quest, event=event, command=self.call("quest-admin.unparse-script", cmd).strip())
-                                    return env
-
-                                def evaluate_member(member):
-                                    mtype = member["type"]
-                                    if mtype[0] == "virtual":
-                                        cmember = {
-                                            "object": ["virtual"]
-                                        }
-                                    elif mtype[0] == "expr":
-                                        cmemberobj = self.call("script.evaluate-expression", mtype[1], globs=kwargs, description=lambda: self._("Combat member type"))
-                                        makemember = getattr(cmemberobj, "combat_member", None)
-                                        if makemember is None:
-                                            raise QuestError(self._("'%s' is not a valid combat member") % self.call("script.unparse-expression", mtype[1]))
-                                        cmember = makemember()
-                                    else:
-                                        raise QuestError(self._("Unknown combat type %s") % mtype[0])
-                                    rmember = cmember
-                                    team = self.call("script.evaluate-expression", member["team"], globs=kwargs, description=lambda: self._("Combat member team"))
-                                    if type(team) != int:
-                                        raise QuestError(self._("Team number must be integer. Got: %s") % type(team))
-                                    else:
-                                        team = int(team)
-                                        if team < 1 or team > 1000:
-                                            raise QuestError(self._("Team number must be in range 1 .. 1000. Got: %s") % team)
-                                        else:
-                                            rmember["team"] = team
-                                    if "control" in member:
-                                        rmember["control"] = self.call("script.evaluate-expression", member["control"], globs=kwargs, description=lambda: self._("Combat member control"))
-                                    elif cmember["object"][0] == "character":
-                                        rmember["control"] = "web"
-                                    else:
-                                        rmember["control"] = "ai"
-                                    if "name" in member:
-                                        rmember["name"] = self.call("script.evaluate-text", member["name"], globs=kwargs, description=lambda: self._("Combat member name"))
-                                    if "sex" in member:
-                                        rmember["sex"] = self.call("script.evaluate-expression", member["sex"], globs=kwargs, description=lambda: self._("Combat member sex"))
-                                    if "ai" in member:
-                                        rmember["ai"] = self.call("script.evaluate-expression", member["ai"], globs=kwargs, description=lambda: self._("Combat member AI"))
-                                    if "image" in member:
-                                        rmember["image"] = self.call("script.evaluate-expression", member["image"], globs=kwargs, description=lambda: self._("Combat member image"))
-                                    if "params" in member:
-                                        params = {}
-                                        rmember["params"] = params
-                                        for key, val in member["params"].iteritems():
-                                            params[key] = self.call("script.evaluate-expression", val, globs=kwargs, description=lambda: self._("Combat member parameter '%s'") % key)
-                                    return rmember
-
-                                try:
-                                    cmd_code = cmd[0]
-                                    if cmd_code == "comment":
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: u'# %s' % cmd[1], cls="quest-comment", indent=indent+2)
-                                    elif cmd_code == "message" or cmd_code == "error":
-                                        message = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=eval_description)
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: u'%s %s' % (cmd_code, self.call("script.unparse-expression", message)), cls="quest-action", indent=indent+2)
-                                        getattr(char, cmd_code)(message)
-                                    elif cmd_code == "require":
-                                        res = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
-                                        if not res:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: u'%s: %s' % (self.call("script.unparse-expression", cmd[1]), self._("false")), cls="quest-condition", indent=indent+2)
-                                            if len(cmd) >= 4:
-                                                if cmd[2] == "error":
-                                                    error = self.call("script.evaluate-text", cmd[3], globs=kwargs, description=lambda: self._("Error text for 'require' statement"))
-                                                    if debug:
-                                                        self.call("debug-channel.character", char, lambda: self._("Error message: %s") % error, cls="quest-condition", indent=indent+2)
-                                                    char.error(error)
-                                            raise AbortHandler()
-                                    elif cmd_code == "call":
-                                        if len(cmd) == 2:
-                                            ev = "event-%s-%s" % (quest, cmd[1])
-                                        else:
-                                            ev = "event-%s-%s" % (cmd[1], cmd[2])
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("calling event %s") % ev, cls="quest-action", indent=indent+2)
-                                        self.qevent(ev, char=char)
-                                    elif cmd_code == "call2":
-                                        target_quest = cmd[1]
-                                        target_event = cmd[2]
-                                        if target_quest is None:
-                                            target_quest = quest
-                                        ev = "event-%s-%s" % (target_quest, target_event)
-                                        args = cmd[3]
-                                        if "char" in args:
-                                            char_id = utf2str(unicode(self.call("script.evaluate-expression", args["char"], globs=kwargs, description=lambda: self._("target character for call"))))
-                                            target_char = self.character(char_id)
-                                            if target_char.valid:
-                                                if debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("calling event {event} for character {character}").format(event=ev, character=target_char), cls="quest-action", indent=indent+2)
-                                                self.qevent(ev, char=target_char)
-                                            else:
-                                                raise ScriptRuntimeError(self._("Character with id '%s' doesn't exist") % htmlescape(char_id), env)
-                                        else:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("calling event %s") % ev, cls="quest-action", indent=indent+2)
-                                            self.qevent(ev, char=char)
-                                    elif cmd_code == "giveitem":
-                                        item_type_uuid = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
-                                        mods = {}
-                                        mods_list = []
-                                        for param, value in cmd[2].iteritems():
-                                            val = self.call("script.evaluate-expression", value, globs=kwargs, description=eval_description)
-                                            mods[param] = val
-                                            mods_list.append((param, val))
-                                        quantity = intz(self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description))
-                                        if quantity > 0:
-                                            if quantity > 1e9:
-                                                quantity = 1e9
-                                            item_type = self.item_type(item_type_uuid, mods=mods)
-                                            if item_type and item_type.valid():
-                                                def message():
-                                                    res = self._("giving {item_name}, quantity={quantity}").format(item_name=item_type.name, quantity=quantity)
-                                                    if mods_list:
-                                                        mods_list.sort(cmp=lambda x, y: cmp(x[0], y[0]))
-                                                        res += ", %s" % ", ".join([u"p_%s=%s" % (k, v) for k, v in mods_list])
-                                                    return res
-                                                if debug:
-                                                    self.call("debug-channel.character", char, message, cls="quest-action", indent=indent+2)
-                                                char.inventory.give(item_type_uuid, quantity, "quest.give", quest=quest, mod=mods)
-                                                # information message: 'You have got ...'
-                                                item_name = item_type.name
-                                                try:
-                                                    char.quest_given_items[item_name] += quantity
-                                                except AttributeError:
-                                                    char.quest_given_items = {item_name: quantity}
-                                                except KeyError:
-                                                    char.quest_given_items[item_name] = quantity
-                                    elif cmd_code == "takeitem":
-                                        quantity = cmd[3]
-                                        if len(cmd) >= 6:
-                                            fractions = cmd[5]
-                                        else:
-                                            fractions = None
-                                        if quantity is not None:
-                                            quantity = self.call("script.evaluate-expression", quantity, globs=kwargs, description=eval_description)
-                                            quantity = intz(quantity)
-                                        if fractions is not None:
-                                            fractions = self.call("script.evaluate-expression", fractions, globs=kwargs, description=eval_description)
-                                            fractions = intz(fractions)
-                                        if cmd[1]:
-                                            item_type = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
-                                            it_obj = self.item_type(item_type)
-                                            print "quantity=%s, fractions=%s" % (quantity, fractions)
-                                            if fractions is not None:
-                                                if fractions >= 1:
-                                                    max_fractions = it_obj.get("fractions", 0)
-                                                    if not max_fractions:
-                                                        max_fractions = 1
-                                                    deleted = char.inventory.take_type(item_type, fractions, "quest.take", quest=quest, any_dna=True, fractions=max_fractions)
-                                                else:
-                                                    deleted = 0
-                                            elif quantity is None or quantity >= 1:
-                                                print "quantity=%s" % quantity
-                                                deleted = char.inventory.take_type(item_type, quantity, "quest.take", quest=quest, any_dna=True)
-                                            else:
-                                                deleted = 0
-                                            if debug:
-                                                if it_obj.valid():
-                                                    name = it_obj.name
-                                                else:
-                                                    name = "??? (%s)" % item_type
-                                                if fractions is not None:
-                                                    self.call("debug-channel.character", char, self._("taking {quantity} fractions of items with type '{type}' and any DNA ({result})").format(quantity=fractions, type=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
-                                                elif quantity is None:
-                                                    self.call("debug-channel.character", char, self._("taking all ({quantity}) items with type '{type}' and any DNA").format(type=name, quantity=deleted), cls="quest-action", indent=indent+2)
-                                                else:
-                                                    self.call("debug-channel.character", char, self._("taking {quantity} items with type '{type}' and any DNA ({result})").format(quantity=quantity, type=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
-                                            if (quantity is not None or fractions is not None) and not deleted:
-                                                if len(cmd) >= 5 and cmd[4] is not None and it_obj.valid:
-                                                    self.qevent("event-%s-%s" % (quest, cmd[4]), char=char, item=it_obj)
-                                                raise AbortHandler()
-                                        elif cmd[2]:
-                                            dna = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
-                                            if quantity is None or quantity >= 1:
-                                                it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
-                                                if it_obj is None:
-                                                    it_obj = self.item_type(dna)
-                                            else:
-                                                deleted = 0
-                                                it_obj = self.item_type(dna)
-                                            if debug:
-                                                if it_obj.valid():
-                                                    name = it_obj.name
-                                                else:
-                                                    name = "??? (%s)" % dna
-                                                if quantity is None:
-                                                    self.call("debug-channel.character", char, self._("taking all ({quantity}) items with exact DNA '{dna}'").format(dna=name, quantity=deleted or 0), cls="quest-action", indent=indent+2)
-                                                else:
-                                                    self.call("debug-channel.character", char, self._("taking {quantity} items with exact DNA '{dna}' ({result})").format(quantity=quantity, dna=name, result=self._("successfully") if deleted else self._("unsuccessfully")), cls="quest-action", indent=indent+2)
-                                            if quantity is not None and not deleted:
-                                                if len(cmd) >= 5 and cmd[4] is not None and it_obj.valid:
-                                                    self.qevent("event-%s-%s" % (quest, cmd[4]), char=char, item=it_obj)
-                                                raise AbortHandler()
-                                        else:
-                                            raise ScriptRuntimeError(self._("Neither item type nor DNA specified in 'take'"), env)
-                                    elif cmd_code == "givemoney":
-                                        amount = floatz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
-                                        currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
-                                        if amount > 1e9:
-                                            amount = 1e9
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("giving money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
-                                        money_opts = {}
-                                        if len(cmd) >= 4 and cmd[3]:
-                                            money_opts["override"] = cmd[3]
-                                        try:
-                                            char.money.credit(amount, currency, "quest-give", quest=quest, **money_opts)
-                                        except MoneyError as e:
-                                            raise QuestError(e.val)
-                                        # information message: 'You have got ...'
-                                        try:
-                                            char.quest_given_money[currency] += amount
-                                        except AttributeError:
-                                            char.quest_given_money = {currency: amount}
-                                        except KeyError:
-                                            char.quest_given_money[currency] = amount
-                                    elif cmd_code == "takemoney":
-                                        amount = floatz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
-                                        currency = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
-                                        money_opts = {}
-                                        if len(cmd) >= 5 and cmd[4]:
-                                            money_opts["override"] = cmd[4]
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("taking money, amount={amount}, currency={currency}").format(amount=amount, currency=currency), cls="quest-action", indent=indent+2)
-                                        try:
-                                            res = char.money.debit(amount, currency, "quest-take", quest=quest, **money_opts)
-                                        except MoneyError as e:
-                                            raise QuestError(e.val)
-                                        else:
-                                            if not res:
-                                                if cmd[3] is not None:
-                                                    self.qevent("event-%s-%s" % (quest, cmd[3]), char=char, amount=amount, currency=currency)
-                                                raise AbortHandler()
-                                    elif cmd_code == "if":
-                                        expr = cmd[1]
-                                        val = self.call("script.evaluate-expression", expr, globs=kwargs, description=eval_description)
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("if {condition}: {result}").format(condition=self.call("script.unparse-expression", expr), result=self._("true") if val else self._("false")), cls="quest-condition", indent=indent+2)
-                                        if val:
-                                            execute_actions(cmd[2], indent+1)
-                                        else:
-                                            if len(cmd) >= 4:
-                                                execute_actions(cmd[3], indent+1)
-                                    elif cmd_code == "set" or cmd_code == "setdynamic" or cmd_code == "slide":
-                                        obj = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
-                                        attr = cmd[2]
-                                        if cmd_code == "slide":
-                                            # from
-                                            fr = cmd[3]
-                                            if fr is None:
-                                                getter = getattr(obj, "script_attr", None)
-                                                if getter is None:
-                                                    raise ScriptTypeError(self._("Object '{val}' has no attributes").format(val=self.unparse_expression(cmd[1])), env)
-                                                try:
-                                                    fr = getter(attr, handle_exceptions=False)
-                                                except AttributeError as e:
-                                                    raise ScriptTypeError(self._("Object '{val}' has no attribute '{att}'").format(val=self.unparse_expression(cmd[1]), att=attr), env)
-                                            else:
-                                                fr = self.call("script.evaluate-expression", fr, globs=kwargs, description=eval_description)
-                                            # to
-                                            to = self.call("script.evaluate-expression", cmd[4], globs=kwargs, description=eval_description)
-                                            # time
-                                            time = floatz(self.call("script.evaluate-expression", cmd[5], globs=kwargs, description=eval_description))
-                                            now = self.time()
-                                            if time > 0:
-                                                cmd_code = "setdynamic"
-                                                val = [
-                                                    "+",
-                                                    fr,
-                                                    [
-                                                        "*",
-                                                        [
-                                                            "-",
-                                                            ["glob", "t"],
-                                                            now
-                                                        ],
-                                                        [
-                                                            "/",
-                                                            [
-                                                                "-",
-                                                                to,
-                                                                fr
-                                                            ],
-                                                            time
-                                                        ]
-                                                    ]
-                                                ]
-                                                # rounding
-                                                if cmd[6] is not None:
-                                                    rnd = self.call("script.evaluate-expression", cmd[6], globs=kwargs, description=eval_description)
-                                                    if (type(rnd) is int or type(rnd) is float) and rnd > 0:
-                                                        val = [
-                                                            "*",
-                                                            [
-                                                                "call",
-                                                                "round",
-                                                                [
-                                                                    "/",
-                                                                    val,
-                                                                    rnd
-                                                                ]
-                                                            ],
-                                                            rnd
-                                                        ]
-                                                val = [now + time, val]
-                                                val[1] = self.call("script.evaluate-expression", val[1], keep_globs={"t": True})
-                                            else:
-                                                cmd_code = "set"
-                                                val = to
-                                            val = self.call("script.encode-objects", val)
-                                        elif cmd_code == "setdynamic":
-                                            till = cmd[4]
-                                            if till is not None:
-                                                till = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
-                                                if type(till) != int and type(till) != float:
-                                                    till = None
-                                            val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description, keep_globs={"t": True})
-                                            val = [till, val]
-                                        else:
-                                            val = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
-                                        set_attr = getattr(obj, "script_set_attr", None)
-                                        if not set_attr:
-                                            if getattr(obj, "script_attr", None):
-                                                raise ScriptRuntimeError(self._("'%s' has no settable attributes") % self.call("script.unparse-expression", cmd[1]), env)
-                                            else:
-                                                raise ScriptRuntimeError(self._("'%s' is not an object") % self.call("script.unparse-expression", cmd[1]), env)
-                                        tval = type(val)
-                                        if not getattr(obj, "allow_compound", False):
-                                            if tval != str and tval != type(None) and tval != unicode and tval != long and tval != float and tval != bool and tval != int and tval != list:
-                                                raise ScriptRuntimeError(self._("Can't assign compound values ({val}) to the attributes").format(val=tval.__name__ if tval else None), env)
-                                        if debug:
-                                            if cmd_code == "setdynamic":
-                                                if val[0] is None:
-                                                    self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val[1]))), cls="quest-action", indent=indent+2)
-                                                else:
-                                                    self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val} till {till} ({till_human})").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val[1])), till=val[0], till_human=self.call("l10n.time_local", from_unixtime(val[0]))), cls="quest-action", indent=indent+2)
-                                            else:
-                                                self.call("debug-channel.character", char, lambda: self._("setting {obj}.{attr} = {val}").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], val=htmlescape(self.call("script.unparse-expression", val))), cls="quest-action", indent=indent+2)
-                                        try:
-                                            set_attr(attr, val, env)
-                                            modified_objects.add(obj)
-                                        except AttributeError as e:
-                                            raise ScriptRuntimeError(self._("'{obj}.{attr}' of the {cls} object is not settable").format(obj=self.call("script.unparse-expression", cmd[1]), attr=cmd[2], cls=type(obj).__name__), env)
-                                    elif cmd_code == "destroy":
-                                        if cmd[1]:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("quest finished"), cls="quest-action", indent=indent+2)
-                                            char.quests.add_finished(quest)
-                                        else:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("quest failed"), cls="quest-action", indent=indent+2)
-                                            char.error(self._("Quest failed"))
-                                        char.quests.destroy(quest)
-                                        modified_objects.add(char.quests)
-                                    elif cmd_code == "lock":
-                                        if cmd[1] is None:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("locking quest infinitely"), cls="quest-action", indent=indent+2)
-                                            char.quests.lock(quest)
-                                        else:
-                                            timeout = intz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
-                                            if timeout > 100e6:
-                                                timeout = 100e6
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("locking quest for %s sec") % timeout, cls="quest-action", indent=indent+2)
-                                            char.quests.lock(quest, timeout)
-                                    elif cmd_code == "timer":
-                                        tid = cmd[1]
-                                        timeout = intz(self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description))
-                                        if timeout > 100e6:
-                                            timeout = 100e6
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("setting timer '{timer}' for {sec} sec").format(timer=tid, sec=timeout), cls="quest-action", indent=indent+2)
-                                        if timeout > 0:
-                                            char.modifiers.add("timer-%s-%s" % (quest, tid), 1, self.now(timeout))
-                                    elif cmd_code == "modremove":
-                                        mid = cmd[1]
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("removing modifier '{modifier}'").format(modifier=mid), cls="quest-action", indent=indent+2)
-                                        char.modifiers.destroy(mid)
-                                    elif cmd_code == "modifier":
-                                        mid = cmd[1]
-                                        op = cmd[2]
-                                        modval = self.call("script.evaluate-expression", cmd[4], globs=kwargs, description=lambda: self._("modifier value")) if len(cmd) >= 5 else 1
-                                        timeout = self.call("script.evaluate-expression", cmd[3], globs=kwargs, description=eval_description)
-                                        if timeout is None:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("setting modifier '{modifier}'={modval} infinitely").format(modifier=mid, modval=modval), cls="quest-action", indent=indent+2)
-                                            char.modifiers.add(mid, modval, None)
-                                        else:
-                                            timeout = intz(timeout)
-                                            if timeout > 0:
-                                                if timeout > 100e6:
-                                                    timeout = 100e6
-                                                if op == "add":
-                                                    if debug:
-                                                        self.call("debug-channel.character", char, lambda: self._("adding modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
-                                                    char.modifiers.add(mid, modval, self.now(timeout))
-                                                elif op == "prolong":
-                                                    if debug:
-                                                        self.call("debug-channel.character", char, lambda: self._("prolonging modifier '{modifier}'={modval} for {sec} sec").format(modifier=mid, sec=timeout, modval=modval), cls="quest-action", indent=indent+2)
-                                                    char.modifiers.prolong(mid, modval, timeout)
-                                    elif cmd_code == "selectitem":
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("opening item selector"), cls="quest-action", indent=indent+2)
-                                        itemselector = cmd[1].copy()
-                                        if itemselector.get("title"):
-                                            itemselector["title"] = self.call("script.evaluate-text", itemselector["title"], globs=kwargs, description=eval_description)
-                                        char.quests.itemselector(itemselector, quest)
-                                        modified_objects.add(char.quests)
-                                    elif cmd_code == "dialog":
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("opening dialog"), cls="quest-action", indent=indent+2)
-                                        dialog = cmd[1].copy()
-                                        if dialog.get("title"):
-                                            dialog["title"] = self.call("script.evaluate-text", dialog["title"], globs=kwargs, description=eval_description)
-                                        if dialog.get("text"):
-                                            dialog["text"] = self.call("script.evaluate-text", dialog["text"], globs=kwargs, description=eval_description)
-                                        if dialog.get("inputs"):
-                                            inputs = [inp.copy() for inp in dialog["inputs"]]
-                                            dialog["inputs"] = inputs
-                                            for inp in inputs:
-                                                if inp.get("text"):
-                                                    inp["text"] = self.call("script.evaluate-text", inp["text"], globs=kwargs, description=eval_description)
-                                        if dialog.get("buttons"):
-                                            buttons = [btn.copy() for btn in dialog["buttons"]]
-                                            dialog["buttons"] = buttons
-                                            for btn in buttons:
-                                                if btn.get("text"):
-                                                    btn["text"] = self.call("script.evaluate-text", btn["text"], globs=kwargs, description=eval_description)
-                                        char.quests.dialog(dialog, quest)
-                                        modified_objects.add(char.quests)
-                                    elif cmd_code == "random":
-                                        sum_weight = 0
-                                        actions = []
-                                        for act in cmd[1]:
-                                            weight = self.call("script.evaluate-expression", act[0], globs=kwargs, description=eval_description)
-                                            if weight > 0:
-                                                sum_weight += weight
-                                                actions.append((act, weight))
-                                        if sum_weight > 0:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("selecting random execution branch"), cls="quest-action", indent=indent+2)
-                                            rnd = random.random() * sum_weight
-                                            sum_weight = 0
-                                            selected = None
-                                            for act, weight in actions:
-                                                sum_weight += weight
-                                                if sum_weight >= rnd:
-                                                    selected = act
-                                                    break
-                                            # floating point rounding
-                                            if selected is None:
-                                                selected = actions[-1]
-                                            execute_actions(selected[1], indent+1)
-                                        else:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("no cases in random with positive weights"), cls="quest-error", indent=indent+2)
-                                    elif cmd_code == "combatlog":
-                                        if not kwargs.get("combat"):
-                                            raise QuestError(self._("'combat log' operator can be used in combat events only"))
-                                        text = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of log text"))
-                                        args = {
-                                            "text": text
-                                        }
-                                        if len(cmd) >= 3:
-                                            for key in cmd[2].keys():
-                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat log {key} attribute").format(key=key))
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("writing to combat log: {text}").format(text=text), cls="quest-action", indent=indent+2)
-                                        kwargs["combat"].textlog(args)
-                                    elif cmd_code == "combatsyslog":
-                                        if not kwargs.get("combat"):
-                                            raise QuestError(self._("'combat syslog' operator can be used in combat events only"))
-                                        text = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of system log text"))
-                                        args = {
-                                            "text": text
-                                        }
-                                        if len(cmd) >= 3:
-                                            for key in cmd[2].keys():
-                                                args[key] = self.call("script.evaluate-expression", cmd[2][key], globs=kwargs, description=lambda: self._("Evaluation of combat system log {key} attribute").format(key=key))
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("writing to combat system log: {text}").format(text=text), cls="quest-action", indent=indent+2)
-                                        kwargs["combat"].syslog(args)
-                                    elif cmd_code == "javascript":
-                                        script = cmd[1]
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("sending javascript %s") % self.call("script.unparse-expression", script), cls="quest-action", indent=indent+2)
-                                        char.javascript(script)
-                                    elif cmd_code == "chat":
-                                        html = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=eval_description)
-                                        args = cmd[2]
-                                        if "public" in args:
-                                            public = self.call("script.evaluate-expression", args["public"], globs=kwargs, description=eval_description)
-                                        else:
-                                            public = False
-                                        if "channel" in args:
-                                            channel = self.call("script.evaluate-expression", args["channel"], globs=kwargs, description=eval_description)
-                                            channel = utf2str(unicode(channel))
-                                        else:
-                                            channel = "wld"
-                                        if "cls" in args:
-                                            cls = self.call("script.evaluate-expression", args["cls"], globs=kwargs, description=eval_description)
-                                        else:
-                                            cls = "quest"
-                                        if public:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("sending public chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
-                                            self.call("chat.message", html=html, cls=cls, hide_time=True, hl=True, channel=channel)
-                                        else:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("sending chat message to channel {channel}: {msg}").format(channel=htmlescape(str2unicode(channel)), msg=htmlescape(str2unicode(html))), cls="quest-action", indent=indent+2)
-                                            self.call("chat.message", html=html, cls=cls, private=True, recipients=[char], hide_time=True, hl=True, channel=channel)
-                                    elif cmd_code == "teleport":
-                                        locid = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
-                                        if type(locid) != str and type(locid) != unicode:
-                                            raise QuestError(self._("Location id must be a string. Found %s" % type(locid).__name__))
-                                        loc = self.call("location.info", locid)
-                                        if loc:
-                                            if debug:
-                                                self.call("debug-channel.character", char, lambda: self._("teleporting %s") % htmlescape(loc.name_t), cls="quest-action", indent=indent+2)
-                                            char.teleport(loc, char.instance, [self.now(), self.now()])
-                                            try:
-                                                tasklet.quest_teleported.add(char.uuid)
-                                            except AttributeError:
-                                                tasklet.quest_teleported = set()
-                                                tasklet.quest_teleported.add(char.uuid)
-                                        else:
-                                            raise QuestError(self._("Missing location %s") % locid)
-                                    elif cmd_code == "equipbreak":
-                                        globs = kwargs.copy()
-                                        changed = False
-                                        if char.equip:
-                                            for slot_id, item in char.equip.equipped_slots():
-                                                globs["slot"] = slot_id
-                                                globs["item"] = item
-                                                fractions = intz(self.call("script.evaluate-expression", cmd[1], globs=globs, description=lambda: self._("Evaluation of damage to the equip")))
-                                                if debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("breaking item {item} in slot {slot}. damage={damage}").format(item=htmlescape(item.name), slot=slot_id, damage=fractions), cls="quest-action", indent=indent+2)
-                                                if fractions > 0:
-                                                    spent, destroyed = char.equip.break_item(slot_id, fractions, "break", quest=quest)
-                                                    if not spent and debug:
-                                                        self.call("debug-channel.character", char, lambda: self._("could not break item {item} in slot {slot}").format(item=htmlescape(item.name), slot=slot_id), cls="quest-error", indent=indent+3)
-                                                    if spent and destroyed:
-                                                        if debug:
-                                                            self.call("debug-channel.character", char, lambda: self._("item {item} in slot {slot} has broken completely").format(item=htmlescape(item.name), slot=slot_id), cls="quest-action", indent=indent+3)
-                                                        if kwargs.get("combat") and kwargs.get("member"):
-                                                            kwargs["combat"].textlog({
-                                                                "text": self._('<span class="combat-log-item">{item}</span> of character <span class="combat-log-member">{name}</span> has been broken').format(item=htmlescape(item.name), name=htmlescape(kwargs["member"].name)),
-                                                                "cls": "combat-log-equipbreak",
-                                                            })
-                                                    changed = True
-                                        if changed:
-                                            char.equip.validate()
-                                            char.inventory.store()
-                                    elif cmd_code == "combat":
-                                        options = cmd[1]
-                                        # prepare combat request
-                                        creq = CombatRequest(self.app())
-                                        # combat system
-                                        rules = options.get("rules")
-                                        if rules is None:
-                                            raise QuestError(self._("Combat rules not specified. Specify default combat rules in the combat comfiguration"))
-                                        creq.set_rules(rules)
-                                        # combat title
-                                        title = options.get("title")
-                                        if title:
-                                            title = self.call("script.evaluate-text", title, globs=kwargs, description=lambda: self._("Combat title"))
-                                            creq.set_title(title)
-                                        # combat flags
-                                        flags = options.get("flags")
-                                        if flags:
-                                            creq.set_flags(flags)
-                                        # members
-                                        n_char = 0
-                                        n_npc = 0
-                                        for member in options["members"]:
-                                            rmember = evaluate_member(member)
-                                            try:
-                                                if rmember["object"][0] == "character":
-                                                    n_char += 1
-                                                else:
-                                                    n_npc += 1
-                                            except KeyError:
-                                                n_npc += 1
-                                            creq.add_member(rmember)
-                                        # npc combat check
-                                        if not n_char:
-                                            raise QuestError(self._("Combats without character members are forbidden"))
-                                        if n_npc > n_char * 10:
-                                            raise QuestError(self._("Number of NPC characters in a combat can't be more then 10x number of player members"))
-                                        # launch combat
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("launching combat"), cls="quest-action", indent=indent+2)
-                                        try:
-                                            creq.run()
-                                        except CombatMemberBusyError as e:
-                                            self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
-                                            char.error(e.val)
-                                            raise AbortHandler()
-                                        except CombatRunError as e:
-                                            raise QuestError(e.val)
-                                        else:
-                                            for member in creq.members:
-                                                if member["object"][0] == "character":
-                                                    char_uuid = member["object"][1]
-                                                    try:
-                                                        tasklet.quest_combat_started[char_uuid] = creq.uuid
-                                                    except AttributeError:
-                                                        tasklet.quest_combat_started = {char_uuid: creq.uuid}
-                                    elif cmd_code == "combatjoin":
-                                        combat_id = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the combat id"))
-                                        rmember = evaluate_member(cmd[2])
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("joining {name} to combat {combat} for team {team}").format(name=rmember.get("name"), combat=combat_id, team=rmember.get("team")), cls="quest-action", indent=indent+2)
-                                        try:
-                                            combat = CombatInterface(self.app(), combat_id)
-                                            result = combat.join(rmember)
-                                        except CombatUnavailable:
-                                            self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
-                                            char.error(self._("Combat is unavailable"))
-                                            raise AbortHandler()
-                                        else:
-                                            if result.get("error"):
-                                                self.call("debug-channel.character", char, result["error"], cls="quest-error", indent=indent+2)
-                                                char.error(self._("Unable to join the combat"))
-                                                raise AbortHandler()
-                                            else:
-                                                if rmember["object"][0] == "character":
-                                                    char_uuid = rmember["object"][1]
-                                                    try:
-                                                        tasklet.quest_combat_started[char_uuid] = combat_id
-                                                    except AttributeError:
-                                                        tasklet.quest_combat_started = {char_uuid: combat_id}
-                                    elif cmd_code == "sound":
-                                        url = self.call("script.evaluate-text", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the sound URL to play"))
-                                        options = cmd[2]
-                                        attrs = {}
-                                        if "mode" in options:
-                                            mode = self.call("script.evaluate-expression", options["mode"], globs=kwargs, description=lambda: self._("Evaluation of 'mode' argument"))
-                                            if mode != "wait" and mode != "overlap" and mode != "stop":
-                                                raise QuestError(self._("Invalid value for 'mode' attribute: '%s'") % mode)
-                                            attrs["mode"] = mode
-                                        if "volume" in options:
-                                            volume = self.call("script.evaluate-expression", options["volume"], globs=kwargs, description=lambda: self._("Evaluation of 'volume' argument"))
-                                            if type(volume) != int:
-                                                raise QuestError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__)
-                                            attrs["volume"] = volume
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("playing sound {url}").format(url=url.split("/")[-1]), cls="quest-action", indent=indent+2)
-                                        self.call("sound.play", char, url, **attrs)
-                                    elif cmd_code == "music":
-                                        playlist = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=lambda: self._("Evaluation of the music playlist identifier"))
-                                        options = cmd[2]
-                                        attrs = {}
-                                        if "fade" in options:
-                                            fade = self.call("script.evaluate-expression", options["fade"], globs=kwargs, description=lambda: self._("Evaluation of 'fade' argument"))
-                                            if type(fade) != int:
-                                                raise QuestError(self._("Invalid value type for 'fade' attribute: '%s'") % type(fade).__name__)
-                                            attrs["fade"] = fade
-                                        if "volume" in options:
-                                            volume = self.call("script.evaluate-expression", options["volume"], globs=kwargs, description=lambda: self._("Evaluation of 'volume' argument"))
-                                            if type(volume) != int:
-                                                raise QuestError(self._("Invalid value type for 'volume' attribute: '%s'") % type(volume).__name__)
-                                            attrs["volume"] = volume
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("playing music {playlist}").format(playlist=playlist), cls="quest-action", indent=indent+2)
-                                        self.call("sound.music", char, playlist, **attrs)
-                                    elif cmd_code == "musicstop":
-                                        options = cmd[1]
-                                        attrs = {}
-                                        if "fade" in options:
-                                            fade = self.call("script.evaluate-expression", options["fade"], globs=kwargs, description=lambda: self._("Evaluation of 'fade' argument"))
-                                            if type(fade) != int:
-                                                raise QuestError(self._("Invalid value type for 'fade' attribute: '%s'") % type(fade).__name__)
-                                            attrs["fade"] = fade
-                                        if debug:
-                                            self.call("debug-channel.character", char, lambda: self._("stopping music"), cls="quest-action", indent=indent+2)
-                                        self.call("sound.music", char, None, **attrs)
-                                    elif cmd_code == "sendchar":
-                                        for param_code in cmd[1]:
-                                            param, val = char.find_param_and_eval(param_code)
-                                            if param:
-                                                char.send_param_force(param, val)
-                                                if debug:
-                                                    self.call("debug-channel.character", char, lambda: self._("sending parameter %s") % param_code, cls="quest-action", indent=indent+2)
-                                            else:
-                                                raise QuestError(self._("Parameter '%s' not found") % param_code)
-                                    else:
-                                        raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
-                                except QuestError as e:
-                                    e = ScriptError(e.val, env)
-                                    self.call("exception.report", e)
-                                    self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
-                                except ScriptError as e:
-                                    self.call("exception.report", e)
-                                    self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
-                                except AbortHandler:
-                                    raise
-                                except Exception as e:
-                                    self.exception(e)
-                                    self.call("debug-channel.character", char, self._("System exception: %s") % e.__class__.__name__, cls="quest-error", indent=indent+2)
-                                Tasklet.yield_()
-                        try:
-                            execute_actions(act, indent)
-                        except AbortHandler:
-                            pass
-                        for obj in modified_objects:
-                            obj.store()
+                    kwargs["quest"] = CharQuest(char.quests, quest)
+                    execute_handlers(script.get("hdls"), quest, kwargs)
                 except QuestError as e:
                     raise ScriptError(e.val, env)
+                finally:
+                    del kwargs["quest"]
         except ScriptError as e:
             self.call("exception.report", e)
             self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent)

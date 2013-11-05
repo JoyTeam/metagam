@@ -220,6 +220,9 @@ class TokenOnCancel(Parsing.Token):
 class TokenAvailable(Parsing.Token):
     "%token available"
 
+class TokenActivity(Parsing.Token):
+    "%token activity"
+
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
@@ -746,6 +749,10 @@ class QuestAction(Parsing.Nonterm):
         "%reduce sendchar CharParamList"
         self.val = ["sendchar", lst.val]
 
+    def reduceActivity(self, cmd, attrs, curlyleft, activity, curlyright):
+        "%reduce activity ExprAttrs curlyleft QuestHandlers curlyright"
+        self.val = ["activity", activity.val, attrs.val]
+
 class CharParamList(Parsing.Nonterm):
     "%nonterm"
     def reduceParam(self, text):
@@ -1170,6 +1177,7 @@ class QuestScriptParser(ScriptParser):
     syms["actions"] = TokenActions
     syms["oncancel"] = TokenOnCancel
     syms["available"] = TokenAvailable
+    syms["activity"] = TokenActivity
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

@@ -550,7 +550,9 @@ class Locations(ConstructorModule):
             if not character.tech_online:
                 self.call("web.response_json", {"ok": False, "error": self._("Character offline")})
             if character.location_delay and character.location_delay[1] > self.now():
-                self.call("web.response_json", {"ok": False, "error": self._("You are busy"), "hide_title": True})
+                self.call("web.response_json", {"ok": False, "error": self._("You are moving already"), "hide_title": True})
+            if character.busy:
+                self.call("web.response_json", {"ok": False, "error": self._("You are busy and cannot move"), "hide_title": True})
             old_location = character.location
             new_location_id = req.param("location")
             # validating transition
