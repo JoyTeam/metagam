@@ -778,6 +778,11 @@ class ScriptEngine(ConstructorModule):
                 arg2 = self.toNumber(arg2)
                 arg3 = self.toNumber(arg3)
                 return Vec3(arg1, arg2, arg3)
+            elif fname == "str":
+                if len(val) != 3:
+                    raise ScriptRuntimeError(self._("Function {fname} must be called with single argument").format(fname=fname), env)
+                arg = self._evaluate(val[2], env)
+                return utf2str(arg)
             else:
                 raise ScriptRuntimeError(self._("Function {fname} is not supported in expression context").format(fname=fname), env)
         elif cmd == "random":

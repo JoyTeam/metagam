@@ -169,6 +169,9 @@ class TokenFunc(Parsing.Token):
 class TokenOnline(Parsing.Token):
     "%token online"
 
+class TokenActivity(Parsing.Token):
+    "%token activity"
+
 class TokenScalar(Parsing.Token):
     "%token scalar"
     def __init__(self, parser, val):
@@ -368,7 +371,7 @@ class Expr(Parsing.Nonterm):
 
     exprFuncs = set(["min", "max", "uc", "lc", "selrand", "floor",
         "round", "ceil", "abs", "sqrt", "sqr", "pow", "log", "exp",
-        "sin", "cos", "tan", "asin", "acos", "atan", "vec3"])
+        "sin", "cos", "tan", "asin", "acos", "atan", "vec3", "str"])
 
     def reduceFunc(self, func, ParLeft, lst, ParRight):
         "%reduce func parleft List parright"
@@ -387,6 +390,10 @@ class Expr(Parsing.Nonterm):
     def reduceNow(self, n):
         "%reduce now"
         self.val = ["now"]
+
+    def reduceActivity(self, n):
+        "%reduce activity"
+        self.val = ["glob", "activity"]
 
 # This is the start symbol; there can be only one such class in the grammar.
 class Result(Parsing.Nonterm):
@@ -431,10 +438,12 @@ class ScriptParser(Parsing.Glr, Module):
         "&": TokenBitAnd,
         "|": TokenBitOr,
         'now': TokenNow,
+        "activity": TokenActivity,
     }
     funcs = set(["min", "max", "uc", "lc", "selrand", "floor",
         "round", "ceil", "abs", "sqrt", "sqr", "pow", "log",
-        "exp", "sin", "cos", "tan", "asin", "acos", "atan", "vec3"])
+        "exp", "sin", "cos", "tan", "asin", "acos", "atan", "vec3",
+        "str"])
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptParser")

@@ -220,9 +220,6 @@ class TokenOnCancel(Parsing.Token):
 class TokenAvailable(Parsing.Token):
     "%token available"
 
-class TokenActivity(Parsing.Token):
-    "%token activity"
-
 class QuestAttrKey(Parsing.Nonterm):
     "%nonterm [pAttrKey]"
     def reduceAttrKey(self, attrkey):
@@ -751,6 +748,13 @@ class QuestAction(Parsing.Nonterm):
 
     def reduceActivity(self, cmd, attrs, curlyleft, activity, curlyright):
         "%reduce activity ExprAttrs curlyleft QuestHandlers curlyright"
+        for key in attrs.val.keys():
+            if key == "priority":
+                pass
+            elif re_param.match(key):
+                pass
+            else:
+                raise Parsing.SyntaxError(cmd.script_parser._("Custom parameter names must start with p_ and contain only latin letters, digits and underscores. '{param}' is invalid").format(param=key))
         self.val = ["activity", activity.val, attrs.val]
 
 class CharParamList(Parsing.Nonterm):
@@ -1177,7 +1181,6 @@ class QuestScriptParser(ScriptParser):
     syms["actions"] = TokenActions
     syms["oncancel"] = TokenOnCancel
     syms["available"] = TokenAvailable
-    syms["activity"] = TokenActivity
 
     def __init__(self, app, spec, general_spec):
         Module.__init__(self, app, "mg.mmorpg.quest_parser.QuestScriptParser")

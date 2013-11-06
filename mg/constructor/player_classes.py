@@ -312,6 +312,8 @@ class Character(Module, ParametrizedObject):
             if old_priority >= priority:
                 return False
             if not dry_run:
+                if old_busy["tp"] == "activity":
+                    self.invalidate_activity()
                 abort = old_busy("abort_event")
                 if abort:
                     self.call(abort, self)
@@ -321,6 +323,8 @@ class Character(Module, ParametrizedObject):
             self._db_busy.set("busy", options)
             self._db_busy.store()
             self._busy = options
+            if tp == "activity":
+                self.invalidate_activity()
             self.call("character.busy-changed", self)
         return True
 
@@ -429,6 +433,8 @@ class Character(Module, ParametrizedObject):
         elif attr == "anyperm":
             perms = self.call("auth.permissions", self.uuid)
             return 1 if perms and len(perms) else 0
+        elif attr == "activity":
+            return self.activity
         elif attr == "inv":
             return self.inventory
         elif attr == "equip":
@@ -522,6 +528,20 @@ class Character(Module, ParametrizedObject):
         except AttributeError:
             self._quests = self.call("quests.char", self.uuid)
             return self._quests
+
+    @property
+    def activity(self):
+        try:
+            return self._activity
+        except AttributeError:
+            self._activity = self.call("quests.char-activity", self)
+            return self._activity
+
+    def invalidate_activity(self):
+        try:
+            del self._activity
+        except AttributeError:
+            pass
 
     def message(self, content, title=None):
         self.call("stream.character", self, "game", "msg_info", title=title, content=content)

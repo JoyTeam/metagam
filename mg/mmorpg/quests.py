@@ -42,6 +42,48 @@ class QuestError(Exception):
 class AbortHandler(Exception):
     pass
 
+class CharActivity(ConstructorModule):
+    def __init__(self, app, char):
+        Module.__init__(self, app, "mg.mmorpg.quests.CharActivity")
+        self.char = char
+
+    @property
+    def lock_key(self):
+        return "CharActivity.%s" % self.char.uuid
+
+    def store(self):
+        self.char.db_busy.store()
+
+    def script_attr(self, attr, handle_exceptions=True):
+        busy = self.char.busy
+        if not busy or busy["tp"] != "activity":
+            raise QuestError(self._("Cannot access '{attr}' attribute because of missing activity").format(attr=attr))
+        if re_param.match(attr):
+            if attr in busy["vars"]:
+                return busy["vars"].get(attr)
+            elif handle_exceptions:
+                return None
+            else:
+                raise AttributeError(attr)
+        else:
+            raise AttributeError(attr)
+
+    def script_set_attr(self, attr, val, env):
+        busy = self.char.busy
+        if not busy or busy["tp"] != "activity":
+            raise QuestError(self._("Cannot set '{attr}' attribute because of missing activity").format(attr=attr))
+        m = re_param.match(attr)
+        if m:
+            busy["vars"][attr] = val
+            self.char.db_busy.touch()
+        else:
+            raise AttributeError(attr)
+
+    def __str__(self):
+        return u"%s.[activity]" % htmlescape(self.char)
+
+    __repr__ = __str__
+
 class CharQuests(ConstructorModule):
     def __init__(self, app, uuid):
         Module.__init__(self, app, "mg.mmorpg.quests.CharQuests")
@@ -1096,7 +1138,7 @@ class QuestsAdmin(ConstructorModule):
             elif val[0] == "activity":
                 attrs = ""
                 for k in sorted(val[2].keys()):
-                    attrs += " %s=%s" % (k, self.call("script.unparse-expression", v))
+                    attrs += " %s=%s" % (k, self.call("script.unparse-expression", val[2][k]))
                 result = "  " * indent + "activity%s {\n" % attrs
                 result += self.quest_admin_unparse_script(val[1], indent + 1).rstrip() + "\n"
                 result += "  " * indent + "}\n"
@@ -1358,6 +1400,13 @@ class Quests(ConstructorModule):
         self.rhook("locations.map-zone-event-render", self.location_map_zone_event_render)
         self.rhook("interface.render-button", self.interface_render_button)
         self.rhook("modules.list", self.modules_list)
+        self.rhook("quests.char-activity", self.char_activity)
+
+    def char_activity(self, char):
+        if char.busy and char.busy["tp"] == "activity":
+            return CharActivity(self.app(), char)
+        else:
+            return None
 
     def child_modules(self):
         modules = ["mg.mmorpg.quests.QuestsAdmin"]
@@ -2245,7 +2294,7 @@ class Quests(ConstructorModule):
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("activity not started (character is busy)"), cls="quest-error", indent=indent+3)
                                         raise AbortHandler()
-                                        self.qevent("event-:activity-start", char=char)
+                                    self.qevent("event-:activity-start", char=char)
                                 else:
                                     raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)
                             except QuestError as e:
@@ -2270,9 +2319,8 @@ class Quests(ConstructorModule):
             # check activity
             if char.busy and char.busy.get("tp") == "activity":
                 try:
-                    # TODO: pass "activity" object to the handler
                     debug = char.busy.get("debug", True)
-                    kwargs["activity"] = None
+                    kwargs["activity"] = char.activity
                     execute_handlers(char.busy.get("hdls"), ":activity", kwargs)
                 except QuestError as e:
                     raise ScriptError(e.val, env)

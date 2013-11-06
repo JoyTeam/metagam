@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-05 12:56+0300\n"
+"PO-Revision-Date: 2013-11-06 13:34+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -452,7 +452,7 @@ msgstr "Активен"
 
 #, python-format
 msgid "Activity priority must be a number. Got: %s"
-msgstr "Приоритет мирного действия должен быть числом. Получено: %s"
+msgstr "Приоритет деятельности должен быть числом. Получено: %s"
 
 msgid "Actual reference documents about the game are placed here."
 msgstr "Здесь публикуется актуальная справочная информация об игре"
@@ -1192,6 +1192,12 @@ msgstr "Отмена"
 
 msgid "Cancelling combat {combat} ({reason}). Freeing members"
 msgstr "Отменяем бой {combat} ({reason}). Освобождаем участников"
+
+msgid "Cannot access '{attr}' attribute because of missing activity"
+msgstr "Невозможно получить доступ к атрибуту \"{attr}\" из-за того, что деятельность в данный момент не ведётся"
+
+msgid "Cannot set '{attr}' attribute because of missing activity"
+msgstr "Невозможно установить атрибут \"{attr}\" из-за того, что деятельность в данный момент не ведётся"
 
 msgid "Cargo amount expression"
 msgstr "Выражение для величины груза"
@@ -2319,6 +2325,9 @@ msgstr "Пользовательские модули"
 
 msgid "Custom modules injection"
 msgstr "Подгрузка пользовательских модулей"
+
+msgid "Custom parameter names must start with p_ and contain only latin letters, digits and underscores. '{param}' is invalid"
+msgstr "Пользовательские названия параметров должны начинаться с \"p_\" и содержать только латинские буквы, цифры и символы подчёркивания. \"{param}\" - некорректное название."
 
 msgid "DAU"
 msgstr "DAU"
@@ -10241,13 +10250,13 @@ msgid "actionname///Strike"
 msgstr "Удар"
 
 msgid "activity finished"
-msgstr "мирное действие завершено"
+msgstr "деятельность завершена"
 
 msgid "activity not finished"
-msgstr "мирное действие не завершено"
+msgstr "деятельность не завершена"
 
 msgid "activity not started (character is busy)"
-msgstr "мирная деятельность не начата (персонаж занят)"
+msgstr "деятельность не начата (персонаж занят)"
 
 msgid "adding modifier '{modifier}'={modval} for {sec} sec"
 msgstr "установка модификатора \"{modifier}\"={modval} на {sec} сек"
@@ -11375,7 +11384,7 @@ msgid "specfunc///{action_name} of {func_title}"
 msgstr "{action_name} \"{func_title}\""
 
 msgid "starting activity"
-msgstr "запускаем мирное действие"
+msgstr "запускаем деятельность"
 
 msgid "status///unknown"
 msgstr "неизвестен"
