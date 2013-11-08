@@ -604,6 +604,12 @@ class QuestAction(Parsing.Nonterm):
         validate_attrs(cmd, "timer", attrs, ["id", "timeout"])
         self.val = ["timer", tid, timeout]
 
+    def reduceActivityTimer(self, cmd1, cmd, attrs):
+        "%reduce activity timer ExprAttrs"
+        timeout = get_attr(cmd, "timer", attrs, "timeout", require=True)
+        validate_attrs(cmd, "timer", attrs, ["timeout"])
+        self.val = ["activity-timer", timeout]
+
     def reduceModifier(self, cmd, attrs):
         "%reduce modifier ExprAttrs"
         mid = get_str_attr(cmd, "modifier", attrs, "id", require=True)

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-06 13:34+0300\n"
+"PO-Revision-Date: 2013-11-08 12:26+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -453,6 +453,9 @@ msgstr "Активен"
 #, python-format
 msgid "Activity priority must be a number. Got: %s"
 msgstr "Приоритет деятельности должен быть числом. Получено: %s"
+
+msgid "Activity timers can be started within activities only"
+msgstr "Таймеры деятельности могут запускаться только изнутри activity"
 
 msgid "Actual reference documents about the game are placed here."
 msgstr "Здесь публикуется актуальная справочная информация об игре"
@@ -4271,12 +4274,11 @@ msgid "Incorrect password"
 msgstr "Неверный пароль"
 
 #, python-format
-msgid "Incorrect pattern '%s'. Maximal length of pattern is %d characters."
-msgstr "Неправильный шаблон '%s'. Максимальная длина шаблона - %d символов."
-
-#, python-format
 msgid "Incorrect pattern '%s'. Patterns must contain only latin and russian letters, numbers, spaces, symbols '_', '-', '+' and '*'"
 msgstr "Неправильный шаблон '%s'. Можно использовать только цифры, латинские и русские буквы, цифры, пробелы, а также символы '_', '-', '+' и '*'."
+
+msgid "Incorrect pattern '{pattern}'. Maximal length of pattern is {length} characters."
+msgstr "Неправильный шаблон '{pattern}'. Максимальная длина шаблона - {length} символов."
 
 msgid "Index page"
 msgstr "Титульная страница"
@@ -11340,6 +11342,9 @@ msgstr "включена"
 
 msgid "service///inactive"
 msgstr "неактивна"
+
+msgid "setting activity timer for {sec} sec"
+msgstr "установка таймера деятельности на {sec} сек"
 
 msgid "setting modifier '{modifier}'={modval} infinitely"
 msgstr "установка модификатора \"{modifier}\"={modval} навсегда"

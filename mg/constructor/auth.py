@@ -1469,7 +1469,7 @@ class Auth(ConstructorModule):
     def validate_name_blacklist(self, blacklist):
         for pattern in blacklist:
             if len(pattern) > name_blacklist_pattern_limit:
-                return self._("Incorrect pattern '%s'. Maximal length of pattern is %d characters.") % (pattern, name_blacklist_pattern_limit)
+                return self._("Incorrect pattern '{pattern}'. Maximal length of pattern is {length} characters.").format(pattern=pattern, length=name_blacklist_pattern_limit)
             elif not re_name_blacklist_pattern.match(pattern):
                 return self._("Incorrect pattern '%s'. Patterns must contain only latin and russian letters, numbers, spaces, symbols '_', '-', '+' and '*'") % pattern
         

@@ -974,6 +974,8 @@ class QuestsAdmin(ConstructorModule):
                 return "  " * indent + "lock%s\n" % attrs
             elif val[0] == "timer":
                 return "  " * indent + 'timer id="%s" timeout=%s\n' % (val[1], self.call("script.unparse-expression", val[2]))
+            elif val[0] == "activity-timer":
+                return "  " * indent + 'activity timer timeout=%s\n' % self.call("script.unparse-expression", val[1])
             elif val[0] == "modremove":
                 return "  " * indent + 'modifier remove id="%s"\n' % val[1]
             elif val[0] == "modifier":
@@ -1959,6 +1961,16 @@ class Quests(ConstructorModule):
                                         self.call("debug-channel.character", char, lambda: self._("setting timer '{timer}' for {sec} sec").format(timer=tid, sec=timeout), cls="quest-action", indent=indent+2)
                                     if timeout > 0:
                                         char.modifiers.add("timer-%s-%s" % (quest, tid), 1, self.now(timeout))
+                                elif cmd_code == "activity-timer":
+                                    if quest != ":activity":
+                                        raise QuestError(self._("Activity timers can be started within activities only"))
+                                    timeout = intz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
+                                    if timeout > 100e6:
+                                        timeout = 100e6
+                                    if debug:
+                                        self.call("debug-channel.character", char, lambda: self._("setting activity timer for {sec} sec").format(sec=timeout), cls="quest-action", indent=indent+2)
+                                    if timeout > 0:
+                                        char.modifiers.add("timer-:activity-done", 1, self.now(timeout))
                                 elif cmd_code == "modremove":
                                     mid = cmd[1]
                                     if debug:
