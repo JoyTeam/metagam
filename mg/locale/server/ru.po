@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-08 12:26+0300\n"
+"PO-Revision-Date: 2013-11-08 13:37+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -348,6 +348,9 @@ msgstr "Возможность выбирать стартовую локаци�
 msgid "Ability to use arbitrary scripting expression (for example, show character level: [{char.p_level}])"
 msgstr "Возможность использования произвольных скриптовых выражений (например, показать уровень персонажа: [{char.p_level}])"
 
+msgid "Abort activity"
+msgstr "Прервать деятельность"
+
 msgid "Absolute expiration time (format: {datetime_sample} or {date_sample}, last date inclusive)"
 msgstr "Абсолютный срок годности (формат: {datetime_sample} или {date_sample}, последняя дата рассматривается включительно)"
 
@@ -453,6 +456,9 @@ msgstr "Активен"
 #, python-format
 msgid "Activity priority must be a number. Got: %s"
 msgstr "Приоритет деятельности должен быть числом. Получено: %s"
+
+msgid "Activity state"
+msgstr "Состояние деятельности"
 
 msgid "Activity timers can be started within activities only"
 msgstr "Таймеры деятельности могут запускаться только изнутри activity"
@@ -2297,6 +2303,9 @@ msgstr "Название валюты: склонения числительны
 
 msgid "Currency of the balance price"
 msgstr "Валюта балансировочной цены"
+
+msgid "Current activity"
+msgstr "Текущая деятельность"
 
 msgid "Current icon"
 msgstr "Текущая иконка"
@@ -6854,6 +6863,9 @@ msgstr "Квестовые действия над предметами"
 
 msgid "Quest dialog"
 msgstr "Квестовый диалог"
+
+msgid "Quest engine: aborting activities"
+msgstr "Квестовый движок: прерывание деятельности"
 
 msgid "Quest engine: actions for items"
 msgstr "Квестовый движок: действия над предметами"

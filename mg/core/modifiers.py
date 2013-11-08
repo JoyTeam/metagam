@@ -194,16 +194,24 @@ class MemberModifiers(Module):
         self._mods.get("mods").append(ent)
         self._mods.touch()
         self.created[ent["uuid"]] = ent
-        if till and till < self.now(600):
-            mcid = "modifiers-cooldown"
-            cnt = intz(self.app().mc.get(mcid)) + 1
-            self.app().mc.set(mcid, cnt, 60)
-            priority = 100 - cnt
+        if kind == "timer-:activity-done":
+            priority = 110
+            minimal_recommended_timeout = 30
         else:
             priority = 100
+            minimal_recommended_timeout = 600
+        if till and till < self.now(minimal_recommended_timeout):
+            mcid = "modifiers-cooldown-%s" % kind
+            cnt = intz(self.app().mc.get(mcid)) + 1
+            self.app().mc.set(mcid, cnt, 60)
+            priority -= cnt
         if till:
             mobj = [till, self.app().inst.cls, self.app().tag, self.target_type, self.uuid, priority]
             self.mobjs.append(mobj)
+        try:
+            del self._lst
+        except AttributeError:
+            pass
         return ent
 
     def destroy(self, *args, **kwargs):
@@ -227,6 +235,10 @@ class MemberModifiers(Module):
                 new_mods.append(ent)
         if modified:
             self._mods.set("mods", new_mods)
+        try:
+            del self._lst
+        except AttributeError:
+            pass
 
     def get(self, kind):
         return self.mods().get(kind)
@@ -252,6 +264,10 @@ class MemberModifiers(Module):
             self.created = dict([(uuid, mod) for uuid, mod in self.created.iteritems() if mod["kind"] != kind])
             self.destroyed = dict([(uuid, mod) for uuid, mod in self.destroyed.iteritems() if mod["kind"] != kind])
             self.prolonged = dict([(uuid, mod) for uuid, mod in self.prolonged.iteritems() if mod["kind"] != kind])
+            try:
+                del self._lst
+            except AttributeError:
+                pass
         else:
             # Add new
             till = self.now(period)

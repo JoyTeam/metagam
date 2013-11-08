@@ -647,7 +647,6 @@ Game.update_dynamic_blocks = function () {
 };
 
 Game.on_myparam_update = function (param) {
-    var self = Game;
     var paramStr = 'char.p_' + param;
     var deps = Game.dynamic_block_deps[paramStr];
     if (deps) {
@@ -661,6 +660,14 @@ Game.on_myparam_update = function (param) {
             Game.update_dynamic_blocks();
         }
     }
+};
+
+Game.activity_start = function (pkt) {
+    var now = Game.now();
+    var ratio = (now - pkt.since_ts) / (pkt.till_ts - pkt.since_ts);
+    var till_end = pkt.till_ts - now;
+    console.log(pkt, now, ratio, till_end);
+    Game.progress_run('location-movement', ratio, 1, till_end);
 };
 
 wait(['timesync'], function () {

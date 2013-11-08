@@ -54,6 +54,20 @@ class CharActivity(ConstructorModule):
     def store(self):
         self.char.db_busy.store()
 
+    @property
+    def state(self):
+        busy = self.char.busy
+        if not busy or busy["tp"] != "activity":
+            return {}
+        return busy["vars"]
+
+    @property
+    def handlers(self):
+        busy = self.char.busy
+        if not busy or busy["tp"] != "activity":
+            return {}
+        return busy["hdls"]
+
     def script_attr(self, attr, handle_exceptions=True):
         busy = self.char.busy
         if not busy or busy["tp"] != "activity":
@@ -313,6 +327,7 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("ext-admin-quests.remove-lock", self.admin_remove_lock, priv="quests.remove-locks")
         self.rhook("admin-gameinterface.design-files", self.design_files)
         self.rhook("quest-admin.update-quest-handlers", self.update_quest_handlers)
+        self.rhook("ext-admin-quests.abort-activity", self.abort_activity, priv="quests.abort-activities")
 
     def design_files(self, files):
         files.append({"filename": "dialog.html", "description": self._("Quest dialog"), "doc": "/doc/quests"})
@@ -394,6 +409,7 @@ class QuestsAdmin(ConstructorModule):
         perms.append({"id": "quests.remove-locks", "name": self._("Quest engine: removing quest locks")})
         if self.conf("module.inventory"):
             perms.append({"id": "quests.inventory", "name": self._("Quest engine: actions for items")})
+        perms.append({"id": "quests.abort-activities", "name": self._("Quest engine: aborting activities")})
 
     def menu_root_index(self, menu):
         menu.append({"id": "quests.index", "text": self._("Quests and triggers"), "order": 25})
@@ -1253,6 +1269,15 @@ class QuestsAdmin(ConstructorModule):
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
+    def abort_activity(self):
+        req = self.req()
+        character = self.character(req.args)
+        if not character.valid:
+            self.call("web.not_found")
+        if character.activity:
+            character.unset_busy()
+        self.call("admin.redirect", "auth/user-dashboard/%s?active_tab=quests" % character.uuid)
+
     def user_tables(self, user, tables):
         req = self.req()
         if req.has_access("quests.view"):
@@ -1305,6 +1330,25 @@ class QuestsAdmin(ConstructorModule):
                             '<hook:admin.link href="quests/editor/%s/info" title="%s" />' % (qid, htmlescape(quest.get("name"))),
                             self.call("l10n.time_local", performed),
                         ])
+                # activities
+                cur_activities = []
+                activity = character.activity
+                if activity:
+                    state = []
+                    for key, val in activity.state.iteritems():
+                        if type(val) is list:
+                            val = htmlescape(self.call("script.unparse-expression", val[1])) + u' <img class="inline-icon" src="/st/icons/dyn-script.gif" alt="{title}" title="{title}" />'.format(title=self._("Parameter changing with time"))
+                        else:
+                            val = htmlescape(val)
+                        state.append(u'activity.%s = <strong>%s</strong>' % (htmlescape(key), val))
+                    state.sort()
+                    state.append('<pre class="admin-code">%s</pre>' % htmlescape(self.call("quest-admin.unparse-script", activity.handlers).strip()))
+                    if req.has_access("quests.abort-activities"):
+                        state.append('<hook:admin.link href="quests/abort-activity/%s" title="%s" />' % (character.uuid, self._("Abort activity")))
+                    cur_activities.append([
+                        "char.activity",
+                        '<br />'.join(state),
+                    ])
                 # dialogs
                 may_dialogs = req.has_access("quests.dialogs")
                 dialogs = []
@@ -1333,6 +1377,14 @@ class QuestsAdmin(ConstructorModule):
                             "title": self._("Currently opened dialogs"),
                             "header": dialogs_header,
                             "rows": dialogs,
+                        },
+                        {
+                            "title": self._("Current activity"),
+                            "header": [
+                                self._("Object"),
+                                self._("Activity state"),
+                            ],
+                            "rows": cur_activities,
                         },
                         {
                             "title": self._("Current quests"),
@@ -1403,12 +1455,30 @@ class Quests(ConstructorModule):
         self.rhook("interface.render-button", self.interface_render_button)
         self.rhook("modules.list", self.modules_list)
         self.rhook("quests.char-activity", self.char_activity)
+        self.rhook("quests.send-activity-modifier", self.send_activity_modifier)
+        self.rhook("session.character-init", self.character_init)
 
     def char_activity(self, char):
         if char.busy and char.busy["tp"] == "activity":
             return CharActivity(self.app(), char)
         else:
             return None
+
+    def character_init(self, session_uuid, char):
+        self.send_activity_modifier(char)
+
+    def send_activity_modifier(self, char):
+        timer = char.modifiers.get("timer-:activity-done")
+        if timer and timer["mods"]:
+            mod = timer["mods"][-1]
+            since_ts = mod.get("since_ts")
+            till_ts = mod.get("till_ts")
+            if since_ts and till_ts:
+                now = self.time()
+                if now < till_ts:
+                    self.call("stream.character", char, "game", "activity_start", since_ts=since_ts, till_ts=till_ts)
+                    return
+        self.call("stream.character", char, "game", "activity_stop")
 
     def child_modules(self):
         modules = ["mg.mmorpg.quests.QuestsAdmin"]
@@ -1970,7 +2040,10 @@ class Quests(ConstructorModule):
                                     if debug:
                                         self.call("debug-channel.character", char, lambda: self._("setting activity timer for {sec} sec").format(sec=timeout), cls="quest-action", indent=indent+2)
                                     if timeout > 0:
-                                        char.modifiers.add("timer-:activity-done", 1, self.now(timeout))
+                                        since_ts = self.time() * 1000.0
+                                        till_ts = since_ts + timeout * 1000.0
+                                        char.modifiers.add("timer-:activity-done", 1, self.now(timeout), since_ts=since_ts, till_ts=till_ts)
+                                        self.call("quests.send-activity-modifier", char)
                                 elif cmd_code == "modremove":
                                     mid = cmd[1]
                                     if debug:
