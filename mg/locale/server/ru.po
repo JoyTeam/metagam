@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-08 13:37+0300\n"
+"PO-Revision-Date: 2013-11-10 19:40+0300\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -6542,12 +6542,6 @@ msgstr "Paystation"
 msgid "Peaceful activities"
 msgstr "Мирная деятельность"
 
-msgid "Peaceful activities configuration"
-msgstr "Настройка мирной деятельности"
-
-msgid "Peaceful activities: configuration"
-msgstr "Мирная деятельность: конфигурация"
-
 msgid "Peaceful activities: crafting"
 msgstr "Мирная деятельность: крафт"
 
@@ -6723,6 +6717,9 @@ msgstr "Профиль"
 
 msgid "Progress bar"
 msgstr "Прогресс-бар"
+
+msgid "Progress bar text"
+msgstr "Текст прогресс-бара"
 
 msgid "Progress bars"
 msgstr "Прогресс-бары"
@@ -9759,6 +9756,9 @@ msgstr "Вы забанены до %s"
 msgid "You are busy"
 msgstr "Вы заняты"
 
+msgid "You are busy and cannot equip yourself at the moment"
+msgstr "Вы заняты и в данный момент не можете экипироваться"
+
 msgid "You are busy and cannot move"
 msgstr "Вы заняты и не можете перемещаться"
 
@@ -11707,6 +11707,12 @@ msgstr "{targetchar.name} не в игре"
 
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
+
+#~ msgid "Peaceful activities configuration"
+#~ msgstr "Настройка мирной деятельности"
+
+#~ msgid "Peaceful activities: configuration"
+#~ msgstr "Мирная деятельность: конфигурация"
 
 #~ msgid "recipe name"
 #~ msgstr "название рецепта"

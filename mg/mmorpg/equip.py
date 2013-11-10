@@ -1237,6 +1237,9 @@ class Equip(ConstructorModule):
         self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
+        if character.busy:
+            character.error(self._("You are busy and cannot equip yourself at the moment"))
+            self.call("web.redirect", "/interface/character")
         inv = character.inventory 
         equip = character.equip
         # parsing request
@@ -1320,6 +1323,9 @@ class Equip(ConstructorModule):
         self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
+        if character.busy:
+            character.error(self._("You are busy and cannot equip yourself at the moment"))
+            self.call("web.redirect", "/interface/character")
         m = re_equip_slot.match(req.args)
         if m:
             slot_id = m.group(1)
@@ -1377,6 +1383,9 @@ class Equip(ConstructorModule):
         self.call("quest.check-dialogs")
         req = self.req()
         character = self.character(req.user())
+        if character.busy:
+            character.error(self._("You are busy and cannot equip yourself at the moment"))
+            self.call("web.redirect", "/interface/character")
         inv = character.inventory 
         equip = character.equip
         # parsing request
