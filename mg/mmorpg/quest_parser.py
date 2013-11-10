@@ -607,8 +607,14 @@ class QuestAction(Parsing.Nonterm):
     def reduceActivityTimer(self, cmd1, cmd, attrs):
         "%reduce activity timer ExprAttrs"
         timeout = get_attr(cmd, "timer", attrs, "timeout", require=True)
-        validate_attrs(cmd, "timer", attrs, ["timeout"])
-        self.val = ["activity-timer", timeout]
+        text = get_str_attr(cmd, "timer", attrs, "text")
+        validate_attrs(cmd, "timer", attrs, ["timeout", "text"])
+        options = {
+            "timeout": timeout
+        }
+        if text is not None:
+            options["text"] = cmd.script_parser.parse_text(text, cmd.script_parser._("Progress bar text"))
+        self.val = ["activity-timer", options]
 
     def reduceModifier(self, cmd, attrs):
         "%reduce modifier ExprAttrs"

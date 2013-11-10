@@ -2808,9 +2808,9 @@
             * @private
             * Regular Expression filter pattern for script tag removal.
             * @cfg {regexp} scriptRE script removal RegeXp
-            * Default: "/(?:<script.*?>)((\n|\r|.)*?)(?:<\/script>)/gi"
+            * Default: "/(?:<script.*?>)((\n|gc|.)*?)(?:<\/script>)/gi"
             */
-            scriptRE : /(?:<script.*?>)((\n|\r|.)*?)(?:<\/script>)/gi,
+            scriptRE : /(?:<script.*?>)((\n|gc|.)*?)(?:<\/script>)/gi,
 
             /**
              * Write(replacing) string content into the IFrames document structure

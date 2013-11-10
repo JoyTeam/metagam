@@ -4,7 +4,7 @@ a:link, a:visited { color: #435770 }
 a:hover, a:active { color: #5d789b }
 
 /* BOX */
-.box-0 { background-color: #bfe3fb; color: #112e4c }
+.box-0 { background-color: #bfe3fb; color: #112e4c; height: 100% }
 .box-1 { background-image: url(box-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
 .box-2 { background-image: url(box-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
 .box-3 { background-image: url(box-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }
@@ -17,7 +17,7 @@ a:hover, a:active { color: #5d789b }
 .box-0 a:link, .box-0 a:visited { color: #435770 }
 .box-0 a:hover, .box-0 a:active { color: #5d789b }
 
-.sbox-0 { background-color: #bfe3fb; color: #112e4c }
+.sbox-0 { background-color: #bfe3fb; color: #112e4c; height: 100% }
 .sbox-1 { background-image: url(sbox-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
 .sbox-2 { background-image: url(sbox-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
 .sbox-3 { background-image: url(sbox-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }

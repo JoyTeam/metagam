@@ -4,7 +4,7 @@ a:link, a:visited { color: #098d45 }
 a:hover, a:active { color: #461e82 }
 
 /* BOX */
-.box-0 { background-color: #d8d8b4; color: #383816 }
+.box-0 { background-color: #d8d8b4; color: #383816; height: 100% }
 .box-1 { background-image: url(box-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
 .box-2 { background-image: url(box-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
 .box-3 { background-image: url(box-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }

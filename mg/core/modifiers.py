@@ -329,6 +329,10 @@ class Modifiers(Module):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("modifiers.stop", self.mod_stop)
         self.rhook("modifiers.obj", self.mod_obj)
+        self.rhook("session.character-init", self.character_init)
+
+    def character_init(self, session_uuid, char):
+        self.call("modifiers.stop", "user", char.uuid)
 
     def child_modules(self):
         return ["mg.core.modifiers.ModifiersAdmin"]

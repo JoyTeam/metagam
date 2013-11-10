@@ -312,9 +312,7 @@ class Character(Module, ParametrizedObject):
             if old_priority >= priority:
                 return False
             if not dry_run:
-                if old_busy["tp"] == "activity":
-                    self.invalidate_activity()
-                abort = old_busy("abort_event")
+                abort = old_busy.get("abort_event")
                 if abort:
                     self.call(abort, self)
         if not dry_run:
@@ -323,8 +321,7 @@ class Character(Module, ParametrizedObject):
             self._db_busy.set("busy", options)
             self._db_busy.store()
             self._busy = options
-            if tp == "activity":
-                self.invalidate_activity()
+            self.invalidate_activity()
             self.call("character.busy-changed", self)
         return True
 
@@ -332,6 +329,7 @@ class Character(Module, ParametrizedObject):
         self._db_busy.set("busy", None)
         self._db_busy.store()
         self._busy = None
+        self._activity = None
         self.call("character.busy-changed", self)
 
     @property

@@ -5,7 +5,7 @@ a:hover, a:active { color: #ffffff }
 #main { background-color: #07375d }
 
 /* BOX */
-.box-0 { background-color: #07375d; color: #ffffff }
+.box-0 { background-color: #07375d; color: #ffffff; height: 100% }
 .box-1 { background-image: url(box-left.png); background-position: 0% 50%; background-repeat: repeat-y; height: 100% }
 .box-2 { background-image: url(box-right.png); background-position: 100% 50%; background-repeat: repeat-y; height: 100% }
 .box-3 { background-image: url(box-top.png); background-position: 50% 0%; background-repeat: repeat-x; height: 100% }

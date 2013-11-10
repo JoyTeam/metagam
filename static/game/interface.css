@@ -55,6 +55,7 @@ area { border: none }
 #payment-container .box-0, #payment-container .sbox-0 { height: 100% }
 .chat-smile { margin: 2px; cursor: pointer }
 #smiles-window .x-window-tl, #smiles-window .x-window-tc, #smiles-window .x-window-tr, #smiles-window .x-window-ml, #smiles-window .x-window-mc, #smiles-window .x-window-mr, #smiles-window .x-window-bl, #smiles-window .x-window-bc, #smiles-window .x-window-br, #smiles-window .x-window-mc { background: transparent; border-color: transparent }
+#activity-progress-win .x-window-tl, #activity-progress-win .x-window-tc, #activity-progress-win .x-window-tr, #activity-progress-win .x-window-ml, #activity-progress-win .x-window-mc, #activity-progress-win .x-window-mr, #activity-progress-win .x-window-bl, #activity-progress-win .x-window-bc, #activity-progress-win .x-window-br, #activity-progress-win .x-window-mc { background: transparent; border-color: transparent }
 #payment-window .x-window-tl, #payment-window .x-window-tc, #payment-window .x-window-tr, #payment-window .x-window-ml, #payment-window .x-window-mc, #payment-window .x-window-mr, #payment-window .x-window-bl, #payment-window .x-window-bc, #payment-window .x-window-br, #payment-window .x-window-mc { background: transparent; border-color: transparent }
 .chat-div-your-location { background-color: #404040; color: #ffffff; padding: 2px 10px 2px 10px; margin-top: 4px; margin-bottom: 4px; text-align: center }
 
@@ -270,3 +271,8 @@ area { border: none }
 .chat-msg-combat-started { color: #c08080 }
 .chat-msg-combat-joined { color: #c08080 }
 .chat-msg-combat-stopped { color: #c08080 }
+
+/* ACTIVITIES */
+#activity-progress-background { background-color: #404040 }
+#activity-progress-indicator { background-color: #606060 }
+#activity-progress-text { color: #ffffff; padding: 0 10px 0 10px; text-align: center }

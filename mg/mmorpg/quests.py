@@ -991,7 +991,12 @@ class QuestsAdmin(ConstructorModule):
             elif val[0] == "timer":
                 return "  " * indent + 'timer id="%s" timeout=%s\n' % (val[1], self.call("script.unparse-expression", val[2]))
             elif val[0] == "activity-timer":
-                return "  " * indent + 'activity timer timeout=%s\n' % self.call("script.unparse-expression", val[1])
+                options = val[1]
+                res = "  " * indent + 'activity timer timeout=%s' % self.call("script.unparse-expression", options.get("timeout"))
+                if "text" in options:
+                    res += " text=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", options["text"]))
+                res += "\n"
+                return res
             elif val[0] == "modremove":
                 return "  " * indent + 'modifier remove id="%s"\n' % val[1]
             elif val[0] == "modifier":
@@ -1276,6 +1281,7 @@ class QuestsAdmin(ConstructorModule):
             self.call("web.not_found")
         if character.activity:
             character.unset_busy()
+        self.call("quests.send-activity-modifier", character)
         self.call("admin.redirect", "auth/user-dashboard/%s?active_tab=quests" % character.uuid)
 
     def user_tables(self, user, tables):
@@ -1457,6 +1463,16 @@ class Quests(ConstructorModule):
         self.rhook("quests.char-activity", self.char_activity)
         self.rhook("quests.send-activity-modifier", self.send_activity_modifier)
         self.rhook("session.character-init", self.character_init)
+        self.rhook("ext-quests.activity-end", self.ext_activity_end, priv="logged")
+        self.rhook("quests.activity-aborted", self.activity_aborted)
+
+    def activity_aborted(self, char):
+        self.qevent("event-:activity-abort", char=char)
+
+    def ext_activity_end(self):
+        req = self.req()
+        self.call("modifiers.stop", "user", req.user())
+        self.call("web.response_json", {"ok": 1})
 
     def char_activity(self, char):
         if char.busy and char.busy["tp"] == "activity":
@@ -1468,16 +1484,18 @@ class Quests(ConstructorModule):
         self.send_activity_modifier(char)
 
     def send_activity_modifier(self, char):
-        timer = char.modifiers.get("timer-:activity-done")
-        if timer and timer["mods"]:
-            mod = timer["mods"][-1]
-            since_ts = mod.get("since_ts")
-            till_ts = mod.get("till_ts")
-            if since_ts and till_ts:
-                now = self.time()
-                if now < till_ts:
-                    self.call("stream.character", char, "game", "activity_start", since_ts=since_ts, till_ts=till_ts)
-                    return
+        if char.activity:
+            timer = char.modifiers.get("timer-:activity-done")
+            if timer and timer["mods"]:
+                mod = timer["mods"][-1]
+                since_ts = mod.get("since_ts")
+                till_ts = mod.get("till_ts")
+                text = mod.get("text")
+                if since_ts and till_ts:
+                    now = self.time()
+                    if now < till_ts:
+                        self.call("stream.character", char, "game", "activity_start", since_ts=since_ts, till_ts=till_ts, text=text)
+                        return
         self.call("stream.character", char, "game", "activity_stop")
 
     def child_modules(self):
@@ -1996,6 +2014,7 @@ class Quests(ConstructorModule):
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("activity finished"), cls="quest-action", indent=indent+2)
                                             char.unset_busy()
+                                            self.call("quests.send-activity-modifier", char)
                                         else:
                                             if debug:
                                                 self.call("debug-channel.character", char, lambda: self._("activity not finished"), cls="quest-error", indent=indent+2)
@@ -2034,15 +2053,20 @@ class Quests(ConstructorModule):
                                 elif cmd_code == "activity-timer":
                                     if quest != ":activity":
                                         raise QuestError(self._("Activity timers can be started within activities only"))
-                                    timeout = intz(self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description))
+                                    options = cmd[1]
+                                    timeout = intz(self.call("script.evaluate-expression", options["timeout"], globs=kwargs, description=eval_description))
                                     if timeout > 100e6:
                                         timeout = 100e6
                                     if debug:
                                         self.call("debug-channel.character", char, lambda: self._("setting activity timer for {sec} sec").format(sec=timeout), cls="quest-action", indent=indent+2)
                                     if timeout > 0:
-                                        since_ts = self.time() * 1000.0
-                                        till_ts = since_ts + timeout * 1000.0
-                                        char.modifiers.add("timer-:activity-done", 1, self.now(timeout), since_ts=since_ts, till_ts=till_ts)
+                                        since_ts = self.time()
+                                        till_ts = since_ts + timeout
+                                        if "text" in options:
+                                            text = self.call("script.evaluate-text", options["text"], globs=kwargs, description=lambda: self._("Progress bar text"))
+                                        else:
+                                            text = None
+                                        char.modifiers.add("timer-:activity-done", 1, self.now(timeout), since_ts=since_ts, till_ts=till_ts, text=text)
                                         self.call("quests.send-activity-modifier", char)
                                 elif cmd_code == "modremove":
                                     mid = cmd[1]
@@ -2365,6 +2389,7 @@ class Quests(ConstructorModule):
                                         "hdls": cmd[1],
                                         "vars": variables,
                                         "debug": debug,
+                                        "abort_event": "quests.activity-aborted",
                                     }
                                     if "priority" in variables:
                                         options["priority"] = variables["priority"]
@@ -2379,6 +2404,7 @@ class Quests(ConstructorModule):
                                         if debug:
                                             self.call("debug-channel.character", char, lambda: self._("activity not started (character is busy)"), cls="quest-error", indent=indent+3)
                                         raise AbortHandler()
+                                    char.modifiers.destroy("timer-:activity-done")
                                     self.qevent("event-:activity-start", char=char)
                                 else:
                                     raise QuestSystemError(self._("Unknown quest action: %s") % cmd_code)

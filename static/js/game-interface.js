@@ -259,6 +259,9 @@ Game.element = function(eid, cel, el) {
     };
     cel = this.fixupContentEl(cel);
     cel.id = eid + '-container';
+    if (!cel.style)
+        cel.style = {};
+    cel.style.height = '100%';
     Ext.get(eid).dom.style.height = '100%';
     /* creating content element */
     var content = Ext.get(eid + '-content');
@@ -662,12 +665,137 @@ Game.on_myparam_update = function (param) {
     }
 };
 
+Game.activity_update = function (text) {
+    if (Game.activity_timer) {
+        return;
+    }
+    var now = TimeSync.getTime();
+    if (now) {
+        var ratio = Game.activity_expr.evaluateAndForget(now);
+        if (Game.activity_shown) {
+            Game.activity_progress(ratio);
+        } else {
+            Game.activity_shown = true;
+            Game.activity_show(ratio, text);
+        }
+        if (!Game.activity_expr.dynamic) {
+            Game.activity_end_timer = setTimeout(function () {
+                Ext.Ajax.request({
+                    url: '/quest/activity-end',
+                    method: 'POST'
+                });
+            }, 1000);
+            return;
+        }
+    }
+    Game.activity_timer = setTimeout(function () {
+        Game.activity_timer = undefined;
+        Game.activity_update(text);
+    }, 10);
+};
+
 Game.activity_start = function (pkt) {
-    var now = Game.now();
-    var ratio = (now - pkt.since_ts) / (pkt.till_ts - pkt.since_ts);
-    var till_end = pkt.till_ts - now;
-    console.log(pkt, now, ratio, till_end);
-    Game.progress_run('location-movement', ratio, 1, till_end);
+    Game.activity_expr = new DynamicValue(['/', ['-', ['glob', 't'], pkt.since_ts], pkt.till_ts - pkt.since_ts]);
+    Game.activity_expr.setTill(pkt.till_ts);
+    Game.activity_update(pkt.text);
+};
+
+Game.activity_stop = function () {
+    if (Game.activity_shown) {
+        delete Game.activity_shown;
+        Game.activity_hide();
+    }
+    if (Game.activity_timer) {
+        clearTimeout(Game.activity_timer);
+        delete Game.activity_timer;
+    }
+    if (Game.activity_end_timer) {
+        clearTimeout(Game.activity_end_timer);
+        delete Game.activity_end_timer;
+    }
+};
+
+Game.activity_show = function (ratio, text) {
+    if (!Game.activity_initialized) {
+        Game.activity_initialized = true;
+        var viewport = Ext.getCmp('game-viewport');
+        Game.activity_cmp = new Ext.Window({
+            id: 'activity-progress-win',
+            width: viewport.getWidth() - 100,
+            height: 100,
+            header: false,
+            closable: false,
+            resizable: false,
+            draggable: false,
+            items: Game.element('activity-progress', {}, {})
+        });
+        var content = Ext.getCmp('activity-progress-content');
+        content.add({
+            id: 'activity-progress-background',
+            xtype: 'box'
+        });
+        content.add({
+            id: 'activity-progress-indicator',
+            xtype: 'box',
+            style: {
+                position: 'relative',
+                left: '0px'
+            }
+        });
+        content.add({
+            id: 'activity-progress-text-container',
+            xtype: 'box',
+            autoEl: 'table',
+            style: {
+                position: 'relative',
+                left: '0px'
+            },
+            html: '<tr><td id="activity-progress-text">' + text + '</td></tr>'
+        });
+        var backgroundEl, indicatorEl, textEl;
+        var resize = function () {
+            /* Resize window */
+            Game.activity_cmp.setSize(viewport.getWidth() - 100, 100);
+            Game.activity_cmp.setPosition(50, Math.floor((viewport.getHeight() - 100) / 2));
+            Ext.getCmp('activity-progress-container').doLayout();
+            /* Get internal area dimensions */
+            var activity_width = content.getWidth();
+            var activity_height = content.getHeight();
+            Game.activity_width = activity_width;
+            /* Find elements */
+            if (!backgroundEl) {
+                backgroundEl = document.getElementById('activity-progress-background');
+                indicatorEl = document.getElementById('activity-progress-indicator');
+                textEl = document.getElementById('activity-progress-text-container');
+            }
+            /* Resize elements */
+            backgroundEl.style.width = activity_width + 'px';
+            backgroundEl.style.height = activity_height + 'px';
+            indicatorEl.style.height = activity_height + 'px';
+            indicatorEl.style.top = (-activity_height) + 'px';
+            textEl.style.width = activity_width + 'px';
+            textEl.style.height = activity_height + 'px';
+            textEl.style.top = (-activity_height * 2) + 'px';
+        };
+        Game.activity_cmp.show();
+        resize();
+        viewport.on('resize', resize);
+    } else {
+        Game.activity_cmp.show();
+    }
+    Game.activity_progress(ratio);
+};
+
+Game.activity_progress = function (ratio) {
+    var width = Math.round(Game.activity_width * ratio);
+    if (width != Game.activity_last_width) {
+        document.getElementById('activity-progress-indicator').style.width = width + 'px';
+        Game.activity_last_width = width;
+    }
+};
+
+Game.activity_hide = function () {
+    Game.activity_cmp.hide();
 };
 
 wait(['timesync'], function () {
