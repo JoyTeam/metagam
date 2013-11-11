@@ -1471,7 +1471,7 @@ class Auth(ConstructorModule):
             if len(pattern) > name_blacklist_pattern_limit:
                 return self._("Incorrect pattern '{pattern}'. Maximal length of pattern is {length} characters.").format(pattern=pattern, length=name_blacklist_pattern_limit)
             elif not re_name_blacklist_pattern.match(pattern):
-                return self._("Incorrect pattern '%s'. Patterns must contain only latin and russian letters, numbers, spaces, symbols '_', '-', '+' and '*'") % pattern
+                return self._("Incorrect pattern '%s'. Patterns must contain only latin and russian letters, numbers, spaces, symbols '_', '-', '?' and '*'") % pattern
         
     def ext_blacklist_check(self):
         req = self.req()
@@ -1503,5 +1503,4 @@ class Auth(ConstructorModule):
     
     def advice_name_blacklist(self, args, advice):
         advice.append({"title": self._("Restricted character names"), "content": self._("This list contain names(one per line) which could not be used when creating character.")})
-        advice.append({"title": self._("Wildcards"), "content": self._('There are special symbols that can be used in this list: <strong>+</strong>(any character) and <strong>*</strong>(any characters). I.e. "adm+n" will block "admin", "adm1n", "adman", "admen", etc. and "admin*" will block "admin", "admin12345", "adminabcdef", etc.')})
         advice.append({"title": self._("Blacklist checker"), "content": self._('You can check any name for matching blacklist patterns on <hook:admin.link href="characters/blacklist-check" title="special page" />.')})

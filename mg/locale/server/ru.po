@@ -11,8 +11,8 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-10 19:40+0300\n"
-"Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
+"PO-Revision-Date: 2013-11-11 16:22+0300\n"
+"Last-Translator: Mikhail Khvastunov <spark@joyteam.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -4283,8 +4283,8 @@ msgid "Incorrect password"
 msgstr "Неверный пароль"
 
 #, python-format
-msgid "Incorrect pattern '%s'. Patterns must contain only latin and russian letters, numbers, spaces, symbols '_', '-', '+' and '*'"
-msgstr "Неправильный шаблон '%s'. Можно использовать только цифры, латинские и русские буквы, цифры, пробелы, а также символы '_', '-', '+' и '*'."
+msgid "Incorrect pattern '%s'. Patterns must contain only latin and russian letters, numbers, spaces, symbols '_', '-', '?' and '*'"
+msgstr "Неправильный шаблон '%s'. Можно использовать только латинские и русские буквы, цифры, пробелы, а также символы '_', '-', '?' и '*'."
 
 msgid "Incorrect pattern '{pattern}'. Maximal length of pattern is {length} characters."
 msgstr "Неправильный шаблон '{pattern}'. Максимальная длина шаблона - {length} символов."
@@ -8605,9 +8605,6 @@ msgstr "В данный момент товар на продажу отсутс
 msgid "There are some very important points in the contract. At least read information in the red panel."
 msgstr "В договоре есть некоторые очень важные пункты. Как минимум, прочтите информацию в красной панели."
 
-msgid "There are special symbols that can be used in this list: <strong>+</strong>(any character) and <strong>*</strong>(any characters). I.e. \"adm+n\" will block \"admin\", \"adm1n\", \"adman\", \"admen\", etc. and \"admin*\" will block \"admin\", \"admin12345\", \"adminabcdef\", etc."
-msgstr "Существуют специальные символы, которые можно использовать при заполнении списка: <strong>+</strong>(любой символ) и <strong>*</strong>(любые символы). Например, строка \"adm+n\" заблокирует имена \"admin\", \"adm1n\", \"adman\", \"admen\", и т.д., а \"admin*\" заблокирует  \"admin\", \"admin12345\", \"adminabcdef\", и т.д."
-
 msgid "There is a page group with the same code already"
 msgstr "Группа страниц с таким кодом уже существует"
 
@@ -9630,9 +9627,6 @@ msgstr "Ширина"
 
 msgid "Width in pixels"
 msgstr "Ширина в пикселях"
-
-msgid "Wildcards"
-msgstr "Подстановочные символы"
 
 msgid "Wishlist"
 msgstr "Вишлист"
@@ -11708,142 +11702,111 @@ msgstr "{targetchar.name} не в игре"
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
 
+#~ msgid ""
+#~ "There are special symbols that can be used in this list: <strong>+</"
+#~ "strong>(any character) and <strong>*</strong>(any characters). I.e. \"adm"
+#~ "+n\" will block \"admin\", \"adm1n\", \"adman\", \"admen\", etc. and "
+#~ "\"admin*\" will block \"admin\", \"admin12345\", \"adminabcdef\", etc."
+#~ msgstr ""
+#~ "Существуют специальные символы, которые можно использовать при заполнении "
+#~ "списка: <strong>+</strong>(любой символ) и <strong>*</strong>(любые "
+#~ "символы). Например, строка \"adm+n\" заблокирует имена \"admin\", \"adm1n"
+#~ "\", \"adman\", \"admen\", и т.д., а \"admin*\" заблокирует  \"admin\", "
+#~ "\"admin12345\", \"adminabcdef\", и т.д."
+#~ msgid "Wildcards"
+#~ msgstr "Подстановочные символы"
 #~ msgid "Peaceful activities configuration"
 #~ msgstr "Настройка мирной деятельности"
-
 #~ msgid "Peaceful activities: configuration"
 #~ msgstr "Мирная деятельность: конфигурация"
-
 #~ msgid "recipe name"
 #~ msgstr "название рецепта"
-
 #~ msgid "Button can't contain multiple 'event' entries"
 #~ msgstr "У кнопки не может быть несколько записей \"event\""
-
 #~ msgid "Button can't contain multiple 'text' entries"
 #~ msgstr "У кнопки не может быть несколько записей \"text\""
-
 #~ msgid "Dialog can't contain more than 1 default button"
 #~ msgstr "В диалоге не может быть более одной кнопки по умолчанию"
-
 #~ msgid "Dialog can't contain multiple 'text' entries"
 #~ msgstr "У диалога не может быть несколько записей \"text\""
-
 #~ msgid "Dialog can't contain multiple 'title' entries"
 #~ msgstr "У диалога не может быть несколько записей \"title\""
-
 #~ msgid "Maximal length - 17 characters"
 #~ msgstr "Максимальная длина - 17 символов"
-
 #~ msgid "taking money, amount={amount}, currency={currency} ({result})"
 #~ msgstr "забираем деньги, количество={amount}, валюта={currency} ({result})"
-
 #~ msgid "Comment"
 #~ msgstr "Комментировать"
-
 #~ msgid "Item %s action text"
 #~ msgstr "Текст действия на предмете %s"
-
 #~ msgid "item///wear"
 #~ msgstr "надеть"
-
 #~ msgid "Project uuid"
 #~ msgstr "UUID проекта"
-
 #~ msgid "Last request sent"
 #~ msgstr "Последний запрос отправлен"
-
 #~ msgid "Requested first"
 #~ msgstr "Запрошено впервые"
-
 #~ msgid "Requested last"
 #~ msgstr "Запрошено последний раз"
-
 #~ msgid "Parse script expression"
 #~ msgstr "Парсинг скриптового выражения"
-
 #~ msgid "Evaluation of location object visibility"
 #~ msgstr "Вычисление видимости объекта на локации"
-
 #~ msgid "Image type"
 #~ msgstr "Тип изображения"
-
 #~ msgid "Division by zero: '{val}' == 0"
 #~ msgstr "Деление на 0: ({val}) == 0"
-
 #~ msgid "Music file URL"
 #~ msgstr "URL файла с музыкой"
-
 #~ msgid "Accept"
 #~ msgstr "Принять"
-
 #~ msgid "reqauction///Monthly income"
 #~ msgstr "Месячный доход"
-
 #~ msgid "Combat title must be a string"
 #~ msgstr "Название боя должно быть строкой"
-
 #~ msgid ""
 #~ "selecting action {act} for source {source}: targets={targets}, attrs="
 #~ "{attrs}"
 #~ msgstr ""
 #~ "выбираем действие {act} для участника {source}: цели={targets}, атрибуты="
 #~ "{attrs}"
-
 #~ msgid "Global variable '{glob}' not found"
 #~ msgstr "Глобальная переменная \"{glob}\" не найдена"
-
 #~ msgid "Action {action} has stopped: source={source}"
 #~ msgstr "Действие {action} завершилось: source={source}"
-
 #~ msgid "Allow player to resize enemy's avatar block"
 #~ msgstr "Позволить игроку растягивать блок аватара врага"
-
 #~ msgid "Allow player to resize player's avatar block"
 #~ msgstr "Позволить игроку растягивать блок своего аватара"
-
 #~ msgid "source///has striked"
 #~ msgstr "[source.sex:ударил,ударила]"
-
 #~ msgid "AI type '%s' is not defined'"
 #~ msgstr "Тип ИИ \"%s\" не определён"
-
 #~ msgid "Write combat debug messages to the chat"
 #~ msgstr "Выводить отладочные сообщения боёв в чат"
-
 #~ msgid "Type of combat system"
 #~ msgstr "Тип боевой системы"
-
 #~ msgid "Attack-block system"
 #~ msgstr "Система атака-блок"
-
 #~ msgid "Debug log"
 #~ msgstr "Отладочный лог"
-
 #~ msgid "%s can't join combat. [gender?She:He] is busy"
 #~ msgstr "%s не может присоединиться к бою. [gender?Она занята:Он занят]"
-
 #~ msgid "Character's legend"
 #~ msgstr "Легенда персонажа"
-
 #~ msgid "Character's motto"
 #~ msgstr "Девиз персонажа"
-
 #~ msgid "Enter your character's legend"
 #~ msgstr "Введите легенду вашего персонажа"
-
 #~ msgid "Enter your character's motto"
 #~ msgstr "Введите девиз вашего персонажа"
-
 #~ msgid "Legend"
 #~ msgstr "Легенда"
-
 #~ msgid "Motto"
 #~ msgstr "Девиз"
-
 #~ msgid "Limit"
 #~ msgstr "Предел"
-
 #~ msgid ""
 #~ "New e-mail moderation request received. Go to the admin panel please and "
 #~ "perform required moderation actions:\n"
@@ -11852,46 +11815,36 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "Получен новый запрос на модерацию e-mail. Пожалуйста, зайдите в панель "
 #~ "администрирования и произведите необходимые действия по модерации:\n"
 #~ "%s://www.%s/admin#email/moderation"
-
 #~ msgid "Expression unexpectedly ended"
 #~ msgstr "Выражение внезапно закончилось"
-
 #~ msgid "Unknown script engine function: {fname}"
 #~ msgstr "Неизвестная функция скриптового движка: {fname}"
-
 #~ msgid "Currency name in English"
 #~ msgstr "Название валюты на английском языке"
-
 #~ msgid ""
 #~ "Currency name in English: singular and plural forms delimited by \"/\". "
 #~ "For example: \"Dollar/Dollars\""
 #~ msgstr ""
 #~ "Название валюты на английском языке. Формы единственного и множественного "
 #~ "числа, разделённые \"/\". Например: \"Dollar/Dollars\""
-
 #~ msgid "Currency name: plural form. For example: \"Dollars\""
 #~ msgstr "Название валюты: множественное число. Например: \"Доллары\""
-
 #~ msgid ""
 #~ "Currency name: singular and plural forms delimited by \"/\". For example: "
 #~ "\"Dollar/Dollars\""
 #~ msgstr ""
 #~ "Название валюты: формы в числе 1, 2 и 5, разделённые \"/\". Например: "
 #~ "\"Доллар/Доллара/Долларов\""
-
 #~ msgid "Full game title"
 #~ msgstr "Полное название игры"
-
 #~ msgid "Game code"
 #~ msgstr "Код игры"
-
 #~ msgid ""
 #~ "MMO Constructor - http://www.mmoconstructor.ru - constructor of browser-"
 #~ "based online games"
 #~ msgstr ""
 #~ "MMO Constructor - http://www.mmoconstructor.ru - конструктор браузерных "
 #~ "онлайн-игр"
-
 #~ msgid ""
 #~ "New e-mail moderation request received. Go to the admin panel please and "
 #~ "perform required moderation actions:\n"
@@ -11900,7 +11853,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "Получен новый запрос на модерацию e-mail. Пожалуйста, зайдите в панель "
 #~ "администрирования и произведите необходимые действия по модерации:\n"
 #~ "http://www.%s/admin#email/moderation"
-
 #~ msgid ""
 #~ "New project has been registered: {0}\n"
 #~ "Please perform required moderation actions: http://www.{1}/"
@@ -11909,13 +11861,10 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "Зарегистрирован новый проект: {0}\n"
 #~ "Пожалуйста, произведите необходимые действия по модерации: http://www.{1}/"
 #~ "admin#constructor/project-dashboard/{2}"
-
 #~ msgid "Short game title"
 #~ msgstr "Короткое название игры"
-
 #~ msgid "Short game title in English"
 #~ msgstr "Короткое название игры на английском языке"
-
 #~ msgid ""
 #~ "Someone possibly you requested e-mail change on the {host}. If you really "
 #~ "want to do this enter the following confirmation code on the site:\n"
@@ -11934,7 +11883,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "или просто перейдите по ссылке:\n"
 #~ "\n"
 #~ "http://{host}/auth/email/confirm?code={code}"
-
 #~ msgid ""
 #~ "Someone possibly you requested registration on the {host}. If you really "
 #~ "want to do this enter the following activation code on the site:\n"
@@ -11953,10 +11901,8 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "или просто перейдите по ссылке:\n"
 #~ "\n"
 #~ "http://{host}/auth/activate/{user}?code={code}"
-
 #~ msgid "Unsubscribe - http://{domain}/email/unsubscribe/{code}"
 #~ msgstr "Отписаться - http://{domain}/email/unsubscribe/{code}"
-
 #~ msgid ""
 #~ "You have received a new message.\n"
 #~ "\n"
@@ -11965,7 +11911,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "Вам пришло новое сообщение.\n"
 #~ "\n"
 #~ "http://www.%s/telegrams/list"
-
 #~ msgid ""
 #~ "reqauction///New request: {title}\n"
 #~ "Please perform required moderation actions: http://www.{main_host}/"
@@ -11975,14 +11920,12 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "\n"
 #~ "Пожалуйста, произведите необходимые действия по модерации: http://www."
 #~ "{main_host}/reqauction/moderate/{request}"
-
 #~ msgid ""
 #~ "reqauction///Request '{title}' you voted for is implemented.\n"
 #~ "Details: http://{host}/reqauction/view/{request}"
 #~ msgstr ""
 #~ "Заявка \"{title}\", за которую вы голосовали, реализована.\n"
 #~ "Подробности: http://{host}/reqauction/view/{request}"
-
 #~ msgid ""
 #~ "{author_name} has replied in the topic: {topic_subject}\n"
 #~ "\n"
@@ -11991,7 +11934,6 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "{author_name} ответил[gender?а:] в тему: {topic_subject}\n"
 #~ "\n"
 #~ "http://www.{domain}/forum/topic/{topic_uuid}?page={post_page}#{post_uuid}"
-
 #~ msgid ""
 #~ "{author_name} has started new topic: {topic_subject}\n"
 #~ "\n"
@@ -12000,280 +11942,192 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "{author_name} создал[gender?а:] новую тему: {topic_subject}\n"
 #~ "\n"
 #~ "http://www.{domain}/forum/topic/{topic_uuid}"
-
 #~ msgid "Game '[%game.title_short%]' Combat Log"
 #~ msgstr "Лог боя в игре \"[%game.title_short%]\""
-
 #~ msgid "After execution"
 #~ msgstr "После исполнения"
-
 #~ msgid "Before execution"
 #~ msgstr "Перед исполнением"
-
 #~ msgid "Execution itself (applying action effect to targets)"
 #~ msgstr "Собственно исполнение (применение эффекта действия на цели)"
-
 #~ msgid "Invalid location identifier"
 #~ msgstr "Неверный идентификатор локации"
-
 #~ msgid "Items above avatar"
 #~ msgstr "Элементы над аватаром"
-
 #~ msgid "Items below avatar"
 #~ msgstr "Элементы под аватаром"
-
 #~ msgid "Statement '{statement}'"
 #~ msgstr "Оператор \"{statement}\""
-
 #~ msgid "Error generating %s-new.png"
 #~ msgstr "Ошибка при генерации %s-new.png"
-
 #~ msgid "Error generating %s-off.png"
 #~ msgstr "Ошибка при генерации %s-off.png"
-
 #~ msgid "Error generating %s-on.png"
 #~ msgstr "Ошибка при генерации %s-on.png"
-
 #~ msgid "Profile of '%s'"
 #~ msgstr "%s: профиль"
-
 #~ msgid "actions"
 #~ msgstr "действия"
-
 #~ msgid "profile"
 #~ msgstr "профиль"
-
 #~ msgid "Class"
 #~ msgstr "Класс"
-
 #~ msgid "Interface"
 #~ msgstr "Интерфейс"
-
 #~ msgid "OK"
 #~ msgstr "OK"
-
 #~ msgid "Reloading"
 #~ msgstr "Перезагружается"
-
 #~ msgid "Version"
 #~ msgstr "Версия"
-
 #~ msgid "Web"
 #~ msgstr "Web"
-
 #~ msgid "<strong>Administrator</strong> (uuid)"
 #~ msgstr "<strong>Администратор</strong> (uuid)"
-
 #~ msgid "<strong>Global locale</strong> (en, ru)"
 #~ msgstr "<strong>Глобальная локаль</strong> (en, ru)"
-
 #~ msgid "<strong>HTTP proxy to login.wmtransfer.com</strong> (host:port)"
 #~ msgstr "<strong>HTTP-прокси до login.wmtransfer.com</strong> (хост:порт)"
-
 #~ msgid "<strong>HTTP proxy to passport.webmoney.ru</strong> (host:port)"
 #~ msgstr "<strong>HTTP-прокси до passport.webmoney.ru</strong> (хост:порт)"
-
 #~ msgid "<strong>HTTP proxy to w3s.wmtransfer.com</strong> (host:port)"
 #~ msgstr "<strong>HTTP-прокси до w3s.wmtransfer.com</strong> (хост:порт)"
-
 #~ msgid "<strong>Main application host name</strong> (without www)"
 #~ msgstr "<strong>Домен основного сайта</strong> (без www)"
-
 #~ msgid "<strong>Memcached servers</strong> (host:port, host:port, ...)"
 #~ msgstr "<strong>Серверы Memcached</strong> (host:port, host:port, ...)"
-
 #~ msgid "<strong>MySQL password</strong>"
 #~ msgstr "<strong>Пароль MySQL</strong>"
-
 #~ msgid "<strong>MySQL read server</strong>"
 #~ msgstr "<strong>Сервер MySQL (чтение)</strong>"
-
 #~ msgid "<strong>MySQL user</strong>"
 #~ msgstr "<strong>Пользователь MySQL</strong>"
-
 #~ msgid "<strong>SMTP server</strong>"
 #~ msgstr "<strong>Сервер SMTP</strong>"
-
 #~ msgid "<strong>Storage servers</strong> (host, host, ...)"
 #~ msgstr "<strong>Серверы Storage</strong> (host:port, host:port, ...)"
-
 #~ msgid "App"
 #~ msgstr "Прилож"
-
 #~ msgid "Application %s is not accessible"
 #~ msgstr "Приложение %s недоступно"
-
 #~ msgid "Call daemon method"
 #~ msgstr "Вызов метода демона"
-
 #~ msgid "Change cluster settings"
 #~ msgstr "Изменить настройки кластера"
-
 #~ msgid "Cluster settings"
 #~ msgstr "Настройки кластера"
-
 #~ msgid "Daemon doesn't exist"
 #~ msgstr "Демон не существует"
-
 #~ msgid "Daemons control"
 #~ msgstr "Управление демонами"
-
 #~ msgid "Daemons monitor"
 #~ msgstr "Монитор демонов"
-
 #~ msgid "Error during query: %s"
 #~ msgstr "Ошибка при выполнении запроса: %s"
-
 #~ msgid "Method name"
 #~ msgstr "Имя метода"
-
 #~ msgid "Monitoring"
 #~ msgstr "Мониторинг"
-
 #~ msgid "Query successful. Server response: %s"
 #~ msgstr "Запрос успешный. Ответ сервера: %s"
-
 #~ msgid "Realplexor configuration"
 #~ msgstr "Конфигурация Realplexor"
-
 #~ msgid "Realplexor host name"
 #~ msgstr "Имя хоста Realplexor"
-
 #~ msgid "Realplexor settings"
 #~ msgstr "Настройки Realplexor"
-
 #~ msgid "Specify method name"
 #~ msgstr "Укажите имя метода"
-
 #~ msgid "Updated"
 #~ msgstr "Обновлено"
-
 #~ msgid "Welcome to the cluster control center"
 #~ msgstr "Добро пожаловать в центр управления кластером"
-
 #~ msgid "Workers"
 #~ msgstr "Рабочие серверы"
-
 #~ msgid "<strong>Cassandra servers</strong> (host:port, host:post, ...)"
 #~ msgstr "<strong>Серверы Cassandra</strong> (host: port, host: port, ...)"
-
 #~ msgid "List of servers online"
 #~ msgstr "Список серверов онлайн"
-
 #~ msgid "Invalid sex specified"
 #~ msgstr "Указан неверный пол"
-
 #~ msgid "Send options"
 #~ msgstr "Опции отправки"
-
 #~ msgid "Image map saved successfully"
 #~ msgstr "Карта изображения успешно сохранена"
-
 #~ msgid "Add template"
 #~ msgstr "Добавить шаблон"
-
 #~ msgid "External error message (inside the external interface)"
 #~ msgstr "Внешнее сообщение об ошибке (помещается в external.html)"
-
 #~ msgid "External form (inside the external interface)"
 #~ msgstr "Внешняя форма (помещается в external.html)"
-
 #~ msgid "External interface"
 #~ msgstr "Внешний интерфейс"
-
 #~ msgid "Ban IP"
 #~ msgstr "Бан IP"
-
 #~ msgid "Silence time"
 #~ msgstr "Время молчанки"
-
 #~ msgid "DNA"
 #~ msgstr "ДНК"
-
 #~ msgid "Page margins (0 - margin is disabled):"
 #~ msgstr "Поля страницы (0 - поле отключено)"
-
 #~ msgid "Menu title"
 #~ msgstr "Заголовок в меню"
-
 #~ msgid "Item '{item_name}' unequipped. {error}"
 #~ msgstr "{item_name} снимается. {error}"
-
 #~ msgid "You can't equip this item"
 #~ msgstr "Вы не можете надеть этот предмет"
-
 #~ msgid "New layout stored"
 #~ msgstr "Новая разметка сохранена"
-
 #~ msgid "dimpresent///ok"
 #~ msgstr "ok"
-
 #~ msgid "Currency exchange"
 #~ msgstr "Обмен валюты"
-
 #~ msgid "Constraint exceeded"
 #~ msgstr "Превышено ограничение"
-
 #~ msgid "Shop %s"
 #~ msgstr "Магазин %s"
 
 #, fuzzy
 #~ msgid "Shop %s store"
 #~ msgstr "ассортимент магазина"
-
 #~ msgid "{currency} history"
 #~ msgstr "История {currency}"
-
 #~ msgid "Your inventory"
 #~ msgstr "Ваш инвентарь"
-
 #~ msgid "Price for '%s' was changed"
 #~ msgstr "Цена на \"%s\" изменилась"
-
 #~ msgid "Function %s implementation"
 #~ msgstr "Реализация функции %s"
-
 #~ msgid ""
 #~ "Closed commodity circulation (shop has its own store and it sells goods "
 #~ "bought from users only)"
 #~ msgstr ""
 #~ "Замкнутый товарный цикл (у магазина есть собственный склад, и он продаёт "
 #~ "товары, только купленные от пользователей)"
-
 #~ msgid "Switch to the image map editor"
 #~ msgstr "Переключиться в режим редактора карты изображения"
-
 #~ msgid "Switch to the location editor"
 #~ msgstr "Переключиться в режим редактора локации"
-
 #~ msgid "View location parameters"
 #~ msgstr "Открыть параметры локации"
-
 #~ msgid "View location special functions"
 #~ msgstr "Открыть спецфункции локации"
-
 #~ msgid "User permissions editor"
 #~ msgstr "Редактор привилегий пользователей"
-
 #~ msgid "Validated %d objects"
 #~ msgstr "Проверено %d объектов"
-
 #~ msgid "Image format must be GIF"
 #~ msgstr "Формат изображения должен быть GIF"
-
 #~ msgid "Entire site"
 #~ msgstr "Весь сайт"
 
 #, fuzzy
 #~ msgid "Invalid channel name"
 #~ msgstr "Неверное имя домена"
-
 #~ msgid "Amount is too big"
 #~ msgstr "Сумма слишком велика"
-
 #~ msgid "Quantity is too big"
 #~ msgstr "Количество слишком велико"
-
 #~ msgid "No action specified"
 #~ msgstr "Действие не выбрано"
 
@@ -12284,47 +12138,34 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #, fuzzy
 #~ msgid "Player ID"
 #~ msgstr "Игрок"
-
 #~ msgid "Max"
 #~ msgstr "Макс"
-
 #~ msgid "Min"
 #~ msgstr "Мин"
-
 #~ msgid "taking all items with exact DNA '%s'"
 #~ msgstr "забираем все предметы с точным ДНК \"%s\""
-
 #~ msgid "taking all items with type '%s' and any DNA"
 #~ msgstr "изымаем все предметы с типом \"%s\" и любым ДНК"
-
 #~ msgid "taking %s items with exact DNA '%s'"
 #~ msgstr "забираем %s предметов с точным ДНК \"%s\""
-
 #~ msgid "taking %s items with type '%s' and any DNA"
 #~ msgstr "ыв"
-
 #~ msgid ""
 #~ "Quest is enabled for everybody (if this checkbox is disabled the quest is "
 #~ "available for administrators only)"
 #~ msgstr ""
 #~ "Квест включен для всех (если эта галочка снята, то квест доступен только "
 #~ "администраторам)"
-
 #~ msgid "Error in quest '{quest}': {error}"
 #~ msgstr "Ошибка в квесте \"{quest}\": \"{error}\""
-
 #~ msgid "Error: %s"
 #~ msgstr "Ошибка: %s"
-
 #~ msgid "setting %s.%s = %s"
 #~ msgstr "устанавливаем %s.%s = %s"
-
 #~ msgid "Parse error near '{input}'"
 #~ msgstr "Ошибка парсинга рядом с \"{input}\""
-
 #~ msgid "Unknown token near '{input}'"
 #~ msgstr "Неизвестный элемент рядом с \"{input}\""
-
 #~ msgid ""
 #~ "Event identifier must start with latin letter and end with latin letter "
 #~ "or digit. Inner symbols may be latin letters, digits or '-'"
@@ -12332,92 +12173,67 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "Идентификатор события должен начинаться латинской буквы и заканчиваться "
 #~ "латинской буквой или цифрой. Внутренние символы могут быть латинскими "
 #~ "буквами, цифрами или \"-\""
-
 #~ msgid "Invalid script parse tree. Unknown object: %s"
 #~ msgstr "Неверное синтаксическое дерево скрипта. Неизвестный объект: %s"
-
 #~ msgid "Quests system"
 #~ msgstr "Система квестов"
-
 #~ msgid "Unknown DNA value type"
 #~ msgstr "Неизвестный тип значения при формировании ДНК"
-
 #~ msgid "Item"
 #~ msgstr "Предмет"
-
 #~ msgid "Item is discardable (script expression)"
 #~ msgstr "Предмет выбрасываемый (скриптовое выражение)"
-
 #~ msgid "Category group"
 #~ msgstr "Группа разделов"
-
 #~ msgid "Giving '%s'"
 #~ msgstr "Выдача \"%s\""
-
 #~ msgid "Throw"
 #~ msgstr "Выбросить"
-
 #~ msgid "throw"
 #~ msgstr "выбросить"
-
 #~ msgid "Items history"
 #~ msgstr "История предметов"
-
 #~ msgid "Inventory: taking items"
 #~ msgstr "Инвентарь: изъятие предметов"
-
 #~ msgid "Inventory: viewing owners"
 #~ msgstr "Инвентарь: просмотр владельцев"
-
 #~ msgid "owners"
 #~ msgstr "владельцы"
-
 #~ msgid "Item types: editor"
 #~ msgstr "Типы предметов: редактирование"
-
 #~ msgid "Chat colours players are allowed to use (newline separated)"
 #~ msgstr ""
 #~ "Какие цвета игроки могут использовать в чате (каждый с новой строки)"
-
 #~ msgid "Arguments of '{func}' must be numeric ('{val}' is '{type}')"
 #~ msgstr ""
 #~ "Аргументы функции \"{func}\" должны быть числовыми (\"{val}\" имеет тип "
 #~ "\"{type}\")"
-
 #~ msgid "Left operand of '{operator}' must be numeric ('{val}' is '{type}')"
 #~ msgstr ""
 #~ "Левый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
 #~ "имеет тип \"{type}\")"
-
 #~ msgid "Right operand of '{operator}' must be numeric ('{val}' is '{type}')"
 #~ msgstr ""
 #~ "Правый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
 #~ "имеет тип \"{type}\")"
-
 #~ msgid "Right operand of '{operator}' must be numeric ('{val}' is {type}'"
 #~ msgstr ""
 #~ "Правый операнд оператора \"{operator}\" должен быть числовым (\"{val}\" "
 #~ "имеет тип \"{type}\")"
-
 #~ msgid "Your passport number"
 #~ msgstr "Ваши паспортные данные"
-
 #~ msgid "free"
 #~ msgstr "бесплатно"
-
 #~ msgid ""
 #~ "Every character must select an image after registration (prohibit "
 #~ "gameplay with default avatar)"
 #~ msgstr ""
 #~ "Каждый персонаж после регистрации должен выбрать образ (запретить игру с "
 #~ "образом по умолчанию)"
-
 #~ msgid "first time free"
 #~ msgstr "первый раз бесплатно"
-
 #~ msgid "Select at least one sex"
 #~ msgstr "Выберите, как минимум, один пол"
-
 #~ msgid "Error storing object: %s"
 #~ msgstr "Ошибка при сохранении объекта: %s"
 
@@ -12426,45 +12242,32 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ msgstr ""
 #~ "Чтобы использовать статическое хранилище, к аккаунту владельца игры "
 #~ "должен быть присоединён WMID"
-
 #~ msgid "reqauction///Request: %s"
 #~ msgstr "Заявка: %s"
-
 #~ msgid "Demo advice"
 #~ msgstr "Демонстрационный совет"
-
 #~ msgid "Look to the right to read some recommendations"
 #~ msgstr "Смотрите направо, чтобы прочитать полезные рекомендации"
-
 #~ msgid "Security error"
 #~ msgstr "Ошибка безопасности"
-
 #~ msgid "Socio interface design package must contain an HTML file"
 #~ msgstr "Пакет с оформлением социалки должен содержать HTML-файл"
-
 #~ msgid ""
 #~ "Socio interface design package must not contain more than one HTML file"
 #~ msgstr "Пакет с оформлением социалки не может содержать более 1 HTML-файла"
-
 #~ msgid "global.html must exist in the socio interface design package"
 #~ msgstr ""
 #~ "В пакете оформления интерфейса социалки должен быть файл global.html"
-
 #~ msgid "module///disabled"
 #~ msgstr "отключен"
-
 #~ msgid "module///enabled"
 #~ msgstr "включен"
-
 #~ msgid "Authorize"
 #~ msgstr "Авторизовать"
-
 #~ msgid "Your verified WMID: %s"
 #~ msgstr "Ваш проверенный WMID: %s"
-
 #~ msgid "My votes"
 #~ msgstr "Мои голоса"
-
 #~ msgid ""
 #~ "<p>Dear users, we intend to make the best platform for massively-"
 #~ "multiplayer games development. Since the project is related to gaming "
@@ -12492,129 +12295,91 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "\"><strong>Важная информация по сертификации WebMoney</strong></a>.</"
 #~ "p><p>На привязанный аккаунт WebMoney вы также будете получать и деньги, "
 #~ "заработанные в Конструкторе.</p>"
-
 #~ msgid "Related player"
 #~ msgstr "Связанный игрок"
-
 #~ msgid "Related character %s"
 #~ msgstr "Связанный персонаж %s"
-
 #~ msgid "User limits"
 #~ msgstr "Ограничения пользователя"
-
 #~ msgid "{NAME_CHAT} {GENDER:went,went} online"
 #~ msgstr "{NAME_CHAT} {GENDER:вошёл,вошла} в игру"
-
 #~ msgid "{NAME_CHAT} {GENDER:went,went} offline"
 #~ msgstr "{NAME_CHAT} {GENDER:вышел,вышла} из игры"
-
 #~ msgid "{NAME_CHAT} has {GENDER:come,come} from {LOCATION}"
 #~ msgstr "{NAME_CHAT} {GENDER:ушёл,ушла} {LOCATION_T}"
-
 #~ msgid "You moved to the {LOCATION}"
 #~ msgstr "Вы перешли {LOCATION_T}"
-
 #~ msgid "{NAME_CHAT} has {GENDER:gone,gone} to {LOCATION}"
 #~ msgstr "{NAME_CHAT} {GENDER:ушёл,ушла} {LOCATION_F}"
-
 #~ msgid "Coloured avatars on the forum"
 #~ msgstr "Цветные аватары на форуме"
-
 #~ msgid "Panel: %s"
 #~ msgstr "Панель: %s"
-
 #~ msgid "Subscribe"
 #~ msgstr "Подписаться"
-
 #~ msgid "{2:d}{3} {1}, {0}"
 #~ msgstr "{2:02d} {1} {0}"
-
 #~ msgid "at the {2:d}{4} {1}, {0} {3}"
 #~ msgstr "{2:d} {1} {0} {3}"
-
 #~ msgid "Users"
 #~ msgstr "Пользователи"
-
 #~ msgid "Players authentication"
 #~ msgstr "Аутентификация игроков"
-
 #~ msgid "Design"
 #~ msgstr "Оформление"
-
 #~ msgid "Site indexing enabled"
 #~ msgstr "Индексация сайта включена"
-
 #~ msgid "My dashboard"
 #~ msgstr "Моя информация"
-
 #~ msgid "No visual image for location '%s'"
 #~ msgstr "Для локации '%s' отсутствует визуальное изображение"
-
 #~ msgid "{NAME_CHAT} {GENDER:entered,entered} {LOCATION}"
 #~ msgstr "{NAME_CHAT} {GENDER:пришёл,пришла} {LOCATION_T}"
-
 #~ msgid "Image map"
 #~ msgstr "Карта изображения"
-
 #~ msgid "edit image map"
 #~ msgstr "редактировать карту изображения"
-
 #~ msgid "set chat silence"
 #~ msgstr "выдать молчанку в чате"
-
 #~ msgid "set forum silence"
 #~ msgstr "выдать молчанку на форуме"
-
 #~ msgid "show options"
 #~ msgstr "показать возможности"
-
 #~ msgid "Error storing object %s: %s"
 #~ msgstr "Ошибка при сохранении объекта %s: %s"
-
 #~ msgid ""
 #~ "<p>We don't offer free domain names &mdash; you have to register it "
 #~ "manually.</p>"
 #~ msgstr ""
 #~ "<p>Мы не предоставляем бесплатные доменные имена &mdash; вам нужно "
 #~ "зарегистрировать имя самостоятельно.</p>"
-
 #~ msgid "Step 1. Alternative 1. Register domain yourself"
 #~ msgstr "Шаг 1. Вариант 1. Зарегистрируйте домен самостоятельно"
-
 #~ msgid "Register a new domain (or take any previously registered)"
 #~ msgstr ""
 #~ "Зарегистрируйте новый домен (или возьмите любой ранее зарегистрированный)"
-
 #~ msgid ""
 #~ "Specify the following DNS servers for your domain: <strong>{0}</strong> "
 #~ "and <strong>{1}</strong>"
 #~ msgstr ""
 #~ "Укажите следующие DNS-серверы для вашего домена: <strong>{0}</strong> и "
 #~ "<strong>{1}</strong>"
-
 #~ msgid "You may use any level domains"
 #~ msgstr "Вы можете использовать домены любого уровня"
-
 #~ msgid "Step 1. Alternative 2. Let us register a domain for you"
 #~ msgstr "Шаг 1. Вариант 2. Позвольте нам зарегистрировать домен для вас"
-
 #~ msgid "Step 2. Check your configured domain and link it with your game"
 #~ msgstr ""
 #~ "Шаг 2. Проверка вашего сконфигурированного домена и связь его с вашей "
 #~ "игрой"
-
 #~ msgid "channel///Main"
 #~ msgstr "Главный"
-
 #~ msgid "{NAME} has {GENDER:wrote,wrote} a message"
 #~ msgstr "{NAME} {GENDER:написал,написала} сообщение"
-
 #~ msgid "%s online"
 #~ msgstr "%s онлайн"
-
 #~ msgid "%s offline"
 #~ msgstr "%s оффлайн"
-
 #~ msgid ""
 #~ "Congratulations! Your game was registered successfully. Now you can enter "
 #~ "administration panel and configure your game. Don't worry if you can't "
@@ -12625,41 +12390,30 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "зайдите в административную панель. Если вы не можете попасть в игру прямо "
 #~ "сейчас, не беспокойтесь. Система DNS довольно медленная, и ей может "
 #~ "потребоваться несколько часов или даже дней, чтобы ваш домен заработал."
-
 #~ msgid "Index page design is not configured"
 #~ msgstr "Оформление титульной страницы не сконфигурировано"
-
 #~ msgid "Game interface design is not configured"
 #~ msgstr "Оформление игрового интерфейса не настроено"
-
 #~ msgid ""
 #~ "Activation is required after this character level ('0' if require on "
 #~ "registration)"
 #~ msgstr ""
 #~ "Требовать активацию после этого уровня персонажа ('0', если требовать "
 #~ "сразу при регистрации)"
-
 #~ msgid "Channel"
 #~ msgstr "Канал"
-
 #~ msgid "Game interface design package must not contain HTML files"
 #~ msgstr "Пакет с оформлением игры не может содержать HTML-файлов"
-
 #~ msgid "Missing player %s record in the database"
 #~ msgstr "В базе данных отсутствует запись об игроке %s"
-
 #~ msgid "Constructor: users"
 #~ msgstr "Конструктор: пользователи"
-
 #~ msgid "Twitter posting"
 #~ msgstr "Twitter: постинг"
-
 #~ msgid "Twitter credentials saved"
 #~ msgstr "Данные Twitter сохранены"
-
 #~ msgid "Registering application"
 #~ msgstr "Регистрация приложения"
-
 #~ msgid ""
 #~ "Go to the <a href=\"http://dev.twitter.com/apps\" target=\"_blank"
 #~ "\">Twitter Applications</a> page and follow instructions there to get "
@@ -12669,43 +12423,30 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "\"_blank\">Twitter Applications</a> и следуйте инструкциям, чтобы "
 #~ "получить ключи для аутентификации. Зарегистрируйтесь как \"Desktop "
 #~ "application\"."
-
 #~ msgid "tweet"
 #~ msgstr "tweet"
-
 #~ msgid "Created at"
 #~ msgstr "Создано"
-
 #~ msgid "Confirm e-mail change"
 #~ msgstr "Подтвердите изменение e-mail"
-
 #~ msgid "<strong>Preload modules</strong> (mod, mod, ...)"
 #~ msgstr "<strong>Загружаемые модули</strong> (mod, mod, ...)"
-
 #~ msgid "8th of December, 2010 at 11:54"
 #~ msgstr "8 декабря 2010 в 11:54"
-
 #~ msgid "Design package couldn't contain more than %d files"
 #~ msgstr "Пакет с оформлением не может содержать более %d файлов"
-
 #~ msgid "Design package contents couldn't be more than %d bytes"
 #~ msgstr "Содержимое пакета с оформлением не может быть более %d байт"
-
 #~ msgid "Design package must not contain more than 1 HTML file"
 #~ msgstr "Пакет с оформлением не может содержать более 1 HTML-файла"
-
 #~ msgid "Design package must not contain more than 1 CSS file"
 #~ msgstr "Пакет с оформлением не может содержать более 1 CSS-файла"
-
 #~ msgid "Mandatory attribute '{0}' missing in tag '{1}'"
 #~ msgstr "В теге '{1}' отсутствует обязательный атрибут '{0}'"
-
 #~ msgid "install to the project"
 #~ msgstr "установить в проект"
-
 #~ msgid "download zip"
 #~ msgstr "скачать zip"
-
 #~ msgid ""
 #~ "Here you have to create unique logo for your project. You can either "
 #~ "upload logo from your computer or create it using Constructor."
@@ -12713,47 +12454,34 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "Теперь вам необходимо создать уникальный логотип для вашего проекта. Вы "
 #~ "можете или загрузить логотип с вашего компьютера, или создать его при "
 #~ "помощи Конструктора."
-
 #~ msgid ""
 #~ "You have successfully completed registration of your game. And now get "
 #~ "ready to enter your new admin panel:"
 #~ msgstr ""
 #~ "Вы успешно завершили регистрацию вашей игры. А теперь приготовьтесь войти "
 #~ "в вашу новую административную панель:"
-
 #~ msgid "Admin panel address"
 #~ msgstr "Адрес административной панели"
-
 #~ msgid "Log out"
 #~ msgstr "Выход"
-
 #~ msgid "Add new rule"
 #~ msgstr "Добавить новое правило"
-
 #~ msgid "Registrar ID"
 #~ msgstr "ID запроса"
-
 #~ msgid "Registrar state"
 #~ msgstr "Состояние"
-
 #~ msgid "Registrar cause"
 #~ msgstr "Причина"
-
 #~ msgid "Tag"
 #~ msgstr "Тег"
-
 #~ msgid "Tag \"%s\""
 #~ msgstr "Тег \"%s\""
-
 #~ msgid "Search \"%s\""
 #~ msgstr "Поиск \"%s\""
-
 #~ msgid "Create the world of your dreams"
 #~ msgstr "Создай мир своей мечты"
-
 #~ msgid "DNS check completed successfully"
 #~ msgstr "Проверка DNS успешно пройдена"
-
 #~ msgid ""
 #~ "Domain {0} was not found by {1}. Check your configuration and try again "
 #~ "in several hours &mdash; there can be caching issues"
@@ -12761,10 +12489,8 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "Домен {0} не найден серверами {1}. Проверьте вашу конфигурацию и сделайте "
 #~ "следующую попытку через несколько часов &mdash; возможно, данные ещё не "
 #~ "успели обновиться"
-
 #~ msgid "Domain {0} was not found by {1}"
 #~ msgstr "Домен {0} не найден DNS-серверами {1}"
-
 #~ msgid ""
 #~ "<p>Now you have to assign a domain name to your game. Domain name is a "
 #~ "very important part of your game marketing. Eye-candy names are more "
@@ -12782,33 +12508,24 @@ msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winner
 #~ "RU), установите доменные сервера ns1.mmoconstructor.com, ns2."
 #~ "mmoconstructor.com и введите имя домена без www сюда (напр: YOURDOMAIN.RU)"
 #~ "</strong></p>"
-
 #~ msgid "Upload background image"
 #~ msgstr "Загрузите фоновое изображение"
-
 #~ msgid "Animated backgrounds are not supported"
 #~ msgstr "Анимированные фоны не поддерживаются"
-
 #~ msgid "Abort"
 #~ msgstr "Прервать"
-
 #~ msgid "Padding"
 #~ msgstr "Подложка"
-
 #~ msgid "Effects"
 #~ msgstr "Эффекты"
-
 #~ msgid "Load from file"
 #~ msgstr "Загрузка из файла"
-
 #~ msgid "Set"
 #~ msgstr "Установить"
-
 #~ msgid "Image must be 100x100"
 #~ msgstr "Изображение должно быть 100x100"
-
 #~ msgid "Enter your email address"
 #~ msgstr "Введите ваш адрес e-mail"
-
 #~ msgid "Online games constructor"
 #~ msgstr "Конструктор онлайн-игр"
+
