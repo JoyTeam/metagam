@@ -1453,7 +1453,7 @@ class Auth(ConstructorModule):
                 self._("Examples"),
                 self._("*admin*"),
                 self._("*anybadword*"),
-            ), "type": "textarea", "height": 350, "value": blacklist, "value": blacklist, "remove_label_separator": True},
+            ), "type": "textarea", "height": 350, "value": blacklist, "remove_label_separator": True},
         ]
         self.call("admin.form", fields=fields)
     
