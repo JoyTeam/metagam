@@ -42,9 +42,6 @@ class TokenIf(Parsing.Token):
 class TokenElse(Parsing.Token):
     "%token else"
 
-class TokenLog(Parsing.Token):
-    "%token log"
-
 class TokenSyslog(Parsing.Token):
     "%token syslog"
 
@@ -364,7 +361,6 @@ class CombatScriptParser(ScriptParser):
     syms["select"] = TokenSelect
     syms["if"] = TokenIf
     syms["else"] = TokenElse
-    syms["log"] = TokenLog
     syms["syslog"] = TokenSyslog
     syms["chat"] = TokenChat
     syms["action"] = TokenAction

@@ -215,6 +215,9 @@ class TokenMember(Parsing.Token):
 class TokenNow(Parsing.Token):
     "%token now"
 
+class TokenLog(Parsing.Token):
+    "%token log"
+
 
 #===============================================================================
 # Nonterminals, with associated productions.  In traditional BNF, the following
@@ -379,6 +382,10 @@ class Expr(Parsing.Nonterm):
             raise Parsing.SyntaxError(func.script_parser._("Function %s is not supported in expression context") % func.fname)
         self.val = ["call", func.fname] + lst.val
 
+    def reduceFuncLog(self, log, ParLeft, lst, ParRight):
+        "%reduce log parleft List parright"
+        self.val = ["call", "log"] + lst.val
+
     def reduceIn(self, exprA, op, exprB):
         "%reduce Expr in Expr [pCompareOp]"
         self.val = ["in", exprA.val, exprB.val]
@@ -439,6 +446,7 @@ class ScriptParser(Parsing.Glr, Module):
         "|": TokenBitOr,
         'now': TokenNow,
         "activity": TokenActivity,
+        "log": TokenLog,
     }
     funcs = set(["min", "max", "uc", "lc", "selrand", "floor",
         "round", "ceil", "abs", "sqrt", "sqr", "pow", "log",

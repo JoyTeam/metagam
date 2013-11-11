@@ -172,9 +172,6 @@ class TokenDefeat(Parsing.Token):
 class TokenDraw(Parsing.Token):
     "%token draw"
 
-class TokenLog(Parsing.Token):
-    "%token log"
-
 class TokenSyslog(Parsing.Token):
     "%token syslog"
 
@@ -1175,7 +1172,6 @@ class QuestScriptParser(ScriptParser):
     syms["victory"] = TokenVictory
     syms["defeat"] = TokenDefeat
     syms["draw"] = TokenDraw
-    syms["log"] = TokenLog
     syms["syslog"] = TokenSyslog
     syms["equipbreak"] = TokenEquipBreak
     syms["sound"] = TokenSound
