@@ -441,6 +441,10 @@ class Character(Module, ParametrizedObject):
             return self.combat_id
         elif attr == "combat_state":
             return self.combat_state
+        elif attr == "image":
+            return self.call("charimages.get", self, "charpage")
+        elif attr == "image_info":
+            return self.call("charimages.get", self, "charinfo")
         # parameters
         m = re_param_attr.match(attr)
         if m:
