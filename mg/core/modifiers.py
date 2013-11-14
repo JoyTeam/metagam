@@ -19,6 +19,7 @@ class MemberModifiers(Module):
         Module.__init__(self, app, "mg.core.modifiers.MemberModifiers")
         self.target_type = target_type
         self.uuid = uuid
+        self.in_notify = False
 
     @property
     def lock_key(self):
@@ -69,33 +70,40 @@ class MemberModifiers(Module):
             self.mobjs = []
 
     def notify(self):
-        expired = self.expired
-        self.expired = {}
-        destroyed = self.destroyed
-        self.destroyed = {}
-        created = self.created
-        self.created = {}
-        prolong = self.prolonged
-        self.prolonged = {}
-        # sending events
-        for mod in created.values():
-            self.call("%s-modifier.created" % self.target_type, self, mod)
-            self.call("modifier.created", self, mod)
-        for mod in destroyed.values():
-            self.call("%s-modifier.destroyed" % self.target_type, self, mod)
-            self.call("modifier.destroyed", self, mod)
-        kinds = set()
-        for mod in expired.values():
-            kind = mod["kind"]
-            if kind in kinds:
-                continue
-            kinds.add(kind)
-            #self.debug("Expired modifier (target_type=%s, target=%s): %s", self.target_type, self.uuid, mod)
-            self.call("%s-modifier.expired" % self.target_type, self, mod)
-            self.call("modifier.expired", self, mod)
-        for mod in prolong.values():
-            self.call("%s-modifier.prolong" % self.target_type, self, mod)
-            self.call("modifier.prolong", self, mod)
+        if self.in_notify:
+            self.warning("Recursive modifiers.notify() abandoned")
+            return
+        self.in_notify = True
+        try:
+            expired = self.expired
+            self.expired = {}
+            destroyed = self.destroyed
+            self.destroyed = {}
+            created = self.created
+            self.created = {}
+            prolong = self.prolonged
+            self.prolonged = {}
+            # sending events
+            for mod in created.values():
+                self.call("%s-modifier.created" % self.target_type, self, mod)
+                self.call("modifier.created", self, mod)
+            for mod in destroyed.values():
+                self.call("%s-modifier.destroyed" % self.target_type, self, mod)
+                self.call("modifier.destroyed", self, mod)
+            kinds = set()
+            for mod in expired.values():
+                kind = mod["kind"]
+                if kind in kinds:
+                    continue
+                kinds.add(kind)
+                #self.debug("Expired modifier (target_type=%s, target=%s): %s", self.target_type, self.uuid, mod)
+                self.call("%s-modifier.expired" % self.target_type, self, mod)
+                self.call("modifier.expired", self, mod)
+            for mod in prolong.values():
+                self.call("%s-modifier.prolong" % self.target_type, self, mod)
+                self.call("modifier.prolong", self, mod)
+        finally:
+            self.in_notify = False
 
     def update(self, *args, **kwargs):
         with self.lock([self.lock_key]):
