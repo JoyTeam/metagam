@@ -484,6 +484,9 @@ class Shops(ConstructorModule):
                         max_quantity[item_type.dna] = quantity
             # user action
             if req.ok():
+                if character.busy:
+                    character.error(self._("You are busy and cannot do shopping at the moment"))
+                    self.call("web.redirect", "/location")
                 errors = []
                 user_requests = {}
                 create_items = []

@@ -2440,6 +2440,7 @@ class Quests(ConstructorModule):
             # check quests
             for quest in quests:
                 try:
+                    kwargs["quest"] = CharQuest(char.quests, quest)
                     debug = self.conf("quests.debug_%s" % quest)
                     # quest availability
                     qinfo = self.conf("quests.list", {}).get(quest)
@@ -2464,7 +2465,6 @@ class Quests(ConstructorModule):
                     if script[0] != "state":
                         continue
                     script = script[1]
-                    kwargs["quest"] = CharQuest(char.quests, quest)
                     execute_handlers(script.get("hdls"), quest, kwargs)
                 except QuestError as e:
                     raise ScriptError(e.val, env)

@@ -195,6 +195,7 @@ class QueueRunner(Module):
                             self.exception(e)
                             success = False
                         if success:
+                            self.info("Finished task %s (%s in application %s)", task["id"], task["hook"], task["app"])
                             # Reschedule finished task to later time
                             if schedule:
                                 try:
