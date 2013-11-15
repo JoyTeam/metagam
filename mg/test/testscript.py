@@ -287,7 +287,12 @@ class TestScript(unittest.TestCase):
 
         # Vectors
         self.assertEqual(str(self.evaluate(['call', 'vec3', 1, 2, 3])), str(Vec3(1, 2, 3)))
-
+        
+        # Strings
+        self.assertEqual(self.evaluate(['call', 'lc', 'Lorem Ipsum Dolor Sit Amet']), 'lorem ipsum dolor sit amet')
+        self.assertEqual(self.evaluate(['call', 'uc', 'Lorem Ipsum Dolor Sit Amet']), 'LOREM IPSUM DOLOR SIT AMET')
+        self.assertEqual(self.evaluate(['call', 'length', 'Lorem Ipsum Dolor Sit Amet']), 26)
+        
     def test_expr_max(self):
         self.checkExpression('max(1, 2, 3)', ['call', 'max', 1, 2, 3], 3)
 

@@ -213,3 +213,9 @@ assert.strictEqual(typeof(MMOScript.evaluate(['.', ['now'], 'utc_day'])), 'numbe
 assert.strictEqual(typeof(MMOScript.evaluate(['.', ['now'], 'utc_hour'])), 'number');
 assert.strictEqual(typeof(MMOScript.evaluate(['.', ['now'], 'utc_minute'])), 'number');
 assert.strictEqual(typeof(MMOScript.evaluate(['.', ['now'], 'utc_second'])), 'number');
+
+/* Strings */
+assert.strictEqual(MMOScript.evaluate(['call', 'length', 'Lorem Ipsum Dolor Sit Amet']), 26)
+assert.strictEqual(MMOScript.evaluate(['call', 'lc', 'Lorem Ipsum Dolor Sit Amet']), 'lorem ipsum dolor sit amet')
+assert.strictEqual(MMOScript.evaluate(['call', 'uc', 'Lorem Ipsum Dolor Sit Amet']), 'LOREM IPSUM DOLOR SIT AMET')
+
