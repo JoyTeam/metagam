@@ -325,9 +325,9 @@ MMOScript.evaluate = function (val, env) {
         if (fname == 'lc' || fname == 'uc') {
             var v = self.toString(self.evaluate(val[2], env));
             if (fname == 'lc') {
-                return v.toLower();
+                return v.toLowerCase();
             } else {
-                return v.toUpper();
+                return v.toUpperCase();
             }
         }
         if (fname == 'length') {
