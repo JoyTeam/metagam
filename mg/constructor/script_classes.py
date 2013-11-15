@@ -374,7 +374,7 @@ class Expr(Parsing.Nonterm):
 
     exprFuncs = set(["min", "max", "uc", "lc", "selrand", "floor",
         "round", "ceil", "abs", "sqrt", "sqr", "pow", "log", "exp",
-        "sin", "cos", "tan", "asin", "acos", "atan", "vec3", "str"])
+        "sin", "cos", "tan", "asin", "acos", "atan", "vec3", "str", "length"])
 
     def reduceFunc(self, func, ParLeft, lst, ParRight):
         "%reduce func parleft List parright"
@@ -451,7 +451,7 @@ class ScriptParser(Parsing.Glr, Module):
     funcs = set(["min", "max", "uc", "lc", "selrand", "floor",
         "round", "ceil", "abs", "sqrt", "sqr", "pow", "log",
         "exp", "sin", "cos", "tan", "asin", "acos", "atan", "vec3",
-        "str"])
+        "str", "length"])
 
     def __init__(self, app, spec):
         Module.__init__(self, app, "mg.constructor.script_classes.ScriptParser")

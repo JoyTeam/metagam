@@ -330,6 +330,10 @@ MMOScript.evaluate = function (val, env) {
                 return v.toUpper();
             }
         }
+        if (fname == 'length') {
+            var v = self.toString(self.evaluate(val[2], env));
+            return v ? v.length : 0;
+        }
         if (fname == 'selrand') {
             var index = Math.floor(Math.random() * (val.length - 2));
             if (index >= 2 && index < val.length) {

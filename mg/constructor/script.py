@@ -695,6 +695,15 @@ class ScriptEngine(ConstructorModule):
                     return v.lower()
                 elif fname == "uc":
                     return v.upper()
+            elif fname == "length":
+                if len(val) != 3:
+                    raise ScriptRuntimeError(self._("Function {fname} must be called with single argument").format(fname=fname), env)
+                v = self._evaluate(val[2], env)
+                # Partial evaluation
+                if env.keep_globs:
+                    if env.keep_globs and type(v) is list:
+                        return [cmd, fname, v]
+                return len(str(v))
             elif fname == "selrand":
                 if len(val) >= 3:
                     args = val[2:]
