@@ -654,7 +654,7 @@ class InventoryAdmin(ConstructorModule):
         # loading all item types
         rows = {}
         lst = self.objlist(DBItemTypeList, query_index="all")
-        lst.load()
+        lst.load(silent=True)
         lst.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
         for ent in lst:
             name = htmlescape(ent.get("name"))
@@ -2156,6 +2156,13 @@ class Inventory(ConstructorModule):
         self.rhook("inventory.render", self.inventory_render)
         self.rhook("item-types.item-type", self.item_types_item_type)
         self.rhook("item-types.item", self.item_types_item)
+        self.rhook("item-types.list", self.item_types_list)
+
+    def item_types_list(self):
+        lst = self.objlist(DBItemTypeList, query_index="all")
+        lst.load(silent=True)
+        lst.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
+        return lst
 
     def item_types_item_type(self, uuid, dna_suffix=None, mods=None, db_item_type=None, db_params=None):
         uuid = utf2str(uuid)

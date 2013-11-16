@@ -1,0 +1,23 @@
+[%if error%]<div class="error-message crafting-error-message">[%error%]</div>[%end%]
+<div id="pages" class="crafting-menu pager-list"></div>
+    [%foreach cat in categories%]
+    <div id="page-[%cat.id%]" style="display: [%if cat.visible%]block[%else%]none[%end%]" class="pager-page">
+            <table class="recipes-table">
+            [%foreach recipe in cat.recipes%]
+            <tr>
+                    <td class="recipe-image-td">[%if recipe.image%]<img src="[%recipe.image%]" alt="" class="recipe-image" />[%end%]</td>
+                    <td class="recipe-info-td">
+                            <a name="[%recipe.id%]"></a>
+                            <div class="recipe-info-name">[%recipe.name%]</div>
+                            [%if recipe.params%]<div class="recipe-params">
+                                    [%foreach ent in recipe.params%][%if ent.header%]<div class="recipe-param-header">[%ent.header%]</div>[%else%]
+                                    <div class="recipe-param"><span class="recipe-param-name">[%ent.name%]</span>: <span class="recipe-param-value value">[%ent.value%]</span> [%+ if ent.unit%]<span class="recipe-param-unit unit">[%ent.unit%]</span>[%end%] [%ent.library_icon%]</div>
+                                    [%end%][%end%]
+                            </div>[%end%]
+                            [%if recipe.description%]<div class="recipe-description">[%recipe.description%]</div>[%end%]
+                    </td>
+            </tr>
+            [%end%]
+            </table>
+    </div>
+    [%end%]

@@ -164,11 +164,11 @@ class ConstructorProject(Module):
             "name": self._("Static objects on the locations"),
             "description": self._("Ability to place static visual objects to the locations"),
         })
-        #modules.append({
-        #    "id": "peaceful",
-        #    "name": self._("Peaceful activities"),
-        #    "description": self._("Mining, crafting, mini-games, etc"),
-        #})
+        modules.append({
+            "id": "peaceful",
+            "name": self._("Peaceful activities"),
+            "description": self._("Mining, crafting, mini-games, etc"),
+        })
 
     def project_title(self):
         return self.app().project.get("title_short", "New Game")
