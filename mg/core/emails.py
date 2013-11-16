@@ -2,6 +2,7 @@ from mg import *
 from concurrence.io import Socket
 from concurrence.io.buffered import Buffer, BufferedReader, BufferedWriter
 from concurrence.smtp import *
+from concurrence import Timeout
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
@@ -116,97 +117,98 @@ class Email(Module):
         menu.append({"id": "email.index", "text": self._("E-mail"), "order": 32})
 
     def email_send(self, to_email, to_name, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain", signature=True, headers={}):
-        fingerprint = utf2str(from_email) + "/" + utf2str(to_email) + "/" + utf2str(subject)
-        m = hashlib.md5()
-        m.update(fingerprint)
-        fingerprint = m.hexdigest()
-        mcid = "email-sent-%s" % fingerprint
-        sent = intz(self.app().mc.get(mcid))
-        if sent < 0:
-            return
-        if sent >= MAX_SIMILAR_EMAILS:
-            self.warning("Blocked email flood to %s: %s", to_email, subject)
-            self.app().mc.set(mcid, -1, 3600)
-            return
-        self.app().mc.set(mcid, sent + 1, 600)
-        if not immediately:
-            return self.call("queue.add", "email.send", {
-                "to_email": to_email,
-                "to_name": to_name,
-                "subject": subject,
-                "content": content,
-                "from_email": from_email,
-                "from_name": from_name,
-                "immediately": True,
-                "subtype": subtype,
-                "signature": signature,
-                "headers": headers,
-            })
-        params = {
-            "email": "robot@%s" % self.main_host,
-            "name": "Metagam Robot",
-            "prefix": "[mg] ",
-        }
-        self.call("email.sender", params)
-        if from_email is None or from_name is None:
-            from_email = params["email"]
-            from_name = params["name"]
-        self.info("%s: To %s <%s>: %s", mcid, utf2str(to_name), utf2str(to_email), utf2str(subject))
-        s = SMTP(self.clconf("smtp_server", "127.0.0.1"))
-        try:
-            if type(content) == unicode:
-                content = content.encode("utf-8")
-            if type(from_email) == unicode:
-                from_email = from_email.encode("utf-8")
-            if type(to_email) == unicode:
-                to_email = to_email.encode("utf-8")
-            if signature and subtype == "plain":
-                sig = params.get("signature") or ""
-                sig = str2unicode(sig)
-                # unsubscribe
-                if sig:
-                    sig += "\n"
-                if to_name:
-                    sig += self._('Your name is {user_name}').format(
-                        user_name=to_name
-                    )
-                if getattr(self.app(), "canonical_domain", None):
-                    sig += "\n"
-                    sig += self._("Remind password - {href}").format(
-                        href="{protocol}://{domain}/auth/remind".format(
-                            protocol=self.app().protocol,
-                            domain=self.app().canonical_domain,
-                        ),
-                    )
-                    sig += "\n"
-                    sig += self.call("email.unsubscribe-text", to_email)
-                if sig:
-                    content += "\n\n--\n%s" % utf2str(sig)
-            if subtype == "raw":
-                body = content
-            else:
-                msg = MIMEText(content, _subtype=subtype, _charset="utf-8")
-                msg["Subject"] = "%s%s" % (params["prefix"], Header(subject, "utf-8"))
-                msg["From"] = "%s <%s>" % (Header(from_name, "utf-8"), from_email)
-                msg["To"] = "%s <%s>" % (Header(to_name, "utf-8"), to_email)
-                now = datetime.datetime.now()
-                stamp = time.mktime(now.timetuple())
-                msg["Date"] = formatdate(timeval=stamp, localtime=False, usegmt=True)
-                try:
-                    msg["X-Metagam-Project"] = self.app().tag
-                except AttributeError:
-                    pass
-                for key, val in headers.iteritems():
-                    msg[key] = val
-                body = msg.as_string()
-            s.sendmail("<%s>" % from_email, ["<%s>" % to_email], body)
-        except SMTPRecipientsRefused as e:
-            self.warning(e)
-        except SMTPException as e:
-            self.error(e)
-            self.call("web.service_unavailable")
-        finally:
-            s.quit()
+        with Timeout.push(30):
+            fingerprint = utf2str(from_email) + "/" + utf2str(to_email) + "/" + utf2str(subject)
+            m = hashlib.md5()
+            m.update(fingerprint)
+            fingerprint = m.hexdigest()
+            mcid = "email-sent-%s" % fingerprint
+            sent = intz(self.app().mc.get(mcid))
+            if sent < 0:
+                return
+            if sent >= MAX_SIMILAR_EMAILS:
+                self.warning("Blocked email flood to %s: %s", to_email, subject)
+                self.app().mc.set(mcid, -1, 3600)
+                return
+            self.app().mc.set(mcid, sent + 1, 600)
+            if not immediately:
+                return self.call("queue.add", "email.send", {
+                    "to_email": to_email,
+                    "to_name": to_name,
+                    "subject": subject,
+                    "content": content,
+                    "from_email": from_email,
+                    "from_name": from_name,
+                    "immediately": True,
+                    "subtype": subtype,
+                    "signature": signature,
+                    "headers": headers,
+                })
+            params = {
+                "email": "robot@%s" % self.main_host,
+                "name": "Metagam Robot",
+                "prefix": "[mg] ",
+            }
+            self.call("email.sender", params)
+            if from_email is None or from_name is None:
+                from_email = params["email"]
+                from_name = params["name"]
+            self.info("%s: To %s <%s>: %s", mcid, utf2str(to_name), utf2str(to_email), utf2str(subject))
+            s = SMTP(self.clconf("smtp_server", "127.0.0.1"))
+            try:
+                if type(content) == unicode:
+                    content = content.encode("utf-8")
+                if type(from_email) == unicode:
+                    from_email = from_email.encode("utf-8")
+                if type(to_email) == unicode:
+                    to_email = to_email.encode("utf-8")
+                if signature and subtype == "plain":
+                    sig = params.get("signature") or ""
+                    sig = str2unicode(sig)
+                    # unsubscribe
+                    if sig:
+                        sig += "\n"
+                    if to_name:
+                        sig += self._('Your name is {user_name}').format(
+                            user_name=to_name
+                        )
+                    if getattr(self.app(), "canonical_domain", None):
+                        sig += "\n"
+                        sig += self._("Remind password - {href}").format(
+                            href="{protocol}://{domain}/auth/remind".format(
+                                protocol=self.app().protocol,
+                                domain=self.app().canonical_domain,
+                            ),
+                        )
+                        sig += "\n"
+                        sig += self.call("email.unsubscribe-text", to_email)
+                    if sig:
+                        content += "\n\n--\n%s" % utf2str(sig)
+                if subtype == "raw":
+                    body = content
+                else:
+                    msg = MIMEText(content, _subtype=subtype, _charset="utf-8")
+                    msg["Subject"] = "%s%s" % (params["prefix"], Header(subject, "utf-8"))
+                    msg["From"] = "%s <%s>" % (Header(from_name, "utf-8"), from_email)
+                    msg["To"] = "%s <%s>" % (Header(to_name, "utf-8"), to_email)
+                    now = datetime.datetime.now()
+                    stamp = time.mktime(now.timetuple())
+                    msg["Date"] = formatdate(timeval=stamp, localtime=False, usegmt=True)
+                    try:
+                        msg["X-Metagam-Project"] = self.app().tag
+                    except AttributeError:
+                        pass
+                    for key, val in headers.iteritems():
+                        msg[key] = val
+                    body = msg.as_string()
+                s.sendmail("<%s>" % from_email, ["<%s>" % to_email], body)
+            except SMTPRecipientsRefused as e:
+                self.warning(e)
+            except SMTPException as e:
+                self.error(e)
+                self.call("web.service_unavailable")
+            finally:
+                s.quit()
 
     def email_users(self, users, subject, content, from_email=None, from_name=None, immediately=False, subtype="plain", signature=True):
         if not immediately:
