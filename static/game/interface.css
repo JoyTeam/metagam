@@ -287,3 +287,5 @@ area { border: none }
 .recipe-param-header { font-weight: bold; padding-bottom: 5px }
 .recipe-description { padding-top: 10px; color: #808080 }
 .recipe-actions { padding-top: 10px }
+.recipe-errors { padding-top: 10px }
+.recipe-error { color: #c00000 }

@@ -45,6 +45,13 @@
                 </div>
                 [%end%]
                 [%if recipe.description%]<div class="recipe-description">[%recipe.description%]</div>[%end%]
+                [%if recipe.errors%]
+                <div class="recipe-errors">
+                    [%foreach error in recipe.errors%]
+                    <div class="recipe-error">[%error.text%]</a>
+                    [%end%]
+                </div>
+                [%end%]
                 [%if recipe.actions%]
                 <div class="recipe-actions">
                     [%foreach action in recipe.actions%]

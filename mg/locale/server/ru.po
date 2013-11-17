@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-17 11:34+0100\n"
+"PO-Revision-Date: 2013-11-17 11:54+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -7174,6 +7174,10 @@ msgstr "Перепроверка"
 
 msgid "Recheck all settings thoroughly. After sending data to moderation you won't have an ability to change fields with red border and game logo"
 msgstr "Тщательно перепроверьте все настройки. После отправки данных на модерацию у вас не будет возможности изменить логотип игры и поля, обведённые красным"
+
+#, python-format
+msgid "Recipe '%s' availability condition"
+msgstr "Условие доступности рецепта \"%s\""
 
 #, python-format
 msgid "Recipe '%s' duration"

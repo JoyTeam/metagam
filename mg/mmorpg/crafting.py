@@ -71,12 +71,15 @@ class Crafting(ConstructorModule):
         char = self.character(req.user())
         globs = {"char": char}
         char_params = self.call("characters.params")
+        lang = self.call("l10n.lang")
         for cat in categories:
             rrecipes = []
             for rcp in recipes:
                 if rcp.get("category") == cat["id"]:
                     if not self.call("script.evaluate-expression", rcp.get("visible", 1), globs=globs, description=lambda: self._("Recipe '%s' visibility") % rcp.get("name")):
                         continue
+                    rerrors = []
+                    # requirements
                     reqs = rcp.get("requirements", {})
                     hide = False
                     for param in char_params:
@@ -85,8 +88,24 @@ class Crafting(ConstructorModule):
                             if char.param(param["code"]) < min_val:
                                 hide = True
                                 break
+                        min_val = reqs.get("available_%s" % param["code"])
+                        if min_val is not None:
+                            if char.param(param["code"]) < min_val:
+                                if lang == "ru":
+                                    name = param.get("name_g") or param.get("name")
+                                else:
+                                    name = param.get("name")
+                                rerrors.append({
+                                    "text": self._("Not enough %s") % name,
+                                })
                     if hide:
                         continue
+                    # conditions
+                    for avail in rcp.get("availability", []):
+                        if not self.call("script.evaluate-expression", avail.get("condition"), globs=globs, description=lambda: self._("Recipe '%s' availability condition") % rcp.get("name")):
+                            rerrors.append({
+                                "text": avail.get("message"),
+                            })
                     rrecipe = {
                         "id": rcp.uuid,
                         "name": htmlescape(rcp.get("name")),
@@ -149,15 +168,20 @@ class Crafting(ConstructorModule):
                         })
                     if rproduction:
                         rrecipe["production"] = rproduction
+                    # errors
+                    if rerrors:
+                        rrecipe["errors"] = rerrors
                     # actions
                     ractions = []
-                    ractions.append({
-                        "url": "%s/craft/%s" % (base_url, rcp.uuid),
-                        "text": self._("recipe///Produce"),
-                        "lst": True,
-                    })
+                    if not rerrors:
+                        ractions.append({
+                            "url": "%s/craft/%s" % (base_url, rcp.uuid),
+                            "text": self._("recipe///Produce"),
+                            "lst": True,
+                        })
                     if ractions:
                         rrecipe["actions"] = ractions
+                    # finalize the recipe
                     rrecipes.append(rrecipe)
             if rrecipes:
                 rcategories.append({
