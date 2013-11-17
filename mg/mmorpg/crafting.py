@@ -1,4 +1,5 @@
 from mg.constructor import *
+from mg.mmorpg.crafting_classes import *
 import mg
 from uuid import uuid4
 from PIL import Image
@@ -11,7 +12,6 @@ re_truncate = re.compile(r'^(.{17}).{3}.+$', re.DOTALL)
 class Crafting(ConstructorModule):
     def register(self):
         self.rhook("crafting.categories", self.categories)
-        self.rhook("crafting.recipes", self.recipes)
         self.rhook("interfaces.list", self.interfaces_list)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("interface-crafting.action-default", self.interface_crafting, priv="logged")
@@ -35,12 +35,6 @@ class Crafting(ConstructorModule):
                 "order": 20.0,
             },
         ]
-
-    def recipes(self):
-        recipes = self.conf("crafting.recipes")
-        if recipes is not None:
-            return recipes
-        return []
 
     def interfaces_list(self, types):
         types.append(("crafting", self._("Crafting")))
@@ -68,18 +62,19 @@ class Crafting(ConstructorModule):
                 lock_objects.append(character.inventory.lock_key)
             with self.lock(lock_objects):
                 character.inventory.load()
-                pass
+        enabled_recipes = func.get("crafting_recipes", {})
+        recipes = self.objlist(DBCraftingRecipeList, enabled_recipes.keys())
+        recipes.load(silent=True)
         categories = self.call("crafting.categories")
-        recipes = self.call("crafting.recipes")
         rcategories = []
         for cat in categories:
             rrecipes = []
             for rcp in recipes:
-                if rcp["category"] == cat["id"]:
+                if rcp.get("category") == cat["id"]:
                     rrecipe = {
-                        "id": rcp["id"],
+                        "id": rcp.uuid,
                         "name": htmlescape(rcp.get("name")),
-                        "image": None,
+                        "image": rcp.get("image"),
                         "params": None,
                         "description": rcp.get("description"),
                     }
@@ -227,85 +222,87 @@ class CraftingAdmin(ConstructorModule):
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
+    def load_recipes(self):
+        req = self.req()
+        try:
+            return req._crafting_recipes
+        except AttributeError:
+            lst = self.objlist(DBCraftingRecipeList, query_index="all")
+            lst.load(silent=True)
+            recipes = sorted(lst, cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)))
+            req._crafting_recipes = recipes
+            return recipes
+
+    def load_recipe(self, uuid):
+        try:
+            return self.obj(DBCraftingRecipe, uuid)
+        except ObjectNotFoundException:
+            return None
+
     def headmenu_recipes(self, args):
         m = re_recipes_cmd.match(args)
         if m:
             cmd, recipe_id, args = m.group(1, 2, 3)
-            for rcp in self.call("crafting.recipes"):
-                if rcp["id"] == recipe_id:
-                    if cmd == "view":
-                        return [htmlescape(rcp.get("name")), "crafting/recipes"]
-                    elif cmd == "ingredients":
-                        if args == "new":
-                            return [self._("New ingredient"), "crafting/recipes/view/%s" % recipe_id]
-                        elif args:
-                            for ing in rcp.get("ingredients", []):
-                                if ing["id"] == args:
-                                    item_type = self.item_type(ing["item_type"])
-                                    return [self._("Ingredient '%s'") % htmlescape(item_type.name), "crafting/recipes/view/%s" % recipe_id]
-                    elif cmd == "production":
-                        if args == "new":
-                            return [self._("New product"), "crafting/recipes/view/%s" % recipe_id]
-                        elif args:
-                            for ing in rcp.get("production", []):
-                                if ing["id"] == args:
-                                    item_type = self.item_type(ing["item_type"])
-                                    return [self._("Product '%s'") % htmlescape(item_type.name), "crafting/recipes/view/%s" % recipe_id]
+            rcp = self.load_recipe(recipe_id)
+            if rcp:
+                if cmd == "view":
+                    return [htmlescape(rcp.get("name")), "crafting/recipes"]
+                elif cmd == "ingredients":
+                    if args == "new":
+                        return [self._("New ingredient"), "crafting/recipes/view/%s" % recipe_id]
+                    elif args:
+                        for ing in rcp.get("ingredients", []):
+                            if ing["id"] == args:
+                                item_type = self.item_type(ing["item_type"])
+                                return [self._("Ingredient '%s'") % htmlescape(item_type.name), "crafting/recipes/view/%s" % recipe_id]
+                elif cmd == "production":
+                    if args == "new":
+                        return [self._("New product"), "crafting/recipes/view/%s" % recipe_id]
+                    elif args:
+                        for ing in rcp.get("production", []):
+                            if ing["id"] == args:
+                                item_type = self.item_type(ing["item_type"])
+                                return [self._("Product '%s'") % htmlescape(item_type.name), "crafting/recipes/view/%s" % recipe_id]
         elif args == "new":
             return [self._("New recipe"), "crafting/recipes"]
         elif args:
-            for rcp in self.call("crafting.recipes"):
-                if rcp["id"] == args:
-                    return [self._("Editing"), "crafting/recipes/view/%s" % args]
+            rcp = self.load_recipe(args)
+            if rcp:
+                return [self._("Editing"), "crafting/recipes/view/%s" % args]
         return self._("Crafting recipes")
 
     def admin_recipes(self):
         categories = self.call("crafting.categories")
-        recipes = self.call("crafting.recipes")
         req = self.req()
         m = re_recipes_cmd.match(req.args)
         if m:
             cmd, recipe_id, args = m.group(1, 2, 3)
-            for recipe in recipes:
-                if recipe["id"] == recipe_id:
-                    if cmd == "view":
-                        return self.admin_recipe_view(recipe, args)
-                    if cmd == "ingredients":
-                        return self.admin_recipe_ingredients(recipes, recipe, args)
-                    if cmd == "production":
-                        return self.admin_recipe_production(recipes, recipe, args)
-            self.call("web.not_found")
+            recipe = self.load_recipe(recipe_id)
+            if recipe:
+                if cmd == "view":
+                    return self.admin_recipe_view(recipe, args)
+                if cmd == "ingredients":
+                    return self.admin_recipe_ingredients(recipe, args)
+                if cmd == "production":
+                    return self.admin_recipe_production(recipe, args)
+            self.call("admin.redirect", "crafting/recipes")
         m = re_del.match(req.args)
         if m:
             rcpid = m.group(1)
-            for rcp in recipes:
-                if rcp["id"] == rcpid and rcp.get("image"):
-                    self.call("cluster.static_delete", rcp["image"])
-            recipes = [rcp for rcp in recipes if rcp["id"] != rcpid]
-            config = self.app().config_updater()
-            config.set("crafting.recipes", recipes)
-            config.store()
+            rcp = self.load_recipe(rcpid)
+            if rcp:
+                if rcp.get("image"):
+                    self.call("cluster.static_delete", rcp.get("image"))
+                rcp.remove()
             self.call("admin.redirect", "crafting/recipes")
         if req.args:
             if req.args == "new":
-                rcp = {
-                    "id": uuid4().hex
-                }
-                order = None
-                for c in recipes:
-                    if order is None or c["order"] > order:
-                        order = c["order"]
-                if order is None:
-                    rcp["order"] = 0.0
-                else:
-                    rcp["order"] = order + 10.0
+                rcp = self.obj(DBCraftingRecipe)
+                recipes = self.load_recipes()
+                rcp.set("order", recipes[-1].get("order") + 10.0 if recipes else 0.0)
             else:
-                rcp = None
-                for c in recipes:
-                    if c["id"] == req.args:
-                        rcp = c
-                        break
-                if rcp is None:
+                rcp = self.load_recipe(req.args)
+                if not rcp:
                     self.call("admin.redirect", "crafting/recipes")
             # prepare list of categories
             valid_categories = set()
@@ -315,22 +312,21 @@ class CraftingAdmin(ConstructorModule):
                 categories_values.append((cat["id"], cat["name"]))
             if req.ok():
                 self.call("web.upload_handler")
-                rcp = rcp.copy()
                 errors = {}
                 # name
                 name = req.param("name").strip()
                 if not name:
                     errors["name"] = self._("This field is mandatory")
                 else:
-                    rcp["name"] = name
+                    rcp.set("name", name)
                 # order
-                rcp["order"] = floatz(req.param("order"))
+                rcp.set("order", floatz(req.param("order")))
                 # category
                 category = req.param("v_category")
                 if category not in valid_categories:
                     errors["v_category"] = self._("Select valid category")
                 else:
-                    rcp["category"] = category
+                    rcp.set("category", category)
                 # image
                 old_image = rcp.get("image")
                 image_data = req.param_raw("image")
@@ -361,23 +357,19 @@ class CraftingAdmin(ConstructorModule):
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
                 # upload image
-                data = cStringIO.StringIO()
-                if form == "JPEG":
-                    image.save(data, form, quality=95)
-                else:
-                    image.save(data, form)
-                rcp["image"] = self.call("cluster.static_upload", "recipe", ext, content_type, data.getvalue())
+                if image_data:
+                    data = cStringIO.StringIO()
+                    if form == "JPEG":
+                        image.save(data, form, quality=95)
+                    else:
+                        image.save(data, form)
+                    rcp.set("image", self.call("cluster.static_upload", "recipe", ext, content_type, data.getvalue()))
                 # save
-                recipes = [c for c in recipes if c["id"] != rcp["id"]]
-                recipes.append(rcp)
-                recipes.sort(cmp=lambda x, y: cmp(x["order"], y["order"]) or cmp(x["name"], y["name"]))
-                config = self.app().config_updater()
-                config.set("crafting.recipes", recipes)
-                config.store()
+                rcp.store()
                 # delete old image
                 if image_data and old_image:
                     self.call("cluster.static_delete", old_image)
-                self.call("admin.redirect", "crafting/recipes/view/%s" % rcp["id"])
+                self.call("admin.redirect", "crafting/recipes/view/%s" % rcp.uuid)
             fields = [
                 {"name": "name", "label": self._("Recipe name"), "value": rcp.get("name")},
                 {"name": "order", "label": self._("Sorting order"), "value": rcp.get("order"), "inline": True},
@@ -405,17 +397,18 @@ class CraftingAdmin(ConstructorModule):
             self._("Editing"),
             self._("Deletion"),
         ]
+        recipes = self.load_recipes()
         for cat in categories:
             rows = []
             for rcp in recipes:
-                if rcp["category"] == cat["id"]:
+                if rcp.get("category") == cat["id"]:
                     rows.append([
                         htmlescape(rcp.get("name")),
                         rcp.get("order"),
-                        u'<hook:admin.link href="crafting/recipes/view/%s" title="%s" />' % (rcp["id"], self._("open")),
-                        u'<hook:admin.link href="crafting/recipes/del/%s" title="%s" confirm="%s" />' % (rcp["id"], self._("delete"), self._("Are you sure want to delete this recipe?")),
+                        u'<hook:admin.link href="crafting/recipes/view/%s" title="%s" />' % (rcp.uuid, self._("open")),
+                        u'<hook:admin.link href="crafting/recipes/del/%s" title="%s" confirm="%s" />' % (rcp.uuid, self._("delete"), self._("Are you sure want to delete this recipe?")),
                     ])
-                    displayed_recipes.add(rcp["id"])
+                    displayed_recipes.add(rcp.uuid)
             if rows:
                 tables.append({
                     "title": htmlescape(cat["name"]),
@@ -424,12 +417,12 @@ class CraftingAdmin(ConstructorModule):
                 })
         rows = []
         for rcp in recipes:
-            if rcp["id"] not in displayed_recipes:
+            if rcp.uuid not in displayed_recipes:
                 rows.append([
                     htmlescape(rcp.get("name")),
                     rcp.get("order"),
-                    u'<hook:admin.link href="crafting/recipes/view/%s" title="%s" />' % (rcp["id"], self._("open")),
-                    u'<hook:admin.link href="crafting/recipes/del/%s" title="%s" confirm="%s" />' % (rcp["id"], self._("delete"), self._("Are you sure want to delete this recipe?")),
+                    u'<hook:admin.link href="crafting/recipes/view/%s" title="%s" />' % (rcp.uuid, self._("open")),
+                    u'<hook:admin.link href="crafting/recipes/del/%s" title="%s" confirm="%s" />' % (rcp.uuid, self._("delete"), self._("Are you sure want to delete this recipe?")),
                 ])
         if rows:
             tables.append({
@@ -444,7 +437,7 @@ class CraftingAdmin(ConstructorModule):
 
     def form_render(self, fields, func):
         categories = self.call("crafting.categories")
-        recipes = self.call("crafting.recipes")
+        recipes = self.load_recipes()
         fields.append({
             "name": "default_category",
             "type": "combo",
@@ -452,12 +445,13 @@ class CraftingAdmin(ConstructorModule):
             "value": func.get("default_category"),
             "values": [(cat["id"], cat["name"]) for cat in categories],
         })
+        enabled_recipes = func.get("crafting_recipes", {})
         for cat in categories:
             first_recipe = True
             col = 0
             cols = 3
             for rcp in recipes:
-                if rcp["category"] == cat["id"]:
+                if rcp.get("category") == cat["id"]:
                     if first_recipe:
                         fields.append({
                             "type": "header",
@@ -465,11 +459,10 @@ class CraftingAdmin(ConstructorModule):
                             "condition": "[tp] == 'crafting'",
                         })
                         first_recipe = False
-                    key = "crafting_%s" % rcp["id"]
                     fields.append({
                         "type": "checkbox",
-                        "name": key,
-                        "checked": func.get(key),
+                        "name": "crafting_%s" % rcp.uuid,
+                        "checked": enabled_recipes.get(rcp.uuid),
                         "label": htmlescape(rcp.get("name")),
                         "condition": "[tp] == 'crafting'",
                         "inline": col != 0,
@@ -486,17 +479,19 @@ class CraftingAdmin(ConstructorModule):
     def form_store(self, func, errors):
         req = self.req()
         categories = self.call("crafting.categories")
-        recipes = self.call("crafting.recipes")
+        recipes = self.load_recipes()
         used_categories = set()
+        if "crafting_recipes" not in func:
+            func["crafting_recipes"] = {}
+        enabled_recipes = func["crafting_recipes"]
         for cat in categories:
             for rcp in recipes:
-                if rcp["category"] == cat["id"]:
-                    key = "crafting_%s" % rcp["id"]
-                    if req.param(key):
-                        func[key] = True
+                if rcp.get("category") == cat["id"]:
+                    if req.param("crafting_%s" % rcp.uuid):
+                        enabled_recipes[rcp.uuid] = True
                         used_categories.add(cat["id"])
-                    elif func.get(key):
-                        del func[key]
+                    elif enabled_recipes.get(rcp.uuid):
+                        del enabled_recipes[rcp.uuid]
         default_category = req.param("v_default_category")
         if not used_categories:
             self.call("web.response_json", {"success": False, "errormsg": self._("No recipes selected")})
@@ -519,8 +514,8 @@ class CraftingAdmin(ConstructorModule):
                 htmlescape(quantity),
                 '<div class="nowrap">%s</div>' % ('<br />'.join(requirements)),
                 ing.get("order"),
-                u'<hook:admin.link href="crafting/recipes/ingredients/%s/%s" title="%s" />' % (recipe["id"], ing["id"], self._("edit")),
-                u'<hook:admin.link href="crafting/recipes/ingredients/%s/del/%s" title="%s" confirm="%s" />' % (recipe["id"], ing["id"], self._("delete"), self._("Are you sure want to delete this ingredient?")),
+                u'<hook:admin.link href="crafting/recipes/ingredients/%s/%s" title="%s" />' % (recipe.uuid, ing["id"], self._("edit")),
+                u'<hook:admin.link href="crafting/recipes/ingredients/%s/del/%s" title="%s" confirm="%s" />' % (recipe.uuid, ing["id"], self._("delete"), self._("Are you sure want to delete this ingredient?")),
             ])
         production = []
         for prod in recipe.get("production", []):
@@ -537,21 +532,21 @@ class CraftingAdmin(ConstructorModule):
                 htmlescape(quantity),
                 '<div class="nowrap">%s</div>' % ('<br />'.join(mods)),
                 prod.get("order"),
-                u'<hook:admin.link href="crafting/recipes/production/%s/%s" title="%s" />' % (recipe["id"], prod["id"], self._("edit")),
-                u'<hook:admin.link href="crafting/recipes/production/%s/del/%s" title="%s" confirm="%s" />' % (recipe["id"], prod["id"], self._("delete"), self._("Are you sure want to delete this product?")),
+                u'<hook:admin.link href="crafting/recipes/production/%s/%s" title="%s" />' % (recipe.uuid, prod["id"], self._("edit")),
+                u'<hook:admin.link href="crafting/recipes/production/%s/del/%s" title="%s" confirm="%s" />' % (recipe.uuid, prod["id"], self._("delete"), self._("Are you sure want to delete this product?")),
             ])
         params = [
-            [self._("recipe///Name"), htmlescape(recipe["name"])],
-            [self._("Sorting order"), recipe["order"]],
+            [self._("recipe///Name"), htmlescape(recipe.get("name"))],
+            [self._("Sorting order"), recipe.get("order")],
         ]
         if recipe.get("image"):
-            params.append([self._("Recipe image"), '<img src="%s" alt="" />' % recipe["image"]])
+            params.append([self._("Recipe image"), '<img src="%s" alt="" />' % recipe.get("image")])
         vars = {
             "tables": [
                 {
                     "links": [
                         {
-                            "hook": "crafting/recipes/%s" % recipe["id"],
+                            "hook": "crafting/recipes/%s" % recipe.uuid,
                             "text": self._("Edit recipe parameters"),
                             "lst": True,
                         },
@@ -562,7 +557,7 @@ class CraftingAdmin(ConstructorModule):
                     "title": self._("Ingredients"),
                     "links": [
                         {
-                            "hook": "crafting/recipes/ingredients/%s/new" % recipe["id"],
+                            "hook": "crafting/recipes/ingredients/%s/new" % recipe.uuid,
                             "text": self._("New ingredient"),
                             "lst": True,
                         },
@@ -581,7 +576,7 @@ class CraftingAdmin(ConstructorModule):
                     "title": self._("Production"),
                     "links": [
                         {
-                            "hook": "crafting/recipes/production/%s/new" % recipe["id"],
+                            "hook": "crafting/recipes/production/%s/new" % recipe.uuid,
                             "text": self._("New product"),
                             "lst": True,
                         },
@@ -617,7 +612,7 @@ class CraftingAdmin(ConstructorModule):
                     valid_item_types.add(item_type.uuid)
         return item_type_values, valid_item_types
 
-    def admin_recipe_ingredients(self, recipes, recipe, args):
+    def admin_recipe_ingredients(self, recipe, args):
         req = self.req()
         item_type_values, valid_item_types = self.load_item_types()
         ingredients = recipe.get("ingredients", [])
@@ -625,11 +620,10 @@ class CraftingAdmin(ConstructorModule):
         if m:
             uuid = m.group(1)
             ingredients = [i for i in ingredients if i["id"] != uuid]
-            recipe["ingredients"] = ingredients
-            config = self.app().config_updater()
-            config.set("crafting.recipes", recipes)
-            config.store()
-            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe["id"])
+            recipe.set("ingredients", ingredients)
+            recipe.touch()
+            recipe.store()
+            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
         if args == "new":
             ing = {
                 "id": uuid4().hex,
@@ -641,7 +635,7 @@ class CraftingAdmin(ConstructorModule):
                     ing = i.copy()
                     break
             if ing is None:
-                self.call("admin.redirect", "crafting/recipes/view/%s" % recipe["id"])
+                self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
         if req.ok():
             errors = {}
             # item_type
@@ -666,11 +660,10 @@ class CraftingAdmin(ConstructorModule):
             ingredients = [i for i in ingredients if i["id"] != ing["id"]]
             ingredients.append(ing)
             ingredients.sort(cmp=lambda x, y: cmp(x["order"], y["order"]))
-            recipe["ingredients"] = ingredients
-            config = self.app().config_updater()
-            config.set("crafting.recipes", recipes)
-            config.store()
-            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe["id"])
+            recipe.set("ingredients", ingredients)
+            recipe.touch()
+            recipe.store()
+            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
         fields = [
             {"name": "item_type", "label": self._("Item type"), "type": "combo", "values": item_type_values, "value": ing.get("item_type")},
             {"name": "order", "label": self._("Sorting order"), "value": ing.get("order"), "inline": True},
@@ -679,7 +672,7 @@ class CraftingAdmin(ConstructorModule):
         ]
         self.call("admin.form", fields=fields)
 
-    def admin_recipe_production(self, recipes, recipe, args):
+    def admin_recipe_production(self, recipe, args):
         req = self.req()
         item_type_values, valid_item_types = self.load_item_types()
         params = self.call("item-types.params")
@@ -688,11 +681,10 @@ class CraftingAdmin(ConstructorModule):
         if m:
             uuid = m.group(1)
             production = [p for p in production if p["id"] != uuid]
-            recipe["production"] = production
-            config = self.app().config_updater()
-            config.set("crafting.recipes", recipes)
-            config.store()
-            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe["id"])
+            recipe.set("production", production)
+            recipe.touch()
+            recipe.store()
+            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
         if args == "new":
             prod = {
                 "id": uuid4().hex,
@@ -704,7 +696,7 @@ class CraftingAdmin(ConstructorModule):
                     prod = p.copy()
                     break
             if prod is None:
-                self.call("admin.redirect", "crafting/recipes/view/%s" % recipe["id"])
+                self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
         if req.ok():
             errors = {}
             # item_type
@@ -735,11 +727,10 @@ class CraftingAdmin(ConstructorModule):
             production = [p for p in production if p["id"] != prod["id"]]
             production.append(prod)
             production.sort(cmp=lambda x, y: cmp(x["order"], y["order"]))
-            recipe["production"] = production
-            config = self.app().config_updater()
-            config.set("crafting.recipes", recipes)
-            config.store()
-            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe["id"])
+            recipe.set("production", production)
+            recipe.touch()
+            recipe.store()
+            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
         fields = [
             {"name": "item_type", "label": self._("Item type"), "type": "combo", "values": item_type_values, "value": prod.get("item_type")},
             {"name": "order", "label": self._("Sorting order"), "value": prod.get("order"), "inline": True},
@@ -749,10 +740,14 @@ class CraftingAdmin(ConstructorModule):
             fields.append({"type": "header", "html": self._("Override parameters")})
             fields.append({"type": "html", "html": self._("If you remain a field empty its value will be taken from the item type parameters")})
             mods = prod.get("mods", {})
+            print mods
             grp = None
             for param in params:
                 if param["grp"] != grp and param["grp"] != "":
                     fields.append({"type": "header", "html": param["grp"]})
                     grp = param["grp"]
-                fields.append({"name": "p_%s" % param["code"], "label": u"%s%s" % (param["name"], self.call("script.help-icon-expressions")), "value": mods.get(param["code"]), "value": req.param("p_%s" % param["code"])})
+                val = mods.get(param["code"])
+                if val is not None:
+                    val = self.call("script.unparse-expression", val)
+                fields.append({"name": "p_%s" % param["code"], "label": u"%s%s" % (param["name"], self.call("script.help-icon-expressions")), "value": val})
         self.call("admin.form", fields=fields)

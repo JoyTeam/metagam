@@ -276,3 +276,9 @@ area { border: none }
 #activity-progress-background { background-color: #404040 }
 #activity-progress-indicator { background-color: #606060 }
 #activity-progress-text { color: #ffffff; padding: 0 10px 0 10px; text-align: center }
+
+/* CRAFTING */
+.crafting-menu { padding-bottom: 15px }
+.recipe-image-td { vertical-align: top; padding-right: 30px }
+.recipe-info-td { vertical-align: top }
+.recipe-info-name { font-weight: bold }
