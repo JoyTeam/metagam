@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-17 11:54+0100\n"
+"PO-Revision-Date: 2013-11-17 12:06+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -9015,6 +9015,12 @@ msgstr "Этот параметр является классом персона
 
 msgid "This parameter is mandatory"
 msgstr "Это обязательный параметр"
+
+msgid "This recipe is not available in this place"
+msgstr "Этот рецепт недоступно в этом месте"
+
+msgid "This recipe is unavailable for you at the moment"
+msgstr "Этот рецепт в данный момент вам недоступен"
 
 msgid "This rule is shown in all forum categories"
 msgstr "Это правило показывается во всех разделах форума"

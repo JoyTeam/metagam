@@ -15,7 +15,8 @@ class Crafting(ConstructorModule):
         self.rhook("crafting.categories", self.categories)
         self.rhook("interfaces.list", self.interfaces_list)
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
-        self.rhook("interface-crafting.action-default", self.interface_crafting, priv="logged")
+        self.rhook("interface-crafting.action-default", self.interface_recipes, priv="logged")
+        self.rhook("interface-crafting.action-craft", self.interface_craft, priv="logged")
 
     def child_modules(self):
         return ["mg.mmorpg.crafting.CraftingAdmin"]
@@ -54,15 +55,52 @@ class Crafting(ConstructorModule):
                     "order": 9,
                 })
 
-    def interface_crafting(self, func_id, base_url, func, args, vars):
+    def interface_craft(self, func_id, base_url, func, args, vars):
         req = self.req()
-        if req.ok():
-            lock_objects = []
-            if req.ok():
-                lock_objects.append(character.lock)
-                lock_objects.append(character.inventory.lock_key)
-            with self.lock(lock_objects):
-                character.inventory.load()
+        char = self.character(req.user())
+        lock_objects = [
+            char.lock,
+            char.inventory.lock_key
+        ]
+        # check whether the recipe is enabled in this interface
+        enabled_recipes = func.get("crafting_recipes", {})
+        if args not in enabled_recipes:
+            char.error(self._("This recipe is not available in this place"))
+            self.call("web.redirect", "%s/default" % base_url)
+        globs = {"char": char}
+        char_params = self.call("characters.params")
+        lang = self.call("l10n.lang")
+        with self.lock(lock_objects):
+            char.inventory.load()
+            try:
+                rcp = self.obj(DBCraftingRecipe, args)
+            except ObjectNotFoundException:
+                self.call("web.redirect", "%s/default" % base_url)
+            # check visibility condition
+            if not self.call("script.evaluate-expression", rcp.get("visible", 1), globs=globs, description=lambda: self._("Recipe '%s' visibility") % rcp.get("name")):
+                char.error(self._("This recipe is unavailable for you at the moment"))
+                self.call("web.redirect", "%s/default" % base_url)
+            # check character parameters requirements
+            reqs = rcp.get("requirements", {})
+            for param in char_params:
+                min_val1 = reqs.get("visible_%s" % param["code"])
+                min_val2 = reqs.get("available_%s" % param["code"])
+                if (min_val1 is not None and char.param(param["code"]) < min_val1) or (min_val2 is not None and char.param(param["code"]) < min_val2):
+                    if lang == "ru":
+                        name = param.get("name_g") or param.get("name")
+                    else:
+                        name = param.get("name")
+                    char.error(self._("Not enough %s") % name)
+                    self.call("web.redirect", "%s/default" % base_url)
+            # check additional availability conditions
+            for avail in rcp.get("availability", []):
+                if not self.call("script.evaluate-expression", avail.get("condition"), globs=globs, description=lambda: self._("Recipe '%s' availability condition") % rcp.get("name")):
+                    char.error(avail.get("message"))
+                    self.call("web.redirect", "%s/default" % base_url)
+            self.call("web.response", "OK")
+
+    def interface_recipes(self, func_id, base_url, func, args, vars):
+        req = self.req()
         enabled_recipes = func.get("crafting_recipes", {})
         recipes = self.objlist(DBCraftingRecipeList, enabled_recipes.keys())
         recipes.load(silent=True)
