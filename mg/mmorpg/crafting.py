@@ -74,6 +74,8 @@ class Crafting(ConstructorModule):
             rrecipes = []
             for rcp in recipes:
                 if rcp.get("category") == cat["id"]:
+                    if not self.call("script.evaluate-expression", rcp.get("visible", 1), globs=globs, description=lambda: self._("Recipe '%s' visibility") % rcp.get("name")):
+                        continue
                     rrecipe = {
                         "id": rcp.uuid,
                         "name": htmlescape(rcp.get("name")),
@@ -382,6 +384,7 @@ class CraftingAdmin(ConstructorModule):
                 categories_values.append((cat["id"], cat["name"]))
             if req.ok():
                 self.call("web.upload_handler")
+                char = self.character(req.user())
                 errors = {}
                 # name
                 name = req.param("name").strip()
@@ -426,8 +429,9 @@ class CraftingAdmin(ConstructorModule):
                 # description
                 rcp.set("description", req.param("description").strip())
                 # duration
-                char = self.character(req.user())
                 rcp.set("duration", self.call("script.admin-expression", "duration", errors, globs={"char": char}))
+                # visibility
+                rcp.set("visible", self.call("script.admin-expression", "visible", errors, globs={"char": char}))
                 # process errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
@@ -449,6 +453,7 @@ class CraftingAdmin(ConstructorModule):
                 {"name": "name", "label": self._("Recipe name"), "value": rcp.get("name")},
                 {"name": "order", "label": self._("Sorting order"), "value": rcp.get("order"), "inline": True},
                 {"name": "category", "label": self._("Category"), "type": "combo", "value": rcp.get("category"), "values": categories_values},
+                {"name": "visible", "label": self._("Visibility condition") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", rcp.get("visible", 1))},
                 {"name": "duration", "label": self._("Production time (minimal value - 30 seconds, maximal value - 86400 seconds)") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", rcp.get("duration", 30))},
                 {"name": "image", "type": "fileuploadfield", "label": self._("Recipe image")},
                 {"name": "description", "label": self._("Recipe description"), "type": "textarea", "value": rcp.get("description")},
@@ -615,6 +620,7 @@ class CraftingAdmin(ConstructorModule):
         params = [
             [self._("recipe///Name"), htmlescape(recipe.get("name"))],
             [self._("Sorting order"), recipe.get("order")],
+            [self._("Visibility condition"), htmlescape(self.call("script.unparse-expression", recipe.get("visible", 1)))],
         ]
         if recipe.get("image"):
             params.append([self._("Recipe image"), '<img src="%s" alt="" />' % recipe.get("image")])

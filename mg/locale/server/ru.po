@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-17 10:35+0100\n"
+"PO-Revision-Date: 2013-11-17 10:54+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -7134,6 +7134,10 @@ msgstr "Тщательно перепроверьте все настройки.
 #, python-format
 msgid "Recipe '%s' duration"
 msgstr "Длительность рецепта \"%s\""
+
+#, python-format
+msgid "Recipe '%s' visibility"
+msgstr "Видимость рецепта \"%s\""
 
 msgid "Recipe description"
 msgstr "Описание рецепта"
