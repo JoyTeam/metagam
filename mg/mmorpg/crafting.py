@@ -132,7 +132,7 @@ class Crafting(ConstructorModule):
                         self.call("web.redirect", "%s/default" % base_url)
             # run activity
             options = {
-                "priority": 0,
+                "priority": self.conf("crafting.activity_priority", 0),
                 "hdls": [],
                 "vars": {
                     "p_atype": "crafting",
@@ -418,16 +418,20 @@ class CraftingAdmin(ConstructorModule):
             char = self.character(req.user())
             # progress_text
             progress_text = self.call("script.admin-text", "progress_text", errors, globs={"char": char}, mandatory=False)
+            # activity_priority
+            activity_priority = intz(req.param("activity_priority"))
             # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
             # store
             config = self.app().config_updater()
             config.set("crafting.progress_text", progress_text)
+            config.set("crafting.activity_priority", activity_priority)
             config.store()
             self.call("admin.response", self._("Settings stored"), {})
         fields = [
             {"name": "progress_text", "label": self._("Text on the progress bar during crafting") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.conf("crafting.progress_text", ""))},
+            {"name": "activity_priority", "label": self._("Priority of crafting activity"), "value": self.conf("crafting.activity_priority", 0)},
         ]
         self.call("admin.form", fields=fields)
 
