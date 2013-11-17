@@ -1,0 +1,19 @@
+<table class="items-table">
+[%foreach recipe in recipes%]
+    <tr>
+        <td class="item-image-td">[%if recipe.image%]<img src="[%recipe.image%]" alt="" class="item-image" />[%end%]</td>
+        <td class="item-info-td">
+            <a name="[%recipe.id%]"></a>
+            <div class="item-info-name">[%recipe.name%]</div>
+            [%if recipe.params%]
+            <div class="item-params">
+                [%foreach ent in recipe.params%][%if ent.header%]<div class="item-param-header">[%ent.header%]</div>[%else%]
+                <div class="item-param"><span class="item-param-name">[%ent.name%]</span>: <span class="item-param-value value">[%ent.value%]</span> [%+if ent.unit%]<span class="item-param-unit unit">[%ent.unit%]</span>[%end%][%ent.library_icon%]</div>
+                [%end%][%end%]
+            </div>
+            [%end%]
+            [%if recipe.description%]<div class="item-description">[%recipe.description%]</div>[%end%]
+        </td>
+    </tr>
+[%end%]
+</table>
