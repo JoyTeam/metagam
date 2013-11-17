@@ -695,8 +695,8 @@ Game.activity_update = function (text) {
 };
 
 Game.activity_start = function (pkt) {
-    Game.activity_expr = new DynamicValue(['/', ['-', ['glob', 't'], pkt.since_ts], pkt.till_ts - pkt.since_ts]);
-    Game.activity_expr.setTill(pkt.till_ts);
+    Game.activity_expr = new DynamicValue(pkt.progress_expr);
+    Game.activity_expr.setTill(pkt.progress_till);
     Game.activity_update(pkt.text || '');
 };
 

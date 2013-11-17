@@ -158,8 +158,9 @@ class Crafting(ConstructorModule):
             # run timer
             since_ts = self.time()
             till_ts = since_ts + duration
+            progress_expr = ["/", ["-", ["glob", "t"], since_ts], duration]
             char.modifiers.destroy("timer-:activity-done")
-            char.modifiers.add("timer-:activity-done", 1, self.now(duration), since_ts=since_ts, till_ts=till_ts, text=progress_text)
+            char.modifiers.add("timer-:activity-done", 1, self.now(duration), progress_expr=progress_expr, progress_till=till_ts, text=progress_text)
             self.call("quests.send-activity-modifier", char)
             # commit
             if char.equip:
@@ -224,6 +225,8 @@ class Crafting(ConstructorModule):
                                 tokens.append(name)
                             if tokens:
                                 char.message(u"<br />".join(tokens), title=self._("You have got:"))
+                        # call quest event
+                        self.qevent("crafted", char=char, recipe=rcp.uuid)
                         # redirect to the crafting page
                         char.main_open(recipes_url or "/location")
 

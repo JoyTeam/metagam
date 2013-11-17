@@ -103,6 +103,9 @@ class TokenJavaScript(Parsing.Token):
 class TokenClicked(Parsing.Token):
     "%token clicked"
 
+class TokenCrafted(Parsing.Token):
+    "%token crafted"
+
 class TokenClass(Parsing.Token):
     "%token class"
 
@@ -367,6 +370,10 @@ class EventType(Parsing.Nonterm):
             raise Parsing.SyntaxError(ev.script_parser._("Event identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'"))
         self.val = [["clicked", ident.val], None]
 
+    def reduceCrafted(self, ev):
+        "%reduce crafted"
+        self.val = [["crafted"], None]
+
     def reduceClassSelected(self, ev, ev2):
         "%reduce class selected"
         self.val = [["charclass-selected"], None]
@@ -605,12 +612,15 @@ class QuestAction(Parsing.Nonterm):
         "%reduce activity timer ExprAttrs"
         timeout = get_attr(cmd, "timer", attrs, "timeout", require=True)
         text = get_str_attr(cmd, "timer", attrs, "text")
-        validate_attrs(cmd, "timer", attrs, ["timeout", "text"])
+        indicator = get_attr(cmd, "timer", attrs, "indicator")
+        validate_attrs(cmd, "timer", attrs, ["timeout", "text", "indicator"])
         options = {
             "timeout": timeout
         }
         if text is not None:
             options["text"] = cmd.script_parser.parse_text(text, cmd.script_parser._("Progress bar text"))
+        if indicator is not None:
+            options["indicator"] = indicator
         self.val = ["activity-timer", options]
 
     def reduceModifier(self, cmd, attrs):
@@ -1150,6 +1160,7 @@ class QuestScriptParser(ScriptParser):
     syms["chat"] = TokenChat
     syms["javascript"] = TokenJavaScript
     syms["clicked"] = TokenClicked
+    syms["crafted"] = TokenCrafted
     syms["class"] = TokenClass
     syms["selected"] = TokenSelected
     syms["shop"] = TokenShop
