@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-17 16:13+0100\n"
+"PO-Revision-Date: 2013-11-17 17:14+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -2826,6 +2826,9 @@ msgstr "Экономика"
 msgid "Edit"
 msgstr "Редактировать"
 
+msgid "Edit experience"
+msgstr "Редактировать опыт"
+
 msgid "Edit item type parameters"
 msgstr "Редактировать параметры типа предметов"
 
@@ -3212,6 +3215,9 @@ msgstr "Вычисление \"{cls}.{uuid}.{param}\""
 
 msgid "Evaluation of '{cls}.{uuid}.{param}' visibility condition"
 msgstr "Вычисление условия видимости параметра \"{cls}.{uuid}.{param}\""
+
+msgid "Evaluation of '{param}' experience in recipe '{recipe}'"
+msgstr "Вычисление опыта \"{param}\" в рецепте \"{recipe}\""
 
 msgid "Evaluation of action duration"
 msgstr "Выражение длительности действия"
@@ -3845,6 +3851,9 @@ msgstr "Выдать новое приглашение"
 
 msgid "Give amount"
 msgstr "Сумма к выдаче"
+
+msgid "Give experience"
+msgstr "Выдать опыт"
 
 msgid "Give items"
 msgstr "Выдать предметы"

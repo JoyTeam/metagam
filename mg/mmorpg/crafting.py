@@ -7,7 +7,7 @@ import cStringIO
 from collections import defaultdict
 
 re_del = re.compile(r'^del/(.+)$')
-re_recipes_cmd = re.compile(r'^(view|ingredients|production|requirements|availability)/([0-9a-f]+)(?:|/(.+))$')
+re_recipes_cmd = re.compile(r'^(view|ingredients|production|requirements|availability|experience)/([0-9a-f]+)(?:|/(.+))$')
 re_truncate = re.compile(r'^(.{17}).{3}.+$', re.DOTALL)
 
 class Crafting(ConstructorModule):
@@ -227,6 +227,16 @@ class Crafting(ConstructorModule):
                                 tokens.append(name)
                             if tokens:
                                 char.message(u"<br />".join(tokens), title=self._("You have got:"))
+                        # give experience
+                        exps = rcp.get("experience", {})
+                        for param in self.call("characters.params"):
+                            if param.get("type", 0) == 0:
+                                val = exps.get(param["code"])
+                                if val is not None:
+                                    val = self.call("script.evaluate-expression", val, globs=globs, description=lambda: self._("Evaluation of '{param}' experience in recipe '{recipe}'").format(param=param["code"], recipe=rcp.get("name")))
+                                    if val and val > 0:
+                                        char.set_param(param["code"], char.param(param["code"]) + val)
+                        char.store()
                         # call quest event
                         self.qevent("crafted", char=char, recipe=rcp.uuid)
                         # redirect to the crafting page
@@ -566,6 +576,9 @@ class CraftingAdmin(ConstructorModule):
                         return [self._("New availability condition"), "crafting/recipes/view/%s" % recipe_id]
                     elif args:
                         return [self._("Availability condition"), "crafting/recipes/view/%s" % recipe_id]
+                elif cmd == "experience":
+                    if args == "edit":
+                        return [self._("Give experience"), "crafting/recipes/view/%s" % recipe_id]
                 elif cmd == "requirements":
                     if args == "edit":
                         return [self._("Minimal requirements"), "crafting/recipes/view/%s" % recipe_id]
@@ -607,6 +620,8 @@ class CraftingAdmin(ConstructorModule):
                     return self.admin_recipe_availability(recipe, args)
                 elif cmd == "requirements":
                     return self.admin_recipe_requirements(recipe, args)
+                elif cmd == "experience":
+                    return self.admin_recipe_experience(recipe, args)
                 elif cmd == "ingredients":
                     return self.admin_recipe_ingredients(recipe, args)
                 elif cmd == "production":
@@ -863,6 +878,16 @@ class CraftingAdmin(ConstructorModule):
                     reqs.get("visible_%s" % param["code"]),
                     reqs.get("available_%s" % param["code"]),
                 ])
+        # experience
+        experience = []
+        exps = recipe.get("experience", {})
+        for param in self.call("characters.params"):
+            if param.get("type", 0) == 0:
+                if param["code"] in exps:
+                    experience.append([
+                        htmlescape(param["name"]),
+                        exps.get(param["code"]),
+                    ])
         # ingredients
         ingredients = []
         for ing in recipe.get("ingredients", []):
@@ -996,6 +1021,21 @@ class CraftingAdmin(ConstructorModule):
                     ],
                     "rows": production,
                 },
+                {
+                    "title": self._("Give experience"),
+                    "links": [
+                        {
+                            "hook": "crafting/recipes/experience/%s/edit" % recipe.uuid,
+                            "text": self._("Edit experience"),
+                            "lst": True,
+                        },
+                    ],
+                    "header": [
+                        self._("Parameter"),
+                        self._("Value"),
+                    ],
+                    "rows": experience,
+                },
             ]
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
@@ -1114,6 +1154,40 @@ class CraftingAdmin(ConstructorModule):
             fields.append({"name": key, "label": self._("Minimal value of '%s' for the recipe to be visible") % param["name"], "value": reqs.get(key)})
             key = "available_%s" % param["code"]
             fields.append({"name": key, "label": self._("Minimal value of '%s' for the recipe to be available") % param["name"], "value": reqs.get(key), "inline": True})
+        self.call("admin.form", fields=fields)
+
+    def admin_recipe_experience(self, recipe, args):
+        req = self.req()
+        if args != "edit":
+            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
+        if req.ok():
+            errors = {}
+            exps = {}
+            char = self.character(req.user())
+            # params
+            for param in self.call("characters.params"):
+                if param.get("type", 0) == 0:
+                    key = param["code"]
+                    val = self.call("script.admin-expression", key, errors, globs={"char": char}, mandatory=False)
+                    if val is not None:
+                        exps[key] = val
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # save
+            recipe.set("experience", exps)
+            recipe.touch()
+            recipe.store()
+            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
+        exps = recipe.get("experience", {})
+        fields = []
+        for param in self.call("characters.params"):
+            if param.get("type", 0) == 0:
+                key = param["code"]
+                val = exps.get(key)
+                if val is not None:
+                    val = self.call("script.unparse-expression", val)
+                fields.append({"name": key, "label": param["name"] + self.call("script.help-icon-expressions"), "value": val})
         self.call("admin.form", fields=fields)
 
     def admin_recipe_ingredients(self, recipe, args):
