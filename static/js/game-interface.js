@@ -716,13 +716,17 @@ Game.activity_stop = function () {
 };
 
 Game.activity_show = function (ratio, text) {
+    var hints = Ext.getDom('progress-bar-hints');
+    hints = hints ? hints.innerHTML.split(',') : undefined;
+    var fieldsX = hints ? parseInt(hints[0]) : 100;
+    var heightY = hints ? parseInt(hints[1]) : 100;
     if (!Game.activity_initialized) {
         Game.activity_initialized = true;
         var viewport = Ext.getCmp('game-viewport');
         Game.activity_cmp = new Ext.Window({
             id: 'activity-progress-win',
-            width: viewport.getWidth() - 100,
-            height: 100,
+            width: viewport.getWidth() - fieldsX,
+            height: heightY,
             header: false,
             closable: false,
             resizable: false,
@@ -754,8 +758,8 @@ Game.activity_show = function (ratio, text) {
         var backgroundEl, indicatorEl, textEl;
         var resize = function () {
             /* Resize window */
-            Game.activity_cmp.setSize(viewport.getWidth() - 100, 100);
-            Game.activity_cmp.setPosition(50, Math.floor((viewport.getHeight() - 100) / 2));
+            Game.activity_cmp.setSize(viewport.getWidth() - fieldsX, heightY);
+            Game.activity_cmp.setPosition(Math.floor(fieldsX / 2), Math.floor((viewport.getHeight() - heightY) / 2));
             Ext.getCmp('activity-progress-container').doLayout();
             /* Get internal area dimensions */
             var activity_width = content.getWidth();
