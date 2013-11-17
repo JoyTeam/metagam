@@ -4,6 +4,7 @@ import mg
 from uuid import uuid4
 from PIL import Image
 import cStringIO
+from collections import defaultdict
 
 re_del = re.compile(r'^del/(.+)$')
 re_recipes_cmd = re.compile(r'^(view|ingredients|production)/([0-9a-f]+)(?:|/(.+))$')
@@ -50,7 +51,7 @@ class Crafting(ConstructorModule):
                     "icon": "crafting.png",
                     "title": self._("Crafting"),
                     "block": "left-menu",
-                    "order": 4,
+                    "order": 9,
                 })
 
     def interface_crafting(self, func_id, base_url, func, args, vars):
@@ -67,6 +68,8 @@ class Crafting(ConstructorModule):
         recipes.load(silent=True)
         categories = self.call("crafting.categories")
         rcategories = []
+        char = self.character(req.user())
+        globs = {"char": char}
         for cat in categories:
             rrecipes = []
             for rcp in recipes:
@@ -78,6 +81,70 @@ class Crafting(ConstructorModule):
                         "params": None,
                         "description": rcp.get("description"),
                     }
+                    # parameters
+                    rparams = []
+                    duration = intz(self.call("script.evaluate-expression", rcp.get("duration", 30), globs=globs, description=lambda: self._("Recipe '%s' duration") % rcp.get("name")))
+                    if duration < 30:
+                        duration = 30
+                    if duration > 86400:
+                        duration = 86400
+                    rparams.append({
+                        "name": self._("Production time"),
+                        "value": duration,
+                        "unit": self._("sec"),
+                    })
+                    if rparams:
+                        rrecipe["params"] = rparams
+                    # ingredients
+                    ringredients = []
+                    ingredients = rcp.get("ingredients", [])
+                    used = defaultdict(int)
+                    for ing in ingredients:
+                        item_type = self.item_type(ing.get("item_type"))
+                        if not item_type.valid:
+                            continue
+                        quantity = intz(self.call("script.evaluate-expression", ing.get("quantity"), globs=globs, description=lambda: self._("Ingredient '{item}' quantity in recipe {recipe}").format(item=item_type.name, recipe=rcp.get("name"))))
+                        if quantity <= 0:
+                            continue
+                        used[ing.get("item_type")] += quantity
+                        enough = (char.inventory.aggregate("cnt", ing.get("item_type")) >= used[ing.get("item_type")])
+                        frac_unit = item_type.get("frac_unit")
+                        ringredients.append({
+                            "item_type": item_type,
+                            "item_name": htmlescape(item_type.name),
+                            "quantity": quantity,
+                            "unit": self.call("l10n.literal_value", quantity, frac_unit) if frac_unit else None,
+                            "enough": enough,
+                        })
+                    if ringredients:
+                        rrecipe["ingredients"] = ringredients
+                    # production
+                    rproduction = []
+                    production = rcp.get("production", [])
+                    for prod in production:
+                        item_type = self.item_type(prod.get("item_type"))
+                        if not item_type.valid:
+                            continue
+                        quantity = intz(self.call("script.evaluate-expression", prod.get("quantity"), globs=globs, description=lambda: self._("Product '{item}' quantity in recipe {recipe}").format(item=item_type.name, recipe=rcp.get("name"))))
+                        if quantity <= 0:
+                            continue
+                        rproduction.append({
+                            "item_type": item_type,
+                            "item_name": htmlescape(item_type.name),
+                            "quantity": quantity,
+                            "unit": self._("pcs"),
+                        })
+                    if rproduction:
+                        rrecipe["production"] = rproduction
+                    # actions
+                    ractions = []
+                    ractions.append({
+                        "url": "%s/craft/%s" % (base_url, rcp.uuid),
+                        "text": self._("recipe///Produce"),
+                        "lst": True,
+                    })
+                    if ractions:
+                        rrecipe["actions"] = ractions
                     rrecipes.append(rrecipe)
             if rrecipes:
                 rcategories.append({
@@ -86,7 +153,10 @@ class Crafting(ConstructorModule):
                     "visible": func.get("default_category") == cat["id"],
                     "recipes": rrecipes,
                 })
+        vars["base_url"] = base_url
         vars["categories"] = rcategories
+        vars["Ingredients"] = self._("Ingredients")
+        vars["Production"] = self._("Production")
         content = self.call("game.parse_internal", func.get("shop_template", "crafting-recipes-layout.html"), vars)
         content = self.call("game.parse_internal", "crafting-recipes.html", vars, content)
         self.call("game.response_internal", "crafting-global.html", vars, content)
@@ -353,6 +423,11 @@ class CraftingAdmin(ConstructorModule):
                             left = (w - 100) / 2
                             top = (h - 100) / 2
                             image = image.resize((w, h), Image.ANTIALIAS).crop((left, top, left + 100, top + 100))
+                # description
+                rcp.set("description", req.param("description").strip())
+                # duration
+                char = self.character(req.user())
+                rcp.set("duration", self.call("script.admin-expression", "duration", errors, globs={"char": char}))
                 # process errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
@@ -374,7 +449,9 @@ class CraftingAdmin(ConstructorModule):
                 {"name": "name", "label": self._("Recipe name"), "value": rcp.get("name")},
                 {"name": "order", "label": self._("Sorting order"), "value": rcp.get("order"), "inline": True},
                 {"name": "category", "label": self._("Category"), "type": "combo", "value": rcp.get("category"), "values": categories_values},
+                {"name": "duration", "label": self._("Production time (minimal value - 30 seconds, maximal value - 86400 seconds)") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", rcp.get("duration", 30))},
                 {"name": "image", "type": "fileuploadfield", "label": self._("Recipe image")},
+                {"name": "description", "label": self._("Recipe description"), "type": "textarea", "value": rcp.get("description")},
             ]
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
         if not categories:
@@ -541,6 +618,10 @@ class CraftingAdmin(ConstructorModule):
         ]
         if recipe.get("image"):
             params.append([self._("Recipe image"), '<img src="%s" alt="" />' % recipe.get("image")])
+        params.extend([
+            [self._("Description"), htmlescape(recipe.get("description"))],
+            [self._("Production time in seconds"), htmlescape(self.call("script.unparse-expression", recipe.get("duration", 30)))],
+        ])
         vars = {
             "tables": [
                 {

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-16 22:30+0100\n"
+"PO-Revision-Date: 2013-11-17 10:35+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -4339,6 +4339,9 @@ msgstr "Внутриигровые URL должны быть относител�
 msgid "Ingredient '%s'"
 msgstr "Ингредиент \"%s\""
 
+msgid "Ingredient '{item}' quantity in recipe {recipe}"
+msgstr "Количество ингредиента \"{item}\" в рецепте \"{recipe}\""
+
 msgid "Ingredients"
 msgstr "Ингредиенты"
 
@@ -6754,8 +6757,20 @@ msgstr "Продолжить"
 msgid "Product '%s'"
 msgstr "Продукт \"%s\""
 
+msgid "Product '{item}' quantity in recipe {recipe}"
+msgstr "Количество продукта \"{item}\" в рецепте \"{recipe}\""
+
 msgid "Production"
 msgstr "Продукция"
+
+msgid "Production time"
+msgstr "Время изготовления"
+
+msgid "Production time (minimal value - 30 seconds, maximal value - 86400 seconds)"
+msgstr "Время изготовления (минимальное значение - 30 секунд, максимальное значение - 86400 секунд)"
+
+msgid "Production time in seconds"
+msgstr "Время изготовления в секундах"
 
 msgid "Profile"
 msgstr "Профиль"
@@ -7115,6 +7130,13 @@ msgstr "Перепроверка"
 
 msgid "Recheck all settings thoroughly. After sending data to moderation you won't have an ability to change fields with red border and game logo"
 msgstr "Тщательно перепроверьте все настройки. После отправки данных на модерацию у вас не будет возможности изменить логотип игры и поля, обведённые красным"
+
+#, python-format
+msgid "Recipe '%s' duration"
+msgstr "Длительность рецепта \"%s\""
+
+msgid "Recipe description"
+msgstr "Описание рецепта"
 
 msgid "Recipe image"
 msgstr "Изображение рецепта"
@@ -11152,6 +11174,9 @@ msgstr "перепроверить"
 msgid "recipe///Name"
 msgstr "Название"
 
+msgid "recipe///Produce"
+msgstr "Изготовить"
+
 msgid "recover"
 msgstr "восстановить"
 
@@ -11378,6 +11403,9 @@ msgstr "По UUID"
 
 msgid "search///By domain"
 msgstr "По домену"
+
+msgid "sec"
+msgstr "сек"
 
 msgid "second/seconds"
 msgstr "секунда/секунды/секунд"
@@ -11779,6 +11807,9 @@ msgstr "{targetchar.name} не в игре"
 
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
+
+#~ msgid "Product '%s' quantity"
+#~ msgstr "Количество продукта \"%s\""
 
 #~ msgid "configure"
 #~ msgstr "сконфигурировать"

@@ -20,6 +20,7 @@ area { border: none }
 .game-info { color: #008000; text-align: center; padding: 50px; font-weight: bold }
 .game-error { color: red; text-align: center; padding: 50px; font-weight: bold }
 .error-message { color: #800000; padding: 10px 30px 10px 30px; font-weight: bold; border: solid 1px #800000; margin-bottom: 10px; display: inline-block; }
+.enough { color: #008000 }
 .not-enough { color: #c00000 }
 
 /* MAIN FRAME */
@@ -279,6 +280,10 @@ area { border: none }
 
 /* CRAFTING */
 .crafting-menu { padding-bottom: 15px }
-.recipe-image-td { vertical-align: top; padding-right: 30px }
-.recipe-info-td { vertical-align: top }
-.recipe-info-name { font-weight: bold }
+.recipe-image-td { vertical-align: top; padding: 0 30px 30px 0 }
+.recipe-info-td { vertical-align: top; padding: 3px 0 30px 0 }
+.recipe-info-name { font-weight: bold; font-size: 14px }
+.recipe-params { padding-top: 10px }
+.recipe-param-header { font-weight: bold; padding-bottom: 5px }
+.recipe-description { padding-top: 10px; color: #808080 }
+.recipe-actions { padding-top: 10px }
