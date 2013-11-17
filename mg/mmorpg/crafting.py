@@ -92,7 +92,7 @@ class Crafting(ConstructorModule):
             # check additional availability conditions
             for avail in rcp.get("availability", []):
                 if not self.call("script.evaluate-expression", avail.get("condition"), globs=globs, description=lambda: self._("Recipe '%s' availability condition") % rcp.get("name")):
-                    char.error(avail.get("message"))
+                    char.error(self.call("script.evaluate-text", avail.get("message"), globs=globs, description=lambda: self._("Recipe '%s' unavailability message") % rcp.get("name")))
                     self.call("web.redirect", "%s/default" % base_url)
             # take ingredients
             ingredients = rcp.get("ingredients", [])
@@ -152,11 +152,14 @@ class Crafting(ConstructorModule):
                 duration = 30
             if duration > 86400:
                 duration = 86400
+            # calculate text
+            progress_text = rcp.get("progress_text") or self.conf("crafting.progress_text")
+            progress_text = self.call("script.evaluate-text", progress_text, globs=globs, description=lambda: self._("Recipe '%s' progress bar text") % rcp.get("name"))
             # run timer
             since_ts = self.time()
             till_ts = since_ts + duration
             char.modifiers.destroy("timer-:activity-done")
-            char.modifiers.add("timer-:activity-done", 1, self.now(duration), since_ts=since_ts, till_ts=till_ts, text="CRAFT IN PROGRESS")
+            char.modifiers.add("timer-:activity-done", 1, self.now(duration), since_ts=since_ts, till_ts=till_ts, text=progress_text)
             self.call("quests.send-activity-modifier", char)
             # commit
             if char.equip:
@@ -267,7 +270,7 @@ class Crafting(ConstructorModule):
                     for avail in rcp.get("availability", []):
                         if not self.call("script.evaluate-expression", avail.get("condition"), globs=globs, description=lambda: self._("Recipe '%s' availability condition") % rcp.get("name")):
                             rerrors.append({
-                                "text": avail.get("message"),
+                                "text": self.call("script.evaluate-text", avail.get("message"), globs=globs, description=lambda: self._("Recipe '%s' unavailability message") % rcp.get("name")),
                             })
                     rrecipe = {
                         "id": rcp.uuid,
@@ -371,6 +374,8 @@ class CraftingAdmin(ConstructorModule):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-peaceful.index", self.menu_peaceful_index)
         self.rhook("menu-admin-crafting.index", self.menu_crafting_index)
+        self.rhook("ext-admin-crafting.settings", self.admin_settings, priv="peaceful.crafting")
+        self.rhook("headmenu-admin-crafting.settings", self.headmenu_settings)
         self.rhook("ext-admin-crafting.categories", self.admin_categories, priv="peaceful.crafting")
         self.rhook("headmenu-admin-crafting.categories", self.headmenu_categories)
         self.rhook("ext-admin-crafting.recipes", self.admin_recipes, priv="peaceful.crafting")
@@ -396,8 +401,32 @@ class CraftingAdmin(ConstructorModule):
     def menu_crafting_index(self, menu):
         req = self.req()
         if req.has_access("peaceful.crafting"):
-            menu.append({"id": "crafting/categories", "text": self._("Recipes categories"), "order": 0, "leaf": True})
-            menu.append({"id": "crafting/recipes", "text": self._("Recipes"), "order": 10, "leaf": True})
+            menu.append({"id": "crafting/settings", "text": self._("Settings"), "order": 0, "leaf": True})
+            menu.append({"id": "crafting/categories", "text": self._("Recipes categories"), "order": 10, "leaf": True})
+            menu.append({"id": "crafting/recipes", "text": self._("Recipes"), "order": 20, "leaf": True})
+
+    def headmenu_settings(self, args):
+        return self._("Crafting settings")
+
+    def admin_settings(self):
+        req = self.req()
+        if req.ok():
+            errors = {}
+            char = self.character(req.user())
+            # progress_text
+            progress_text = self.call("script.admin-text", "progress_text", errors, globs={"char": char}, mandatory=False)
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # store
+            config = self.app().config_updater()
+            config.set("crafting.progress_text", progress_text)
+            config.store()
+            self.call("admin.response", self._("Settings stored"), {})
+        fields = [
+            {"name": "progress_text", "label": self._("Text on the progress bar during crafting") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.conf("crafting.progress_text", ""))},
+        ]
+        self.call("admin.form", fields=fields)
 
     def headmenu_categories(self, args):
         if args == "new":
@@ -647,6 +676,8 @@ class CraftingAdmin(ConstructorModule):
                 rcp.set("duration", self.call("script.admin-expression", "duration", errors, globs={"char": char}))
                 # visibility
                 rcp.set("visible", self.call("script.admin-expression", "visible", errors, globs={"char": char}))
+                # progress_text
+                rcp.set("progress_text", self.call("script.admin-text", "progress_text", errors, globs={"char": char}, mandatory=False))
                 # process errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
@@ -672,6 +703,7 @@ class CraftingAdmin(ConstructorModule):
                 {"name": "duration", "label": self._("Production time (minimal value - 30 seconds, maximal value - 86400 seconds)") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-expression", rcp.get("duration", 30))},
                 {"name": "image", "type": "fileuploadfield", "label": self._("Recipe image")},
                 {"name": "description", "label": self._("Recipe description"), "type": "textarea", "value": rcp.get("description")},
+                {"name": "progress_text", "label": self._("Text on the progress bar during crafting (leave empty to use global settings)") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", rcp.get("progress_text", ""))},
             ]
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
         if not categories:
@@ -803,9 +835,10 @@ class CraftingAdmin(ConstructorModule):
         for avail in recipe.get("availability", []):
             condition = self.call("script.unparse-expression", avail.get("condition"))
             condition = re_truncate.sub(r'\1...', condition)
+            message = self.call("script.unparse-text", avail.get("message"))
             availability.append([
                 htmlescape(condition),
-                htmlescape(avail.get("message")),
+                htmlescape(message),
                 avail.get("order"),
                 u'<hook:admin.link href="crafting/recipes/availability/%s/%s" title="%s" />' % (recipe.uuid, avail["id"], self._("edit")),
                 u'<hook:admin.link href="crafting/recipes/availability/%s/del/%s" title="%s" confirm="%s" />' % (recipe.uuid, avail["id"], self._("delete"), self._("Are you sure want to delete this condition?")),
@@ -867,6 +900,8 @@ class CraftingAdmin(ConstructorModule):
             [self._("Description"), htmlescape(recipe.get("description"))],
             [self._("Production time in seconds"), htmlescape(self.call("script.unparse-expression", recipe.get("duration", 30)))],
         ])
+        if recipe.get("progress_text"):
+            params.append([self._("Progress bar text"), htmlescape(self.call("script.unparse-text", recipe.get("progress_text")))])
         vars = {
             "tables": [
                 {
@@ -997,15 +1032,11 @@ class CraftingAdmin(ConstructorModule):
                 self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
         if req.ok():
             errors = {}
-            # condition
             char = self.character(req.user())
+            # condition
             avail["condition"] = self.call("script.admin-expression", "condition", errors, globs={"char": char})
             # message
-            message = req.param("message").strip()
-            if not message:
-                errors["message"] = self._("This field is mandatory")
-            else:
-                avail["message"] = message
+            avail["message"] = self.call("script.admin-text", "message", errors, globs={"char": char})
             # order
             avail["order"] = floatz(req.param("order"))
             # process errors
@@ -1025,7 +1056,7 @@ class CraftingAdmin(ConstructorModule):
         fields = [
             {"name": "condition", "label": self._("Availability condition") + self.call("script.help-icon-expressions"), "value": val},
             {"name": "order", "label": self._("Sorting order"), "value": avail.get("order"), "inline": True},
-            {"name": "message", "label": self._("Message to player when the condition evaluates to false"), "value": avail.get("message")},
+            {"name": "message", "label": self._("Message to player when the condition evaluates to false") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", avail.get("message"))},
         ]
         self.call("admin.form", fields=fields)
 
