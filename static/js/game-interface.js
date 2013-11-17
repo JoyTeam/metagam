@@ -697,7 +697,7 @@ Game.activity_update = function (text) {
 Game.activity_start = function (pkt) {
     Game.activity_expr = new DynamicValue(['/', ['-', ['glob', 't'], pkt.since_ts], pkt.till_ts - pkt.since_ts]);
     Game.activity_expr.setTill(pkt.till_ts);
-    Game.activity_update(pkt.text);
+    Game.activity_update(pkt.text || '');
 };
 
 Game.activity_stop = function () {
@@ -749,8 +749,7 @@ Game.activity_show = function (ratio, text) {
             style: {
                 position: 'relative',
                 left: '0px'
-            },
-            html: '<tr><td id="activity-progress-text">' + text + '</td></tr>'
+            }
         });
         var backgroundEl, indicatorEl, textEl;
         var resize = function () {
@@ -783,6 +782,7 @@ Game.activity_show = function (ratio, text) {
     } else {
         Game.activity_cmp.show();
     }
+    Ext.getCmp('activity-progress-text-container').update('<tr><td id="activity-progress-text">' + text + '</td></tr>');
     Game.activity_progress(ratio);
 };
 

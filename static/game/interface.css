@@ -281,6 +281,7 @@ area { border: none }
 /* CRAFTING */
 .crafting-menu { padding-bottom: 15px }
 .recipe-image-td { vertical-align: top; padding: 0 30px 30px 0 }
+.recipe-image-td img { border: solid 1px #000000 }
 .recipe-info-td { vertical-align: top; padding: 3px 0 30px 0 }
 .recipe-info-name { font-weight: bold; font-size: 14px }
 .recipe-params { padding-top: 10px }

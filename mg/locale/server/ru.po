@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-17 12:06+0100\n"
+"PO-Revision-Date: 2013-11-17 15:24+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -462,6 +462,10 @@ msgstr "Состояние деятельности"
 
 msgid "Activity timers can be started within activities only"
 msgstr "Таймеры деятельности могут запускаться только изнутри activity"
+
+#, python-format
+msgid "Activity type: %s"
+msgstr "Тип деятельности: %s"
 
 msgid "Actual reference documents about the game are placed here."
 msgstr "Здесь публикуется актуальная справочная информация об игре"
@@ -4766,6 +4770,9 @@ msgstr "Название предмета в винительном падеже
 msgid "Item name in genitive plural"
 msgstr "Название предмета в множественном числе и родительном падеже"
 
+msgid "Item parameter '{param}' modifier for item '{item}' in recipe '{recipe}' production"
+msgstr "Модификатор параметра \"{param}\" для предмета \"{item}\" в продукции рецепта \"{recipe}\""
+
 msgid "Item type"
 msgstr "Тип предмета"
 
@@ -6806,6 +6813,9 @@ msgstr "Количество продукта \"{item}\" в рецепте \"{re
 
 msgid "Production"
 msgstr "Продукция"
+
+msgid "Production is in progress"
+msgstr "Идёт изготовление"
 
 msgid "Production time"
 msgstr "Время изготовления"
@@ -10224,6 +10234,10 @@ msgstr "Вы должны загрузить изображение"
 msgid "You must use global variable '{var}' in your expression"
 msgstr "В вашем выражении обязательно должна участвовать переменная \"{var}\""
 
+#, python-format
+msgid "You must wear %s to produce this recipe"
+msgstr "Чтобы произвести этот рецепт, наденьте %s"
+
 msgid "You will be the owner of the domain (in this case provide your personal data)"
 msgstr "Вы сами будете владельцем домена (в этом случае нам потребуются ваши персональные данные)"
 
@@ -11868,6 +11882,9 @@ msgstr "{targetchar.name} не в игре"
 
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
+
+#~ msgid "Production has been started"
+#~ msgstr "Изготовление началось"
 
 #~ msgid "Minimal value"
 #~ msgstr "Минимальное значение"

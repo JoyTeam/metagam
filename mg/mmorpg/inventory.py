@@ -108,6 +108,7 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("advice-admin-inventory.index", self.advice_inventory)
         self.rhook("advice-admin-item-types.index", self.advice_inventory)
+        self.rhook("advice-admin-item-categories.index", self.advice_inventory)
         self.rhook("headmenu-admin-inventory.track", self.headmenu_inventory_track)
         self.rhook("ext-admin-inventory.track", self.admin_inventory_track, priv="inventory.track")
         self.rhook("auth.user-tables", self.user_tables)

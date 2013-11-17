@@ -1348,7 +1348,11 @@ class QuestsAdmin(ConstructorModule):
                             val = htmlescape(val)
                         state.append(u'activity.%s = <strong>%s</strong>' % (htmlescape(key), val))
                     state.sort()
-                    state.append('<pre class="admin-code">%s</pre>' % htmlescape(self.call("quest-admin.unparse-script", activity.handlers).strip()))
+                    atype = character.busy.get("atype")
+                    if atype:
+                        state.insert(0, self._("Activity type: %s") % htmlescape(atype))
+                    if activity.handlers:
+                        state.append('<pre class="admin-code">%s</pre>' % htmlescape(self.call("quest-admin.unparse-script", activity.handlers).strip()))
                     if req.has_access("quests.abort-activities"):
                         state.append('<hook:admin.link href="quests/abort-activity/%s" title="%s" />' % (character.uuid, self._("Abort activity")))
                     cur_activities.append([
@@ -1807,7 +1811,6 @@ class Quests(ConstructorModule):
                                     if cmd[1]:
                                         item_type = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                         it_obj = self.item_type(item_type)
-                                        print "quantity=%s, fractions=%s" % (quantity, fractions)
                                         if fractions is not None:
                                             if fractions >= 1:
                                                 max_fractions = it_obj.get("fractions", 0)
@@ -1817,7 +1820,6 @@ class Quests(ConstructorModule):
                                             else:
                                                 deleted = 0
                                         elif quantity is None or quantity >= 1:
-                                            print "quantity=%s" % quantity
                                             deleted = char.inventory.take_type(item_type, quantity, "quest.take", quest=quest, any_dna=True)
                                         else:
                                             deleted = 0

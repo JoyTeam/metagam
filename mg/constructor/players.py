@@ -711,6 +711,7 @@ class CharactersMod(ConstructorModule):
         character = self.character(mods.uuid)
         #self.debug("Expired modifier of character %s", character.uuid)
         if character.valid:
+            self.call("character-modifier.expired", character, mod)
             character.name_invalidate()
             kind = mod["kind"]
             #self.debug("Expired modifier of kind %s", kind)

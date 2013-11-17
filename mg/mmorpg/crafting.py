@@ -17,6 +17,7 @@ class Crafting(ConstructorModule):
         self.rhook("gameinterface.buttons", self.gameinterface_buttons)
         self.rhook("interface-crafting.action-default", self.interface_recipes, priv="logged")
         self.rhook("interface-crafting.action-craft", self.interface_craft, priv="logged")
+        self.rhook("character-modifier.expired", self.modifier_expired)
 
     def child_modules(self):
         return ["mg.mmorpg.crafting.CraftingAdmin"]
@@ -58,10 +59,6 @@ class Crafting(ConstructorModule):
     def interface_craft(self, func_id, base_url, func, args, vars):
         req = self.req()
         char = self.character(req.user())
-        lock_objects = [
-            char.lock,
-            char.inventory.lock_key
-        ]
         # check whether the recipe is enabled in this interface
         enabled_recipes = func.get("crafting_recipes", {})
         if args not in enabled_recipes:
@@ -70,7 +67,7 @@ class Crafting(ConstructorModule):
         globs = {"char": char}
         char_params = self.call("characters.params")
         lang = self.call("l10n.lang")
-        with self.lock(lock_objects):
+        with self.lock([char.lock, char.inventory.lock_key]):
             char.inventory.load()
             try:
                 rcp = self.obj(DBCraftingRecipe, args)
@@ -97,7 +94,135 @@ class Crafting(ConstructorModule):
                 if not self.call("script.evaluate-expression", avail.get("condition"), globs=globs, description=lambda: self._("Recipe '%s' availability condition") % rcp.get("name")):
                     char.error(avail.get("message"))
                     self.call("web.redirect", "%s/default" % base_url)
-            self.call("web.response", "OK")
+            # take ingredients
+            ingredients = rcp.get("ingredients", [])
+            for ing in ingredients:
+                item_type = self.item_type(ing.get("item_type"))
+                if not item_type.valid():
+                    continue
+                quantity = intz(self.call("script.evaluate-expression", ing.get("quantity"), globs=globs, description=lambda: self._("Ingredient '{item}' quantity in recipe {recipe}").format(item=item_type.name, recipe=rcp.get("name"))))
+                if quantity <= 0:
+                    continue
+                max_fractions = item_type.get("fractions", 0) or 1
+                if ing.get("equipped"):
+                    success = False
+                    if char.equip:
+                        for slot_id, item in char.equip.equipped_slots():
+                            if item.uuid == item_type.uuid:
+                                spent, destroyed = char.equip.break_item(slot_id, quantity, "craft.take")
+                                if not spent:
+                                    continue
+                                success = True
+                                break
+                    if not success:
+                        if lang == "ru":
+                            name = item_type.name_a
+                        else:
+                            name = item_type.name
+                        char.error(self._("You must wear %s to produce this recipe") % name)
+                        self.call("web.redirect", "%s/default" % base_url)
+                else:
+                    deleted = char.inventory._take_type(ing.get("item_type"), quantity, "craft.take", any_dna=True, fractions=max_fractions)
+                    if deleted < quantity:
+                        if lang == "ru":
+                            name = item_type.name_gp
+                        else:
+                            name = item_type.name
+                        char.error(self._("Not enough %s") % name)
+                        self.call("web.redirect", "%s/default" % base_url)
+            # run activity
+            options = {
+                "priority": 0,
+                "hdls": [],
+                "vars": {
+                    "p_atype": "crafting",
+                    "p_recipe": rcp.uuid,
+                    "p_url": "%s/default" % base_url,
+                },
+                "debug": False,
+                "abort_event": "crafting.abort",
+                "atype": "crafting",
+            }
+            if not char.set_busy("activity", options):
+                char.error(self._("You are busy"))
+                self.call("web.redirect", "%s/default" % base_url)
+            # calculate duration
+            duration = intz(self.call("script.evaluate-expression", rcp.get("duration", 30), globs=globs, description=lambda: self._("Recipe '%s' duration") % rcp.get("name")))
+            if duration < 30:
+                duration = 30
+            if duration > 86400:
+                duration = 86400
+            # run timer
+            since_ts = self.time()
+            till_ts = since_ts + duration
+            char.modifiers.destroy("timer-:activity-done")
+            char.modifiers.add("timer-:activity-done", 1, self.now(duration), since_ts=since_ts, till_ts=till_ts, text="CRAFT IN PROGRESS")
+            self.call("quests.send-activity-modifier", char)
+            # commit
+            if char.equip:
+                char.equip.validate()
+            char.inventory.store()
+            self.call("main-frame.info", self._("Production is in progress"))
+
+    def modifier_expired(self, char, mod):
+        if mod["kind"] == "timer-:activity-done":
+            busy = char.busy
+            if busy and busy.get("tp") == "activity":
+                atype = busy.get("atype")
+                if atype == "crafting":
+                    vars = busy.get("vars", {})
+                    recipe_id = vars.get("p_recipe")
+                    recipes_url = vars.get("p_url")
+                    char.unset_busy()
+                    self.call("quests.send-activity-modifier", char)
+                    # give result
+                    if recipe_id:
+                        given_items = {}
+                        with self.lock([char.lock, char.inventory.lock_key]):
+                            char.inventory.load()
+                            try:
+                                rcp = self.obj(DBCraftingRecipe, recipe_id)
+                            except ObjectNotFoundException:
+                                pass
+                            else:
+                                globs = {"char": char}
+                                production = rcp.get("production", [])
+                                for prod in production:
+                                    item_type = self.item_type(prod.get("item_type"))
+                                    if not item_type.valid():
+                                        continue
+                                    # calculate quantity
+                                    quantity = intz(self.call("script.evaluate-expression", prod.get("quantity"), globs=globs, description=lambda: self._("Product '{item}' quantity in recipe {recipe}").format(item=item_type.name, recipe=rcp.get("name"))))
+                                    if quantity <= 0:
+                                        continue
+                                    # calculate modifiers
+                                    mods = {}
+                                    for param, value in prod.get("mods", {}).iteritems():
+                                        value = self.call("script.evaluate-expression", value, globs=globs, description=lambda: self._("Item parameter '{param}' modifier for item '{item}' in recipe '{recipe}' production").format(param=param, item=item_type.name, recipe=rcp.get("name")))
+                                        if value is not None:
+                                            mods[param] = value
+                                    # give item
+                                    char.inventory.give(item_type.uuid, quantity, "craft.give", mod=mods)
+                                    # information message: 'You have got ...'
+                                    item_name = item_type.name
+                                    try:
+                                        given_items[item_name] += quantity
+                                    except AttributeError:
+                                        given_items = {item_name: quantity}
+                                    except KeyError:
+                                        given_items[item_name] = quantity
+                            # commit
+                            char.inventory.store()
+                        # send notification
+                        if given_items:
+                            tokens = []
+                            for key, val in given_items.iteritems():
+                                name = '<span style="font-weight: bold">%s</span> &mdash; %s' % (htmlescape(key), self._("%d pcs") % val)
+                                tokens.append(name)
+                            if tokens:
+                                char.message(u"<br />".join(tokens), title=self._("You have got:"))
+                        # redirect to the crafting page
+                        char.main_open(recipes_url or "/location")
 
     def interface_recipes(self, func_id, base_url, func, args, vars):
         req = self.req()
@@ -169,21 +294,26 @@ class Crafting(ConstructorModule):
                     ringredients = []
                     ingredients = rcp.get("ingredients", [])
                     used = defaultdict(int)
+                    used_equip = defaultdict(int)
                     for ing in ingredients:
                         item_type = self.item_type(ing.get("item_type"))
-                        if not item_type.valid:
+                        if not item_type.valid():
                             continue
                         quantity = intz(self.call("script.evaluate-expression", ing.get("quantity"), globs=globs, description=lambda: self._("Ingredient '{item}' quantity in recipe {recipe}").format(item=item_type.name, recipe=rcp.get("name"))))
                         if quantity <= 0:
                             continue
-                        used[ing.get("item_type")] += quantity
-                        enough = (char.inventory.aggregate("cnt", ing.get("item_type")) >= used[ing.get("item_type")])
+                        if ing.get("equipped"):
+                            used_equip[ing.get("item_type")] += quantity
+                            enough = (char.equip.aggregate("cnt", ing.get("item_type")) >= used_equip[ing.get("item_type")])
+                        else:
+                            used[ing.get("item_type")] += quantity
+                            enough = (char.inventory.aggregate("cnt", ing.get("item_type")) >= used[ing.get("item_type")])
                         frac_unit = item_type.get("frac_unit")
                         ringredients.append({
                             "item_type": item_type,
                             "item_name": htmlescape(item_type.name),
                             "quantity": quantity,
-                            "unit": self.call("l10n.literal_value", quantity, frac_unit) if frac_unit else None,
+                            "unit": (self.call("l10n.literal_value", quantity, frac_unit) if frac_unit else None) if item_type.get("fractions") else self._("pcs"),
                             "enough": enough,
                         })
                     if ringredients:
@@ -193,7 +323,7 @@ class Crafting(ConstructorModule):
                     production = rcp.get("production", [])
                     for prod in production:
                         item_type = self.item_type(prod.get("item_type"))
-                        if not item_type.valid:
+                        if not item_type.valid():
                             continue
                         quantity = intz(self.call("script.evaluate-expression", prod.get("quantity"), globs=globs, description=lambda: self._("Product '{item}' quantity in recipe {recipe}").format(item=item_type.name, recipe=rcp.get("name"))))
                         if quantity <= 0:
