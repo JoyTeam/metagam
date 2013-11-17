@@ -7,7 +7,7 @@ import cStringIO
 from collections import defaultdict
 
 re_del = re.compile(r'^del/(.+)$')
-re_recipes_cmd = re.compile(r'^(view|ingredients|production)/([0-9a-f]+)(?:|/(.+))$')
+re_recipes_cmd = re.compile(r'^(view|ingredients|production|requirements|availability)/([0-9a-f]+)(?:|/(.+))$')
 re_truncate = re.compile(r'^(.{17}).{3}.+$', re.DOTALL)
 
 class Crafting(ConstructorModule):
@@ -70,11 +70,22 @@ class Crafting(ConstructorModule):
         rcategories = []
         char = self.character(req.user())
         globs = {"char": char}
+        char_params = self.call("characters.params")
         for cat in categories:
             rrecipes = []
             for rcp in recipes:
                 if rcp.get("category") == cat["id"]:
                     if not self.call("script.evaluate-expression", rcp.get("visible", 1), globs=globs, description=lambda: self._("Recipe '%s' visibility") % rcp.get("name")):
+                        continue
+                    reqs = rcp.get("requirements", {})
+                    hide = False
+                    for param in char_params:
+                        min_val = reqs.get("visible_%s" % param["code"])
+                        if min_val is not None:
+                            if char.param(param["code"]) < min_val:
+                                hide = True
+                                break
+                    if hide:
                         continue
                     rrecipe = {
                         "id": rcp.uuid,
@@ -319,6 +330,14 @@ class CraftingAdmin(ConstructorModule):
             if rcp:
                 if cmd == "view":
                     return [htmlescape(rcp.get("name")), "crafting/recipes"]
+                elif cmd == "availability":
+                    if args == "new":
+                        return [self._("New availability condition"), "crafting/recipes/view/%s" % recipe_id]
+                    elif args:
+                        return [self._("Availability condition"), "crafting/recipes/view/%s" % recipe_id]
+                elif cmd == "requirements":
+                    if args == "edit":
+                        return [self._("Minimal requirements"), "crafting/recipes/view/%s" % recipe_id]
                 elif cmd == "ingredients":
                     if args == "new":
                         return [self._("New ingredient"), "crafting/recipes/view/%s" % recipe_id]
@@ -353,9 +372,13 @@ class CraftingAdmin(ConstructorModule):
             if recipe:
                 if cmd == "view":
                     return self.admin_recipe_view(recipe, args)
-                if cmd == "ingredients":
+                elif cmd == "availability":
+                    return self.admin_recipe_availability(recipe, args)
+                elif cmd == "requirements":
+                    return self.admin_recipe_requirements(recipe, args)
+                elif cmd == "ingredients":
                     return self.admin_recipe_ingredients(recipe, args)
-                if cmd == "production":
+                elif cmd == "production":
                     return self.admin_recipe_production(recipe, args)
             self.call("admin.redirect", "crafting/recipes")
         m = re_del.match(req.args)
@@ -583,22 +606,46 @@ class CraftingAdmin(ConstructorModule):
             func["default_category"] = default_category
 
     def admin_recipe_view(self, recipe, args):
+        # availability
+        availability = []
+        for avail in recipe.get("availability", []):
+            condition = self.call("script.unparse-expression", avail.get("condition"))
+            condition = re_truncate.sub(r'\1...', condition)
+            availability.append([
+                htmlescape(condition),
+                htmlescape(avail.get("message")),
+                avail.get("order"),
+                u'<hook:admin.link href="crafting/recipes/availability/%s/%s" title="%s" />' % (recipe.uuid, avail["id"], self._("edit")),
+                u'<hook:admin.link href="crafting/recipes/availability/%s/del/%s" title="%s" confirm="%s" />' % (recipe.uuid, avail["id"], self._("delete"), self._("Are you sure want to delete this condition?")),
+            ])
+        # requirements
+        requirements = []
+        reqs = recipe.get("requirements", {})
+        for param in self.call("characters.params"):
+            if ("visible_%s" % param["code"]) in reqs or ("available_%s" % param["code"]) in reqs:
+                requirements.append([
+                    htmlescape(param["name"]),
+                    reqs.get("visible_%s" % param["code"]),
+                    reqs.get("available_%s" % param["code"]),
+                ])
+        # ingredients
         ingredients = []
         for ing in recipe.get("ingredients", []):
             item_type = self.item_type(ing.get("item_type"))
             quantity = self.call("script.unparse-expression", ing.get("quantity"))
             quantity = re_truncate.sub(r'\1...', quantity)
-            requirements = []
+            ing_requirements = []
             if ing.get("equipped"):
-                requirements.append(self._("item///must be equipped"))
+                ing_requirements.append(self._("item///must be equipped"))
             ingredients.append([
                 htmlescape(item_type.name),
                 htmlescape(quantity),
-                '<div class="nowrap">%s</div>' % ('<br />'.join(requirements)),
+                '<div class="nowrap">%s</div>' % ('<br />'.join(ing_requirements)),
                 ing.get("order"),
                 u'<hook:admin.link href="crafting/recipes/ingredients/%s/%s" title="%s" />' % (recipe.uuid, ing["id"], self._("edit")),
                 u'<hook:admin.link href="crafting/recipes/ingredients/%s/del/%s" title="%s" confirm="%s" />' % (recipe.uuid, ing["id"], self._("delete"), self._("Are you sure want to delete this ingredient?")),
             ])
+        # production
         production = []
         for prod in recipe.get("production", []):
             item_type = self.item_type(prod.get("item_type"))
@@ -639,6 +686,40 @@ class CraftingAdmin(ConstructorModule):
                         },
                     ],
                     "rows": params,
+                },
+                {
+                    "title": self._("Minimal requirements"),
+                    "links": [
+                        {
+                            "hook": "crafting/recipes/requirements/%s/edit" % recipe.uuid,
+                            "text": self._("Edit requirements"),
+                            "lst": True,
+                        },
+                    ],
+                    "header": [
+                        self._("Parameter"),
+                        self._("Minimal value to see the recipe"),
+                        self._("Minimal value to use the recipe"),
+                    ],
+                    "rows": requirements,
+                },
+                {
+                    "title": self._("Availability conditions"),
+                    "links": [
+                        {
+                            "hook": "crafting/recipes/availability/%s/new" % recipe.uuid,
+                            "text": self._("New condition"),
+                            "lst": True,
+                        },
+                    ],
+                    "header": [
+                        self._("Condition"),
+                        self._("Message"),
+                        self._("Sorting order"),
+                        self._("Editing"),
+                        self._("Deletion"),
+                    ],
+                    "rows": availability,
                 },
                 {
                     "title": self._("Ingredients"),
@@ -698,6 +779,109 @@ class CraftingAdmin(ConstructorModule):
                     item_type_values.append((item_type.uuid, u"----- %s" % item_type.get("name")))
                     valid_item_types.add(item_type.uuid)
         return item_type_values, valid_item_types
+
+    def admin_recipe_availability(self, recipe, args):
+        req = self.req()
+        availability = recipe.get("availability", [])
+        m = re_del.match(args)
+        if m:
+            uuid = m.group(1)
+            availability = [i for i in availability if i["id"] != uuid]
+            recipe.set("availability", availability)
+            recipe.touch()
+            recipe.store()
+            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
+        if args == "new":
+            avail = {
+                "id": uuid4().hex,
+                "order": availability[-1]["order"] + 10.0 if availability else 0.0,
+            }
+        else:
+            for i in availability:
+                if i["id"] == args:
+                    avail = i.copy()
+                    break
+            if avail is None:
+                self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
+        if req.ok():
+            errors = {}
+            # condition
+            char = self.character(req.user())
+            avail["condition"] = self.call("script.admin-expression", "condition", errors, globs={"char": char})
+            # message
+            message = req.param("message").strip()
+            if not message:
+                errors["message"] = self._("This field is mandatory")
+            else:
+                avail["message"] = message
+            # order
+            avail["order"] = floatz(req.param("order"))
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # save
+            availability = [i for i in availability if i["id"] != avail["id"]]
+            availability.append(avail)
+            availability.sort(cmp=lambda x, y: cmp(x["order"], y["order"]))
+            recipe.set("availability", availability)
+            recipe.touch()
+            recipe.store()
+            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
+        val = avail.get("condition")
+        if val is not None:
+            val = self.call("script.unparse-expression", val)
+        fields = [
+            {"name": "condition", "label": self._("Availability condition") + self.call("script.help-icon-expressions"), "value": val},
+            {"name": "order", "label": self._("Sorting order"), "value": avail.get("order"), "inline": True},
+            {"name": "message", "label": self._("Message to player when the condition evaluates to false"), "value": avail.get("message")},
+        ]
+        self.call("admin.form", fields=fields)
+
+    def admin_recipe_requirements(self, recipe, args):
+        req = self.req()
+        if args != "edit":
+            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
+        if req.ok():
+            errors = {}
+            reqs = {}
+            # params
+            for param in self.call("characters.params"):
+                # visible
+                key = "visible_%s" % param["code"]
+                val = req.param(key).strip()
+                if val:
+                    if valid_int(val):
+                        reqs[key] = intz(val)
+                    elif valid_number(val):
+                        reqs[key] = floatz(val)
+                    else:
+                        errors[key] = self._("This value must be a valid number")
+                # available
+                key = "available_%s" % param["code"]
+                val = req.param(key).strip()
+                if val:
+                    if valid_int(val):
+                        reqs[key] = intz(val)
+                    elif valid_number(val):
+                        reqs[key] = floatz(val)
+                    else:
+                        errors[key] = self._("This value must be a valid number")
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # save
+            recipe.set("requirements", reqs)
+            recipe.touch()
+            recipe.store()
+            self.call("admin.redirect", "crafting/recipes/view/%s" % recipe.uuid)
+        reqs = recipe.get("requirements", {})
+        fields = []
+        for param in self.call("characters.params"):
+            key = "visible_%s" % param["code"]
+            fields.append({"name": key, "label": self._("Minimal value of '%s' for the recipe to be visible") % param["name"], "value": reqs.get(key)})
+            key = "available_%s" % param["code"]
+            fields.append({"name": key, "label": self._("Minimal value of '%s' for the recipe to be available") % param["name"], "value": reqs.get(key), "inline": True})
+        self.call("admin.form", fields=fields)
 
     def admin_recipe_ingredients(self, recipe, args):
         req = self.req()

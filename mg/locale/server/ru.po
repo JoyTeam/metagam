@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-17 10:54+0100\n"
+"PO-Revision-Date: 2013-11-17 11:34+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -664,6 +664,9 @@ msgstr "Вы уверены, что хотите удалить этот цве�
 msgid "Are you sure want to delete this combat action?"
 msgstr "Вы уверены, что хотите удалить это боевое действие?"
 
+msgid "Are you sure want to delete this condition?"
+msgstr "Вы уверены, что хотите удалить это условие?"
+
 msgid "Are you sure want to delete this constraint?"
 msgstr "Вы уверены, что хотите удалить это ограничение?"
 
@@ -858,6 +861,9 @@ msgstr "Автопродление: включено"
 
 msgid "Availability condition"
 msgstr "Условие доступности"
+
+msgid "Availability conditions"
+msgstr "Условия доступности"
 
 msgid "Availability for buy"
 msgstr "Доступность для покупки"
@@ -2019,6 +2025,9 @@ msgstr "Общеигровой CSS (стили для иконок персон�
 msgid "Complex template (with number and HTML from the table of values)"
 msgstr "Составной шаблон (с числом и HTML из таблицы значений)"
 
+msgid "Condition"
+msgstr "Условие"
+
 msgid "Condition (when to show the button)"
 msgstr "Условие (при котором показывать кнопку)"
 
@@ -2824,6 +2833,9 @@ msgstr "Редактировать параметры квеста"
 
 msgid "Edit recipe parameters"
 msgstr "Редактировать параметры рецепта"
+
+msgid "Edit requirements"
+msgstr "Редактировать требования"
 
 msgid "Edit settings"
 msgstr "Редактировать настройки"
@@ -5453,6 +5465,9 @@ msgstr "Пункт меню"
 msgid "Menu item action"
 msgstr "Действие элемента меню"
 
+msgid "Message"
+msgstr "Сообщение"
+
 msgid "Message about character entered location"
 msgstr "Сообщение о том, что персонаж вошёл в локацию"
 
@@ -5482,6 +5497,9 @@ msgstr "Тема сообщения"
 
 msgid "Message text"
 msgstr "Текст сообщения"
+
+msgid "Message to player when the condition evaluates to false"
+msgstr "Сообщение игроку, когда значение ложно"
 
 msgid "Message was sent successfully"
 msgstr "Сообщение было успешно отправлено"
@@ -5539,6 +5557,9 @@ msgstr "Минимальная длина пароля - 6 символов"
 msgid "Minimal quantity is %d"
 msgstr "Минимальное количество - %d"
 
+msgid "Minimal requirements"
+msgstr "Минимальные требования"
+
 msgid "Minimal requirements to wear this item"
 msgstr "Минимальные требования, чтобы носить этот предмет"
 
@@ -5575,6 +5596,20 @@ msgstr "Минимальное значение - 1"
 
 msgid "Minimal value is 2"
 msgstr "Минимальное значение - 2"
+
+#, python-format
+msgid "Minimal value of '%s' for the recipe to be available"
+msgstr "Минимальное значение \"%s\", чтобы рецепт был доступен"
+
+#, python-format
+msgid "Minimal value of '%s' for the recipe to be visible"
+msgstr "Минимальное значение \"%s\", чтобы рецепт был видим"
+
+msgid "Minimal value to see the recipe"
+msgstr "Минимальное значение, чтобы видеть рецепт"
+
+msgid "Minimal value to use the recipe"
+msgstr "Минимальное значение, чтобы использовать рецепт"
 
 msgid "Mining, crafting, mini-games, etc"
 msgstr "Добыча, крафт, мини-игры и т.д."
@@ -5806,6 +5841,9 @@ msgstr "Новая кнопка действия"
 msgid "New attribute"
 msgstr "Новый атрибут"
 
+msgid "New availability condition"
+msgstr "Новое условие доступности"
+
 msgid "New block"
 msgstr "Новый блок"
 
@@ -5826,6 +5864,9 @@ msgstr "Новое боевое действие"
 
 msgid "New combats rules"
 msgstr "Новые правила боёв"
+
+msgid "New condition"
+msgstr "Новое условие"
 
 msgid "New constraint"
 msgstr "Новое ограничение"
@@ -6424,6 +6465,9 @@ msgstr "Парный обмен. Каждый оппонент выбирает 
 
 msgid "Panels"
 msgstr "Панели"
+
+msgid "Parameter"
+msgstr "Параметр"
 
 #, python-format
 msgid "Parameter %s"
@@ -8997,6 +9041,9 @@ msgstr "Этот пользователь не может иметь парол�
 
 msgid "This value must be a valid integer number"
 msgstr "Это значение должно быть корректным положительным числом"
+
+msgid "This value must be a valid number"
+msgstr "Это значение должно быть корректным числом"
 
 msgid "Till"
 msgstr "До"
@@ -11811,6 +11858,9 @@ msgstr "{targetchar.name} не в игре"
 
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
+
+#~ msgid "Minimal value"
+#~ msgstr "Минимальное значение"
 
 #~ msgid "Product '%s' quantity"
 #~ msgstr "Количество продукта \"%s\""
