@@ -59,11 +59,12 @@ class Crafting(ConstructorModule):
     def interface_craft(self, func_id, base_url, func, args, vars):
         req = self.req()
         char = self.character(req.user())
+        redirect_url = "%s/default" % base_url
         # check whether the recipe is enabled in this interface
         enabled_recipes = func.get("crafting_recipes", {})
         if args not in enabled_recipes:
             char.error(self._("This recipe is not available in this place"))
-            self.call("web.redirect", "%s/default" % base_url)
+            self.call("web.redirect", )
         globs = {"char": char}
         char_params = self.call("characters.params")
         lang = self.call("l10n.lang")
@@ -72,11 +73,12 @@ class Crafting(ConstructorModule):
             try:
                 rcp = self.obj(DBCraftingRecipe, args)
             except ObjectNotFoundException:
-                self.call("web.redirect", "%s/default" % base_url)
+                self.call("web.redirect", redirect_url)
+            redirect_url = "%s?category=%s#%s" % (redirect_url, rcp.get("category"), rcp.uuid)
             # check visibility condition
             if not self.call("script.evaluate-expression", rcp.get("visible", 1), globs=globs, description=lambda: self._("Recipe '%s' visibility") % rcp.get("name")):
                 char.error(self._("This recipe is unavailable for you at the moment"))
-                self.call("web.redirect", "%s/default" % base_url)
+                self.call("web.redirect", redirect_url)
             # check character parameters requirements
             reqs = rcp.get("requirements", {})
             for param in char_params:
@@ -88,12 +90,12 @@ class Crafting(ConstructorModule):
                     else:
                         name = param.get("name")
                     char.error(self._("Not enough %s") % name)
-                    self.call("web.redirect", "%s/default" % base_url)
+                    self.call("web.redirect", redirect_url)
             # check additional availability conditions
             for avail in rcp.get("availability", []):
                 if not self.call("script.evaluate-expression", avail.get("condition"), globs=globs, description=lambda: self._("Recipe '%s' availability condition") % rcp.get("name")):
                     char.error(self.call("script.evaluate-text", avail.get("message"), globs=globs, description=lambda: self._("Recipe '%s' unavailability message") % rcp.get("name")))
-                    self.call("web.redirect", "%s/default" % base_url)
+                    self.call("web.redirect", redirect_url)
             # take ingredients
             ingredients = rcp.get("ingredients", [])
             for ing in ingredients:
@@ -120,7 +122,7 @@ class Crafting(ConstructorModule):
                         else:
                             name = item_type.name
                         char.error(self._("You must wear %s to produce this recipe") % name)
-                        self.call("web.redirect", "%s/default" % base_url)
+                        self.call("web.redirect", redirect_url)
                 else:
                     deleted = char.inventory._take_type(ing.get("item_type"), quantity, "craft.take", any_dna=True, fractions=max_fractions)
                     if deleted < quantity:
@@ -129,7 +131,7 @@ class Crafting(ConstructorModule):
                         else:
                             name = item_type.name
                         char.error(self._("Not enough %s") % name)
-                        self.call("web.redirect", "%s/default" % base_url)
+                        self.call("web.redirect", redirect_url)
             # run activity
             options = {
                 "priority": self.conf("crafting.activity_priority", 0),
@@ -137,7 +139,7 @@ class Crafting(ConstructorModule):
                 "vars": {
                     "p_atype": "crafting",
                     "p_recipe": rcp.uuid,
-                    "p_url": "%s/default" % base_url,
+                    "p_url": redirect_url,
                 },
                 "debug": False,
                 "abort_event": "crafting.abort",
@@ -145,7 +147,7 @@ class Crafting(ConstructorModule):
             }
             if not char.set_busy("activity", options):
                 char.error(self._("You are busy"))
-                self.call("web.redirect", "%s/default" % base_url)
+                self.call("web.redirect", redirect_url)
             # calculate duration
             duration = intz(self.call("script.evaluate-expression", rcp.get("duration", 30), globs=globs, description=lambda: self._("Recipe '%s' duration") % rcp.get("name")))
             if duration < 30:
@@ -241,6 +243,7 @@ class Crafting(ConstructorModule):
         globs = {"char": char}
         char_params = self.call("characters.params")
         lang = self.call("l10n.lang")
+        show_category = req.param("category") or func.get("default_category")
         for cat in categories:
             rrecipes = []
             for rcp in recipes:
@@ -361,7 +364,7 @@ class Crafting(ConstructorModule):
                 rcategories.append({
                     "id": cat["id"],
                     "name_html_js": jsencode(htmlescape(cat.get("name"))),
-                    "visible": func.get("default_category") == cat["id"],
+                    "visible": show_category == cat["id"],
                     "recipes": rrecipes,
                 })
         vars["base_url"] = base_url
