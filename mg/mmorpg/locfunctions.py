@@ -160,7 +160,7 @@ class LocationFunctions(ConstructorModule):
                 req.hook = fn_id
                 req.args = args
                 if action is None:
-                    action = func["default_action"]
+                    action = func.get("default_action", "default")
                 vars = {}
                 self.call("locfunctions.menu", char, vars)
                 self.call("interface-%s.action-%s" % (func["tp"], action), "loc-%s-%s" % (location.uuid, fn_id), "/location/%s/action" % fn_id, func, args, vars, check_priv=True)

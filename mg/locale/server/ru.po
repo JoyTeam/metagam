@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-17 17:14+0100\n"
+"PO-Revision-Date: 2013-11-17 19:59+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -20,6 +20,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: KBabel 1.11.4\n"
+
+msgid " (equipment)"
+msgstr " (экипировка)"
 
 #, python-format
 msgid "%(price).2f MM$ (approx %(price).2f USD)"
@@ -1398,6 +1401,9 @@ msgstr "Редактор образов персонажей"
 
 msgid "Character images list"
 msgstr "Список образов персонажей"
+
+msgid "Character impact"
+msgstr "Влияние на персонажа"
 
 msgid "Character info"
 msgstr "Информация о персонаже"
@@ -8931,12 +8937,19 @@ msgstr "Этот формат изображения не поддерживае
 msgid "This interface allows you to configure starting location of a character depending of his race or class. To create races and classes system go to the '{href}' page first"
 msgstr "Этот интерфейс позволяет вам настроить стартовую локацию персонажа, в зависимости от его расы или класса. Чтобы создать систему рас и классов, перейдите на страницу \"{href}\""
 
+msgid "This is a list of crafting recipes available"
+msgstr "Это список доступных рецептов для крафта"
+
 msgid "This is a list of items available"
 msgstr "Это - список доступных предметов"
 
 #, python-format
 msgid "This is a list of items available in the category %s"
 msgstr "Это - список предметов, доступных в разделе %s"
+
+#, python-format
+msgid "This is a list of recipes available in the category %s"
+msgstr "Это список доступных рецептов в разделе \"%s\""
 
 msgid "This is a sample meta description"
 msgstr "Это пример meta-описания"
@@ -10684,6 +10697,9 @@ msgstr "копировать"
 msgid "could not break item {item} in slot {slot}"
 msgstr "не удалось сломать предмет {item} в слоте {slot}"
 
+msgid "crafting, recipes"
+msgstr "крафт, рецепты"
+
 msgid "created///by"
 msgstr "Создано"
 
@@ -11257,6 +11273,9 @@ msgstr "публичная оферта, условия использовани
 msgid "publish"
 msgstr "опубликовать"
 
+msgid "quantity varies"
+msgstr "количество варьируется"
+
 msgid "quest failed"
 msgstr "квест не пройден"
 
@@ -11283,6 +11302,9 @@ msgstr "Название"
 
 msgid "recipe///Produce"
 msgstr "Изготовить"
+
+msgid "recipes"
+msgstr "рецепты"
 
 msgid "recover"
 msgstr "восстановить"
@@ -11914,6 +11936,9 @@ msgstr "{targetchar.name} не в игре"
 
 msgid "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"have\" : \"has\"} defeated</a> {loosers_list}"
 msgstr "{winners_list} <a href=\"/combat/{combat.id}\" target=\"_blank\">{winners_count >= 2 ? \"одержали\" : first_winner.sex ? \"одержала\" : \"одержал\"} победу</a> над {loosers_list}"
+
+#~ msgid "varies"
+#~ msgstr "варьируется"
 
 #~ msgid "Setting stored"
 #~ msgstr "Настройки сохранены"

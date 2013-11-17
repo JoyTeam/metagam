@@ -20,7 +20,7 @@ class Crafting(ConstructorModule):
         self.rhook("character-modifier.expired", self.modifier_expired)
 
     def child_modules(self):
-        return ["mg.mmorpg.crafting.CraftingAdmin"]
+        return ["mg.mmorpg.crafting.CraftingAdmin", "mg.mmorpg.crafting.CraftingLibrary"]
 
     def categories(self):
         categories = self.conf("crafting.categories")
@@ -292,7 +292,6 @@ class Crafting(ConstructorModule):
                         "id": rcp.uuid,
                         "name": htmlescape(rcp.get("name")),
                         "image": rcp.get("image"),
-                        "params": None,
                         "description": rcp.get("description"),
                     }
                     # parameters
@@ -1329,3 +1328,167 @@ class CraftingAdmin(ConstructorModule):
                     val = self.call("script.unparse-expression", val)
                 fields.append({"name": "p_%s" % param["code"], "label": u"%s%s" % (param["name"], self.call("script.help-icon-expressions")), "value": val})
         self.call("admin.form", fields=fields)
+
+class CraftingLibrary(ConstructorModule):
+    def register(self):
+        self.rdep(["mg.mmorpg.crafting.Crafting"])
+        self.rhook("library-grp-index.pages", self.library_index_pages)
+        self.rhook("library-page-crafting.content", self.library_page_categories)
+        categories = self.call("crafting.categories", load_handlers=False)
+        for cat in categories:
+            self.rhook("library-page-crafting-%s.content" % cat["id"], curry(self.library_page_recipes, cat))
+
+    def library_index_pages(self, pages):
+        pages.append({"page": "crafting", "order": 55})
+
+    def library_page_categories(self, render_content):
+        pageinfo = {
+            "code": "crafting",
+            "title": self._("Crafting recipes"),
+            "keywords": self._("crafting, recipes"),
+            "description": self._("This is a list of crafting recipes available"),
+            "parent": "index",
+        }
+        if render_content:
+            categories = self.call("crafting.categories", load_handlers=False)
+            vars = {
+                "categories": categories,
+            }
+            pageinfo["content"] = self.call("socio.parse", "library-crafting-categories.html", vars)
+        return pageinfo
+
+    def library_page_recipes(self, category, render_content):
+        pageinfo = {
+            "code": "crafting-%s" % category["id"],
+            "title": category["name"],
+            "keywords": u"%s, %s" % (self._("recipes"), category["name"]),
+            "description": self._("This is a list of recipes available in the category %s") % category["name"],
+            "parent": "crafting",
+        }
+        if render_content:
+            lst = self.objlist(DBCraftingRecipeList, query_index="category", query_equal=category["id"])
+            lst.load(silent=True)
+            recipes = sorted(lst, cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)))
+            rrecipes = []
+            for rcp in recipes:
+                rrecipe = {
+                    "id": rcp.uuid,
+                    "name": htmlescape(rcp.get("name")),
+                    "image": rcp.get("image"),
+                    "description": rcp.get("description"),
+                }
+                # parameters
+                rparams = []
+                duration = rcp.get("duration", 30)
+                if type(duration) == list:
+                    rparams.append({
+                        "name": self._("Production time"),
+                        "value": self._("quantity varies"),
+                    })
+                else:
+                    rparams.append({
+                        "name": self._("Production time"),
+                        "value": duration,
+                        "unit": self._("sec"),
+                    })
+                # requirements
+                requirements = []
+                reqs = rcp.get("requirements", {})
+                char_params = self.call("characters.params")
+                for param in char_params:
+                    min_val1 = reqs.get("visible_%s" % param["code"])
+                    min_val2 = reqs.get("available_%s" % param["code"])
+                    if min_val1 is None:
+                        min_val = min_val2
+                    elif min_val2 is None:
+                        min_val = min_val1
+                    elif min_val1 > min_val2:
+                        min_val = min_val1
+                    else:
+                        min_val = min_val2
+                    if min_val is not None:
+                        requirements.append({
+                            "name": param["name"],
+                            "value": min_val,
+                        })
+                if requirements:
+                    rparams += [
+                        {"header": self._("Requirements")},
+                    ] + requirements
+                # ingredients
+                ringredients = []
+                ingredients = rcp.get("ingredients", [])
+                for ing in ingredients:
+                    item_type = self.item_type(ing.get("item_type"))
+                    if not item_type.valid():
+                        continue
+                    quantity = ing.get("quantity")
+                    if type(quantity) == list:
+                        quantity = self._("quantity varies")
+                        quantity_unit = None
+                    else:
+                        frac_unit = item_type.get("frac_unit")
+                        quantity_unit = (self.call("l10n.literal_value", quantity, frac_unit) if frac_unit else None) if item_type.get("fractions") else self._("pcs")
+                    ringredient = {
+                        "name": htmlescape(item_type.name),
+                        "value": quantity,
+                        "unit": quantity_unit,
+                    }
+                    ringredients.append(ringredient)
+                    if ing.get("equipped"):
+                        ringredient["name"] += self._(" (equipment)")
+                if ringredients:
+                    rparams += [
+                        {"header": self._("Ingredients")},
+                    ] + ringredients
+                # production
+                rproduction = []
+                production = rcp.get("production", [])
+                for prod in production:
+                    item_type = self.item_type(prod.get("item_type"))
+                    if not item_type.valid():
+                        continue
+                    quantity = prod.get("quantity")
+                    if type(quantity) == list:
+                        quantity = self._("quantity varies")
+                        quantity_unit = None
+                    else:
+                        quantity_unit = self._("pcs")
+                    rproduction.append({
+                        "name": htmlescape(item_type.name),
+                        "value": quantity,
+                        "unit": quantity_unit,
+                    })
+                if rproduction:
+                    rparams += [
+                        {"header": self._("Production")},
+                    ] + rproduction
+                # experience
+                experience = []
+                exps = rcp.get("experience", {})
+                for param in self.call("characters.params"):
+                    if param.get("type", 0) == 0:
+                        val = exps.get(param["code"])
+                        if val is not None:
+                            if type(val) == list:
+                                val = self._("quantity varies")
+                            elif val > 0:
+                                val = "+%s" % val
+                            experience.append({
+                                "name": param["name"],
+                                "value": val,
+                            })
+                if experience:
+                    rparams += [
+                        {"header": self._("Character impact")},
+                    ] + experience
+                # render output
+                if rparams:
+                    rrecipe["params"] = rparams
+                rrecipes.append(rrecipe)
+            vars = {
+                "recipes": rrecipes,
+            }
+            pageinfo["content"] = self.call("socio.parse", "library-crafting-recipes.html", vars)
+        return pageinfo
+
