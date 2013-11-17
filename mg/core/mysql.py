@@ -27,27 +27,35 @@ class MySQL(object):
         self.app = app
 
     def _execute(self, method_name, options, *args, **kwargs):
-        while True:
-            try:
-                conn = self.pool.cget()
-            except IOError as e:
-                self.pool.error(e)
-            else:
-                # connection is ready here
+        try:
+            while True:
                 try:
-                    method = getattr(conn, method_name)
-                except AttributeError as e:
+                    conn = self.pool.cget()
+                except IOError as e:
+                    conn = None
                     self.pool.error(e)
-                    raise
-                # method is ready here
-                try:
-                    res = method(*args, **kwargs)
-                except Exception as e:
-                    self.pool.error(e)
-                    raise
                 else:
-                    self.pool.success(conn)
-                    return res
+                    # connection is ready here
+                    try:
+                        method = getattr(conn, method_name)
+                    except AttributeError as e:
+                        conn = None
+                        self.pool.error(e)
+                        raise
+                    # method is ready here
+                    try:
+                        res = method(*args, **kwargs)
+                    except Exception as e:
+                        conn = None
+                        self.pool.error(e)
+                        raise
+                    else:
+                        self.pool.success(conn)
+                        conn = None
+                        return res
+        finally:
+            if conn:
+                self.pool.error(None, delay_on_error=0)
 
     def do(self, *args, **kwargs):
         return self._execute("do", None, *args, **kwargs)
@@ -114,10 +122,11 @@ class MySQLPool(object):
         connection.connect()
         return connection
 
-    def error(self, exc=None):
+    def error(self, exc=None, delay_on_error=0.1):
         "Notify Pool that currently selected connection is bad"
         if exc is None:
-            Tasklet.sleep(0.1)
+            if delay_on_error > 0:
+                Tasklet.sleep(delay_on_error)
             conn = self.new_connection()
             self.cput(conn)
             return
@@ -206,11 +215,13 @@ class MySQLPool(object):
             try:
                 conn.do("select 1")
             except EOFError:
-                pass
+                conn = None
             except Exception as e:
+                conn = None
                 logging.getLogger("mg.core.mysql.MySQLPool").exception(e)
-            else:
-                self.cput(conn)
+            finally:
+                if conn:
+                    self.cput(conn)
 
     def ping_tasklet(self):
         while True:
