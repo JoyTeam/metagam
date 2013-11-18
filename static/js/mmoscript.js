@@ -67,6 +67,9 @@ var MMOScript = {
  */
 MMOScript.evaluate = function (val, env) {
     var self = this;
+    if (val === null) {
+        return undefined;
+    }
     if (typeof(val) !== 'object') {
         return val;
     }

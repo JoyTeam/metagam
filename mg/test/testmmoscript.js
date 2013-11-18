@@ -219,3 +219,6 @@ assert.strictEqual(MMOScript.evaluate(['call', 'length', 'Lorem Ipsum Dolor Sit 
 assert.strictEqual(MMOScript.evaluate(['call', 'lc', 'Lorem Ipsum Dolor Sit Amet']), 'lorem ipsum dolor sit amet')
 assert.strictEqual(MMOScript.evaluate(['call', 'uc', 'Lorem Ipsum Dolor Sit Amet']), 'LOREM IPSUM DOLOR SIT AMET')
 
+/* Nulls */
+assert.strictEqual(MMOScript.evaluate(undefined), undefined)
+assert.strictEqual(MMOScript.evaluate(null), undefined)
