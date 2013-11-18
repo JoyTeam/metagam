@@ -15,7 +15,8 @@ class TestItems(unittest.TestCase, ConstructorModule):
         self.inst._dbpool = CassandraPool((("localhost", 9160),))
         self.inst._mcpool = MemcachedPool()
         self.app_obj = Application(self.inst, "mgtest")
-        self.app_obj.modules.load(["mg.mmorpg.inventory.Inventory", "mg.core.l10n.L10n"])
+        self.app_obj.modules.load(["mg.mmorpg.inventory.Inventory", "mg.core.l10n.L10n",
+            "mg.constructor.script.ScriptEngine"])
         ConstructorModule.__init__(self, self.app_obj, "mg.test.testitems.TestItems")
         mc = Memcached(prefix="mgtest-")
         mc.delete("Cassandra-CF-mgtest-Data")
