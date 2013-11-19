@@ -67,6 +67,9 @@ var MMOScript = {
  */
 MMOScript.evaluate = function (val, env) {
     var self = this;
+    if (val === null) {
+        return undefined;
+    }
     if (typeof(val) !== 'object') {
         return val;
     }
@@ -325,10 +328,14 @@ MMOScript.evaluate = function (val, env) {
         if (fname == 'lc' || fname == 'uc') {
             var v = self.toString(self.evaluate(val[2], env));
             if (fname == 'lc') {
-                return v.toLower();
+                return v.toLowerCase();
             } else {
-                return v.toUpper();
+                return v.toUpperCase();
             }
+        }
+        if (fname == 'length') {
+            var v = self.toString(self.evaluate(val[2], env));
+            return v ? v.length : 0;
         }
         if (fname == 'selrand') {
             var index = Math.floor(Math.random() * (val.length - 2));
