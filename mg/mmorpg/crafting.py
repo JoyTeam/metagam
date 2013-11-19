@@ -10,6 +10,8 @@ re_del = re.compile(r'^del/(.+)$')
 re_recipes_cmd = re.compile(r'^(view|ingredients|production|requirements|availability|experience)/([0-9a-f]+)(?:|/(.+))$')
 re_truncate = re.compile(r'^(.{17}).{3}.+$', re.DOTALL)
 
+max_param1_count = 3
+
 class Crafting(ConstructorModule):
     def register(self):
         self.rhook("crafting.categories", self.categories)
@@ -219,28 +221,46 @@ class Crafting(ConstructorModule):
                                         given_items[item_name] = quantity
                             # commit
                             char.inventory.store()
-                        # send notification
-                        if given_items:
-                            tokens = []
-                            for key, val in given_items.iteritems():
-                                name = '<span style="font-weight: bold">%s</span> &mdash; %s' % (htmlescape(key), self._("%d pcs") % val)
-                                tokens.append(name)
-                            if tokens:
-                                char.message(u"<br />".join(tokens), title=self._("You have got:"))
-                        # give experience
-                        exps = rcp.get("experience", {})
-                        for param in self.call("characters.params"):
-                            if param.get("type", 0) == 0:
-                                val = exps.get(param["code"])
-                                if val is not None:
-                                    val = self.call("script.evaluate-expression", val, globs=globs, description=lambda: self._("Evaluation of '{param}' experience in recipe '{recipe}'").format(param=param["code"], recipe=rcp.get("name")))
-                                    if val and val > 0:
-                                        char.set_param(param["code"], char.param(param["code"]) + val)
-                        char.store()
-                        # call quest event
-                        self.qevent("crafted", char=char, recipe=rcp.uuid)
+                        # do after-craft processing in background tasklet
+                        Tasklet.new(self.recipe_crafted)(char, rcp, globs, given_items)
                         # redirect to the crafting page
                         char.main_open(recipes_url or "/location")
+
+    def recipe_crafted(self, char, rcp, globs, given_items):
+        try:
+            # send notification
+            if given_items:
+                tokens = []
+                for key, val in given_items.iteritems():
+                    name = '<span style="font-weight: bold">%s</span> &mdash; %s' % (htmlescape(key), self._("%d pcs") % val)
+                    tokens.append(name)
+                if tokens:
+                    char.message(u"<br />".join(tokens), title=self._("You have got:"))
+            # give experience
+            exps = rcp.get("experience", {})
+            for param in self.call("characters.params"):
+                if param.get("type", 0) == 0:
+                    val = exps.get(param["code"])
+                    if val is not None:
+                        val = self.call("script.evaluate-expression", val, globs=globs, description=lambda: self._("Evaluation of '{param}' experience in recipe '{recipe}'").format(param=param["code"], recipe=rcp.get("name")))
+                        if val and val > 0:
+                            char.set_param(param["code"], char.param(param["code"]) + val)
+            char.store()
+            # call quest event
+            self.qevent("crafted", char=char, recipe=rcp.uuid)
+            # log statistics
+            app_tag = self.app().tag
+            period = self.nowdate()
+            if not self.sql_write.do("update crafting_daily set quantity=quantity+1 where app=? and period=? and recipe=?", app_tag, period, rcp.uuid):
+                self.sql_write.do("insert into crafting_daily(app, period, recipe, quantity) values (?, ?, ?, 1)", app_tag, period, rcp.uuid)
+                self.sql_write.do("delete from crafting_daily where app=? and period=? and recipe=? and id<?", app_tag, period, rcp.uuid, self.sql_write.lastrowid)
+            for param in self.conf("crafting.store_param1", []):
+                paramval = intz(char.param(param))
+                if not self.sql_write.do("update crafting_daily_param1 set quantity=quantity+1 where app=? and param1=? and period=? and param1val=? and recipe=?", app_tag, param, period, paramval, rcp.uuid):
+                    self.sql_write.do("insert into crafting_daily_param1(app, param1, period, recipe, param1val, quantity) values (?, ?, ?, ?, ?, 1)", app_tag, param, period, rcp.uuid, paramval)
+                    self.sql_write.do("delete from crafting_daily_param1 where app=? and param1=? and period=? and param1val=? and recipe=? and id<?", app_tag, param, period, paramval, rcp.uuid, self.sql_write.lastrowid)
+        except Exception as e:
+            self.call("exception.report", e)
 
     def interface_recipes(self, func_id, base_url, func, args, vars):
         req = self.req()
@@ -425,6 +445,7 @@ class CraftingAdmin(ConstructorModule):
 
     def admin_settings(self):
         req = self.req()
+        char_params = self.call("characters.params")
         if req.ok():
             errors = {}
             char = self.character(req.user())
@@ -432,6 +453,13 @@ class CraftingAdmin(ConstructorModule):
             progress_text = self.call("script.admin-text", "progress_text", errors, globs={"char": char}, mandatory=False)
             # activity_priority
             activity_priority = intz(req.param("activity_priority"))
+            # selected_params
+            param1 = []
+            for param in char_params:
+                if req.param("param1_%s" % param["code"]):
+                    param1.append(param["code"])
+            if len(param1) > max_param1_count:
+                errors["param1_%s" % param1[max_param1_count]] = self._("Maximal number of parameters selected - %d") % max_param1_count
             # process errors
             if errors:
                 self.call("web.response_json", {"success": False, "errors": errors})
@@ -439,12 +467,26 @@ class CraftingAdmin(ConstructorModule):
             config = self.app().config_updater()
             config.set("crafting.progress_text", progress_text)
             config.set("crafting.activity_priority", activity_priority)
+            config.set("crafting.store_param1", param1)
             config.store()
             self.call("admin.response", self._("Settings stored"), {})
         fields = [
             {"name": "progress_text", "label": self._("Text on the progress bar during crafting") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", self.conf("crafting.progress_text", ""))},
             {"name": "activity_priority", "label": self._("Priority of crafting activity"), "value": self.conf("crafting.activity_priority", 0)},
         ]
+        if char_params:
+            fields.append({
+                "type": "header",
+                "html": self._("Store crafting statistics split by character parameters"),
+            })
+            param1 = self.conf("crafting.store_param1", [])
+            for param in char_params:
+                fields.append({
+                    "name": "param1_%s" % param["code"],
+                    "type": "checkbox",
+                    "label": param["name"],
+                    "checked": param["code"] in param1
+                })
         self.call("admin.form", fields=fields)
 
     def headmenu_categories(self, args):

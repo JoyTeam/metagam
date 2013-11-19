@@ -187,20 +187,46 @@ sql_table('shops_sell',
 	]
 );
 sql_table('shops_buy',
+        [
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
+                'app' => [ -type=>'varchar(32)', -null=>0 ],
+                'shop' => [ -type=>'varchar(80)', -null=>0 ],
+                'item_type' => [ -type=>'varchar(32)', -null=>0 ],
+                'period' => [ -type=>'date', -null=>0 ],
+                'currency' => [ -type=>'varchar(10)', -null=>0 ],
+                'amount' => [ -type=>'decimal(16,2)', -null=>0, -default=>'0.00' ],
+                'quantity' => [ -type=>'integer', -null=>0 ],
+        ], [
+                'index' => 'app,period,currency',
+                'index' => 'app,shop,period',
+                'index' => 'app,item_type,period',
+                'index' => 'app,shop,item_type,period',
+        ]
+);
+sql_table('crafting_daily',
+        [
+                'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
+                'app' => [ -type=>'varchar(32)', -null=>0 ],
+                'period' => [ -type=>'date', -null=>0 ],
+                'recipe' => [ -type=>'varchar(32)', -null=>0 ],
+                'quantity' => [ -type=>'integer', -null=>0 ],
+        ], [
+                'index' => 'app,period',
+                'index' => 'app,recipe',
+        ]
+);
+sql_table('crafting_daily_param1',
 	[
                 'id' => [ -type=>'integer', -null=>0, -key=>'PRI', -extra=>'auto_increment' ],
 		'app' => [ -type=>'varchar(32)', -null=>0 ],
-		'shop' => [ -type=>'varchar(80)', -null=>0 ],
-		'item_type' => [ -type=>'varchar(32)', -null=>0 ],
+		'param1' => [ -type=>'varchar(32)', -null=>0 ],
 		'period' => [ -type=>'date', -null=>0 ],
-		'currency' => [ -type=>'varchar(10)', -null=>0 ],
-		'amount' => [ -type=>'decimal(16,2)', -null=>0, -default=>'0.00' ],
+		'recipe' => [ -type=>'varchar(32)', -null=>0 ],
+                'param1val' => [ -type=>'integer', -null=>0 ],
 		'quantity' => [ -type=>'integer', -null=>0 ],
 	], [
-		'index' => 'app,period,currency',
-		'index' => 'app,shop,period',
-		'index' => 'app,item_type,period',
-		'index' => 'app,shop,item_type,period',
+		'index' => 'app,param1,period,param1val',
+		'index' => 'app,param1,recipe,param1val',
 	]
 );
 sql_done();

@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-17 19:59+0100\n"
+"PO-Revision-Date: 2013-11-19 08:35+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -5373,6 +5373,10 @@ msgstr "Максимальное количество размеров - %d"
 msgid "Maximal number of inventory cells"
 msgstr "Максимальное количество ячеек инвентаря"
 
+#, python-format
+msgid "Maximal number of parameters selected - %d"
+msgstr "Максимальное количество выбранных параметров - %d"
+
 msgid "Maximal number of smiles in the signature"
 msgstr "Максимальное количество смайликов в подписи"
 
@@ -5386,6 +5390,10 @@ msgstr "Максимальное количество целей для боев
 #, python-format
 msgid "Maximal number of targets is %d"
 msgstr "Максимальное количество целей - %d"
+
+#, python-format
+msgid "Maximal parameter identifier length is %d"
+msgstr "Максимальная длина идентификатора параметра - %d"
 
 #, python-format
 msgid "Maximal quantity is %d"
@@ -8504,6 +8512,9 @@ msgstr "Серверы хранилища (список, разделённый 
 
 msgid "Store character images in these dimensions (comma separated)"
 msgstr "Сохранять образы персонажей в этих размерах (разделяются запятыми)"
+
+msgid "Store crafting statistics split by character parameters"
+msgstr "Сохранять статистику крафта с разбивкой по параметрам персонажей"
 
 msgid "Store images for all items in these dimensions (comma separated). Specific item type may require other dimensions (for example, character equip items may have other dimensions - they shouldn't be listed here)"
 msgstr "Сохранять изображения для всех предметов в этих размерах (разделённых запятыми). Отдельные типы предметов могут требовать других размеров (например, предметы экипировки персонажей могут иметь другие разрешения - их не нужно здесь перечислять)"
