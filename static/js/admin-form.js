@@ -365,6 +365,13 @@ Form = Ext.extend(AdminResponsePanel, {
             errorHandler: data.errorHandler
         });
         this.add(form);
+        if (data.html_after) {
+            this.add({
+                xtype: 'box',
+                style: 'padding-top: 30px',
+                html: data.html_after
+            });
+        }
         this.enforce_conditions(true);
         this.form_cmp = form;
         this.form_id = form_id;

@@ -409,15 +409,17 @@ class CraftingAdmin(ConstructorModule):
         self.rhook("permissions.list", self.permissions_list)
         self.rhook("menu-admin-peaceful.index", self.menu_peaceful_index)
         self.rhook("menu-admin-crafting.index", self.menu_crafting_index)
-        self.rhook("ext-admin-crafting.settings", self.admin_settings, priv="peaceful.crafting")
+        self.rhook("ext-admin-crafting.settings", self.admin_settings, priv="crafting.settings")
         self.rhook("headmenu-admin-crafting.settings", self.headmenu_settings)
-        self.rhook("ext-admin-crafting.categories", self.admin_categories, priv="peaceful.crafting")
+        self.rhook("ext-admin-crafting.categories", self.admin_categories, priv="crafting.settings")
         self.rhook("headmenu-admin-crafting.categories", self.headmenu_categories)
-        self.rhook("ext-admin-crafting.recipes", self.admin_recipes, priv="peaceful.crafting")
+        self.rhook("ext-admin-crafting.recipes", self.admin_recipes, priv="crafting.settings")
         self.rhook("headmenu-admin-crafting.recipes", self.headmenu_recipes)
         self.rhook("admin-globfunc.predefined", self.globfuncs)
         self.rhook("admin-interfaces.form", self.form_render)
         self.rhook("admin-interface-crafting.store", self.form_store)
+        self.rhook("ext-admin-crafting.logs", self.admin_logs, priv="crafting.logs")
+        self.rhook("headmenu-admin-crafting.logs", self.headmenu_logs)
 
     def globfuncs(self, funcs):
         funcs.append({
@@ -428,17 +430,21 @@ class CraftingAdmin(ConstructorModule):
         })
 
     def permissions_list(self, perms):
-        perms.append({"id": "peaceful.crafting", "name": self._("Peaceful activities: crafting")})
+        perms.append({"id": "crafting.settings", "name": self._("Peaceful activities: crafting settings")})
+        perms.append({"id": "crafting.logs", "name": self._("Peaceful activities: crafting logs")})
 
     def menu_peaceful_index(self, menu):
         menu.append({"id": "crafting.index", "text": self._("Crafting"), "order": 10})
 
     def menu_crafting_index(self, menu):
         req = self.req()
-        if req.has_access("peaceful.crafting"):
+        if req.has_access("crafting.settings"):
             menu.append({"id": "crafting/settings", "text": self._("Settings"), "order": 0, "leaf": True})
             menu.append({"id": "crafting/categories", "text": self._("Recipes categories"), "order": 10, "leaf": True})
             menu.append({"id": "crafting/recipes", "text": self._("Recipes"), "order": 20, "leaf": True})
+        if req.has_access("crafting.logs"):
+            menu.append({"id": "crafting/logs/summary", "text": self._("Recipes usage summary"), "order": 30, "leaf": True})
+            menu.append({"id": "crafting/logs/param", "text": self._("Usage of single recipe by parameter"), "order": 35, "leaf": True})
 
     def headmenu_settings(self, args):
         return self._("Crafting settings")
@@ -1370,6 +1376,154 @@ class CraftingAdmin(ConstructorModule):
                     val = self.call("script.unparse-expression", val)
                 fields.append({"name": "p_%s" % param["code"], "label": u"%s%s" % (param["name"], self.call("script.help-icon-expressions")), "value": val})
         self.call("admin.form", fields=fields)
+
+    def headmenu_logs(self, args):
+        if args == "summary":
+            return self._("Summary of crafting recipes usage")
+        elif args == "param":
+            return self._("Statistics on crafting recipes usage split by a parameter")
+
+    def admin_logs(self):
+        req = self.req()
+        if req.args == "summary":
+            return self.admin_logs_summary()
+        elif req.args == "param":
+            return self.admin_logs_param()
+
+    def admin_logs_summary(self):
+        req = self.req()
+        recipes = self.load_recipes()
+        # render form
+        fields = []
+        for rcp in recipes:
+            fields.append({
+                "name": rcp.uuid,
+                "type": "checkbox",
+                "label": htmlescape(rcp.get("name")),
+                "checked": req.param(rcp.uuid),
+            })
+        buttons = [
+            {
+                "text": self._("Get report"),
+            }
+        ]
+        html_after = None
+        if req.ok():
+            # render header
+            header = [
+                self._("Period"),
+            ]
+            for rcp in recipes:
+                if req.param(rcp.uuid):
+                    header.append(htmlescape(rcp.get("name")))
+            # load data
+            data = defaultdict(dict)
+            for period, recipe, quantity in self.sql_read.selectall("select period, recipe, quantity from crafting_daily where app=? and period > date_sub(now(), interval 1 year)", self.app().tag):
+                data[period][recipe] = quantity
+            # render data
+            rows = []
+            for date in sorted(data.keys()):
+                row = [date]
+                date_data = data[date]
+                for rcp in recipes:
+                    if req.param(rcp.uuid):
+                        row.append(date_data.get(rcp.uuid))
+                rows.append(row)
+            # render table
+            vars = {
+                "tables": [
+                    {
+                        "header": header,
+                        "rows": rows,
+                    }
+                ]
+            }
+            html_after = self.call("web.parse_template", "admin/common/tables.html", vars)
+        self.call("admin.form", fields=fields, buttons=buttons, html_after=html_after)
+
+    def admin_logs_param(self):
+        req = self.req()
+        recipes = self.load_recipes()
+        char_params = self.call("characters.params")
+        logged_params = self.conf("crafting.store_param1", [])
+        # render form
+        fields = []
+        recipes_list = [(None, None)]
+        valid_recipes = set()
+        for rcp in recipes:
+            recipes_list.append((rcp.uuid, rcp.get("name")))
+            valid_recipes.add(rcp.uuid)
+        fields.append({
+            "name": "recipe",
+            "type": "combo",
+            "label": self._("Recipe"),
+            "value": req.param("v_recipe"),
+            "values": recipes_list,
+        })
+        params_list = [(None, None)]
+        valid_params = set()
+        for param in char_params:
+            if param["code"] in logged_params:
+                params_list.append((param["code"], param["name"]))
+                valid_params.add(param["code"])
+        fields.append({
+            "name": "param",
+            "type": "combo",
+            "label": self._("Character parameter"),
+            "value": req.param("v_param"),
+            "values": params_list,
+        })
+        buttons = [
+            {
+                "text": self._("Get report"),
+            }
+        ]
+        html_after = None
+        if req.ok():
+            errors = {}
+            # recipe
+            recipe_id = req.param("v_recipe")
+            if recipe_id not in valid_recipes:
+                errors["v_recipe"] = self._("Make a valid selection")
+            # param
+            param_id = req.param("v_param")
+            if param_id not in valid_params:
+                errors["v_param"] = self._("Make a valid selection")
+            # process errors
+            if errors:
+                self.call("web.response_json", {"success": False, "errors": errors})
+            # load data
+            data = defaultdict(dict)
+            values = set()
+            for period, value, quantity in self.sql_read.selectall("select period, param1val, quantity from crafting_daily_param1 where app=? and param1=? and recipe=? and period > date_sub(now(), interval 1 year)", self.app().tag, param_id, recipe_id):
+                data[period][value] = quantity
+                values.add(value)
+            # render header
+            header = [
+                "&nbsp;"
+            ]
+            values = sorted(values)
+            for value in values:
+                header.append(value)
+            # render data
+            rows = []
+            for date in sorted(data.keys()):
+                row = [date]
+                date_data = data[date]
+                for value in values:
+                    row.append(date_data.get(value))
+                rows.append(row)
+            # render table
+            vars = {
+                "tables": [
+                    {
+                        "header": header,
+                        "rows": rows,
+                    }
+                ]
+            }
+            html_after = self.call("web.parse_template", "admin/common/tables.html", vars)
+        self.call("admin.form", fields=fields, buttons=buttons, html_after=html_after)
 
 class CraftingLibrary(ConstructorModule):
     def register(self):

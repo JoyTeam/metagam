@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-19 08:35+0100\n"
+"PO-Revision-Date: 2013-11-19 23:31+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3846,6 +3846,9 @@ msgstr "Основные боевые триггеры"
 msgid "Generic interface settings"
 msgstr "Настройки универсального интерфейса"
 
+msgid "Get report"
+msgstr "Получить отчёт"
+
 msgid "Ghost"
 msgstr "Призрак"
 
@@ -6660,8 +6663,11 @@ msgstr "Paystation"
 msgid "Peaceful activities"
 msgstr "Мирная деятельность"
 
-msgid "Peaceful activities: crafting"
-msgstr "Мирная деятельность: крафт"
+msgid "Peaceful activities: crafting logs"
+msgstr "Мирная деятельность: логи крафта"
+
+msgid "Peaceful activities: crafting settings"
+msgstr "Мирная деятельность: настройки крафта"
 
 msgid "Performed"
 msgstr "Произведено"
@@ -7217,6 +7223,9 @@ msgstr "Перепроверка"
 msgid "Recheck all settings thoroughly. After sending data to moderation you won't have an ability to change fields with red border and game logo"
 msgstr "Тщательно перепроверьте все настройки. После отправки данных на модерацию у вас не будет возможности изменить логотип игры и поля, обведённые красным"
 
+msgid "Recipe"
+msgstr "Рецепт"
+
 #, python-format
 msgid "Recipe '%s' availability condition"
 msgstr "Условие доступности рецепта \"%s\""
@@ -7251,6 +7260,9 @@ msgstr "Рецепты"
 
 msgid "Recipes categories"
 msgstr "Разделы рецептов"
+
+msgid "Recipes usage summary"
+msgstr "Сводка по использованию рецептов"
 
 msgid "Recipient"
 msgstr "Получатель"
@@ -8477,6 +8489,9 @@ msgstr "Статическое хранилище"
 msgid "Static value"
 msgstr "Статическое значение"
 
+msgid "Statistics on crafting recipes usage split by a parameter"
+msgstr "Статистика по использованию рецептов с разбивкой по параметру"
+
 msgid "Statistics on the userbase"
 msgstr "Статистика по пользовательской базе"
 
@@ -8605,6 +8620,9 @@ msgstr "Подписанные темы"
 
 msgid "Subscription successful."
 msgstr "Подписка успешна."
+
+msgid "Summary of crafting recipes usage"
+msgstr "Обзор использования рецептов крафта"
 
 msgid "Support"
 msgstr "Техническая поддержка"
@@ -9550,6 +9568,9 @@ msgstr "Загружено"
 
 msgid "Uploading static objects to the storage"
 msgstr "Загрузка статических объектов  в хранилище"
+
+msgid "Usage of single recipe by parameter"
+msgstr "Использование одного рецепта в разбивке по параметру"
 
 msgid "Use \"preview\" feature to check your design before installing it to the project. Then press \"Reload\" several times to check design on arbitrary data."
 msgstr "Чтобы проверить ваше оформление перед установкой в проект, воспользуйтесь функцией предварительного просмотра. Затем несколько раз нажмите кнопку \"Обновить\", чтобы проверить оформление на различных данных."

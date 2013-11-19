@@ -260,7 +260,7 @@ class AdminInterface(Module):
     def form_condition(self, m):
         return "form_value('%s')" % m.group(1)
 
-    def form(self, url=None, fields=None, buttons=None, title=None, modules=None, menu=None):
+    def form(self, url=None, fields=None, buttons=None, title=None, modules=None, menu=None, html_after=None):
         if url is None:
             req = self.req()
             url = "/%s/%s/%s" % (req.group, req.hook, req.args)
@@ -272,7 +272,7 @@ class AdminInterface(Module):
             condition = field.get("condition")
             if condition is not None:
                 field["condition"] = re_form_condition.sub(self.form_condition, condition)
-        self.call("admin.response_js", "admin-form", "Form", {"url": url, "fields": fields, "buttons": buttons, "title": title, "modules": modules, "menu": menu})
+        self.call("admin.response_js", "admin-form", "Form", {"url": url, "fields": fields, "buttons": buttons, "title": title, "modules": modules, "menu": menu, "html_after": html_after})
 
     def update_menu(self):
         try:
