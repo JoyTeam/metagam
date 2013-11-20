@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-19 23:31+0100\n"
+"PO-Revision-Date: 2013-11-20 22:59+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -455,6 +455,9 @@ msgstr "Активация: %s"
 
 msgid "Active"
 msgstr "Активен"
+
+msgid "Activities documentation"
+msgstr "Документация на деятельность"
 
 #, python-format
 msgid "Activity priority must be a number. Got: %s"
@@ -2218,6 +2221,9 @@ msgstr "Модули, относящиеся к социальному взаи�
 
 msgid "Crafting"
 msgstr "Крафт"
+
+msgid "Crafting documentation"
+msgstr "Документация на крафт"
 
 msgid "Crafting recipes"
 msgstr "Рецепты для крафта"
@@ -10021,6 +10027,10 @@ msgid "You can file detailed information about javascript in the game interface 
 msgstr "Подробную информацию об использовании JavaScript в игровом интерфейсе вы можете прочитать в руководстве на странице \"<a href=\"//www.%s/doc/design/gameinterface#javascript\" target=\"_blank\">Использование произвольного JavaScript</a>\"."
 
 #, python-format
+msgid "You can find detailed information on the activities system in the <a href=\"//www.%s/doc/activities\" target=\"_blank\">activities page</a> in the reference manual."
+msgstr "Подробную информацию о системе деятельности персонажей вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/activities\" target=\"_blank\">Система деятельности персонажей</a>."
+
+#, python-format
 msgid "You can find detailed information on the authentication system in the <a href=\"//www.%s/doc/auth\" target=\"_blank\">authentication page</a> in the reference manual."
 msgstr "Подробную информацию о системе аутентификации вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/auth\" target=\"_blank\">Система аутентификации</a>."
 
@@ -10055,6 +10065,10 @@ msgstr "Подробную информацию о системе образов
 #, python-format
 msgid "You can find detailed information on the combats engine in the <a href=\"//www.%s/doc/combats\" target=\"_blank\">combats engine page</a> in the reference manual."
 msgstr "Подробную информацию о боевой системе вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/combats\" target=\"_blank\">Боевая система</a>."
+
+#, python-format
+msgid "You can find detailed information on the crafting system in the <a href=\"//www.%s/doc/crafting\" target=\"_blank\">crafting page</a> in the reference manual."
+msgstr "Подробную информацию о системе крафта вы можете прочитать в руководстве на странице <a href=\"//www.%s/doc/crafting\" target=\"_blank\">Система крафта</a>."
 
 #, python-format
 msgid "You can find detailed information on the dynamic blocks in <a href=\"//www.%s/doc/dynamic\" target=\"_blank\">dynamic blocks documentation</a>."

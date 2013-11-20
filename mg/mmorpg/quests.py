@@ -328,6 +328,11 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("admin-gameinterface.design-files", self.design_files)
         self.rhook("quest-admin.update-quest-handlers", self.update_quest_handlers)
         self.rhook("ext-admin-quests.abort-activity", self.abort_activity, priv="quests.abort-activities")
+        self.rhook("advice-admin-crafting.index", self.advice_activities)
+        self.rhook("advice-admin-quests.index", self.advice_activities)
+
+    def advice_activities(self, hook, args, advice):
+        advice.append({"title": self._("Activities documentation"), "content": self._('You can find detailed information on the activities system in the <a href="//www.%s/doc/activities" target="_blank">activities page</a> in the reference manual.') % self.main_host, "order": 20})
 
     def design_files(self, files):
         files.append({"filename": "dialog.html", "description": self._("Quest dialog"), "doc": "/doc/quests"})

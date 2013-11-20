@@ -445,6 +445,8 @@ class Character(Module, ParametrizedObject):
             return self.call("charimages.get", self, "charpage")
         elif attr == "image_info":
             return self.call("charimages.get", self, "charinfo")
+        elif attr == "busy":
+            return 1 if self.busy else 0
         # parameters
         m = re_param_attr.match(attr)
         if m:

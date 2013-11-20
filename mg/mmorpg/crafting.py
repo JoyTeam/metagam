@@ -420,6 +420,10 @@ class CraftingAdmin(ConstructorModule):
         self.rhook("admin-interface-crafting.store", self.form_store)
         self.rhook("ext-admin-crafting.logs", self.admin_logs, priv="crafting.logs")
         self.rhook("headmenu-admin-crafting.logs", self.headmenu_logs)
+        self.rhook("advice-admin-crafting.index", self.advice_crafting)
+
+    def advice_crafting(self, hook, args, advice):
+        advice.append({"title": self._("Crafting documentation"), "content": self._('You can find detailed information on the crafting system in the <a href="//www.%s/doc/crafting" target="_blank">crafting page</a> in the reference manual.') % self.main_host, "order": 10})
 
     def globfuncs(self, funcs):
         funcs.append({
