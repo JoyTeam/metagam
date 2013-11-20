@@ -704,6 +704,7 @@ class Constructor(Module):
         params["text"] = self._("Message text")
         params["system_name"] = self._("MMO Constructor")
         params["telegrams_with"] = self._("Correspondence with {0}")
+        params["ignore_list"] = self._("Ignore list")
 
     def email_sender(self, params):
         params["email"] = "robot@%s" % self.main_app().main_host
