@@ -421,6 +421,16 @@ class CraftingAdmin(ConstructorModule):
         self.rhook("ext-admin-crafting.logs", self.admin_logs, priv="crafting.logs")
         self.rhook("headmenu-admin-crafting.logs", self.headmenu_logs)
         self.rhook("advice-admin-crafting.index", self.advice_crafting)
+        self.rhook("admin-sociointerface.design-files", self.sociointerface_design_files)
+        self.rhook("admin-gameinterface.design-files", self.gameinterface_design_files)
+
+    def sociointerface_design_files(self, files):
+        files.append({"filename": "library-crafting-categories.html", "description": self._("List of crafting recipes categories for the library"), "doc": "/doc/design/crafting"})
+        files.append({"filename": "library-crafting-recipes.html", "description": self._("List of crafting recipes for the library"), "doc": "/doc/design/crafting"})
+
+    def gameinterface_design_files(self, files):
+        files.append({"filename": "crafting-global.html", "description": self._("Global crafting template"), "doc": "/doc/design/crafting"})
+        files.append({"filename": "crafting-recipes-layout.html", "description": self._("List of crafting recipes"), "doc": "/doc/design/crafting"})
 
     def advice_crafting(self, hook, args, advice):
         advice.append({"title": self._("Crafting documentation"), "content": self._('You can find detailed information on the crafting system in the <a href="//www.%s/doc/crafting" target="_blank">crafting page</a> in the reference manual.') % self.main_host, "order": 10})

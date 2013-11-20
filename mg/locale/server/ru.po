@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-20 23:08+0100\n"
+"PO-Revision-Date: 2013-11-20 23:16+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -3903,6 +3903,9 @@ msgstr "Выдача предметов"
 msgid "Giving permissions to users"
 msgstr "Выдача привилегий пользователям"
 
+msgid "Global crafting template"
+msgstr "Глобальный шаблон интерфейса крафта"
+
 msgid "Global interface function {func} is not defined"
 msgstr "Функция глобального интерфейса {func} не определена"
 
@@ -5004,6 +5007,15 @@ msgstr "Список классов"
 
 msgid "List of contragents in the telegrams interface"
 msgstr "Список контрагентов в интерфейсе телеграмм"
+
+msgid "List of crafting recipes"
+msgstr "Список рецептов для крафта"
+
+msgid "List of crafting recipes categories for the library"
+msgstr "Список категорий рецептов для крафта в библиотеке"
+
+msgid "List of crafting recipes for the library"
+msgstr "Список рецептов для крафта в библиотеке"
 
 msgid "List of item categories for the library"
 msgstr "Список категорий предметов в библиотеке"
