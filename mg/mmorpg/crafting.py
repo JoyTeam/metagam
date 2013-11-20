@@ -551,6 +551,8 @@ class CraftingAdmin(ConstructorModule):
                     cat["name"] = name
                 # order
                 cat["order"] = floatz(req.param("order"))
+                # library
+                cat["library"] = True if req.param("library") else False
                 # process errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
@@ -565,6 +567,7 @@ class CraftingAdmin(ConstructorModule):
             fields = [
                 {"name": "name", "label": self._("Category name"), "value": cat.get("name")},
                 {"name": "order", "label": self._("Sorting order"), "value": cat.get("order"), "inline": True},
+                {"name": "library", "label": self._("Show this category in the library"), "type": "checkbox", "checked": cat.get("library", True)},
             ]
             self.call("admin.form", fields=fields)
         rows = []
@@ -754,6 +757,8 @@ class CraftingAdmin(ConstructorModule):
                 rcp.set("visible", self.call("script.admin-expression", "visible", errors, globs={"char": char}))
                 # progress_text
                 rcp.set("progress_text", self.call("script.admin-text", "progress_text", errors, globs={"char": char}, mandatory=False))
+                # library
+                rcp.set("library", True if req.param("library") else False)
                 # process errors
                 if errors:
                     self.call("web.response_json", {"success": False, "errors": errors})
@@ -780,6 +785,7 @@ class CraftingAdmin(ConstructorModule):
                 {"name": "image", "type": "fileuploadfield", "label": self._("Recipe image")},
                 {"name": "description", "label": self._("Recipe description"), "type": "textarea", "value": rcp.get("description")},
                 {"name": "progress_text", "label": self._("Text on the progress bar during crafting (leave empty to use global settings)") + self.call("script.help-icon-expressions"), "value": self.call("script.unparse-text", rcp.get("progress_text", ""))},
+                {"name": "library", "label": self._("Show this recipe in the library"), "type": "checkbox", "checked": rcp.get("library", True)},
             ]
             self.call("admin.form", fields=fields, modules=["FileUploadField"])
         if not categories:
@@ -1536,7 +1542,8 @@ class CraftingLibrary(ConstructorModule):
         self.rhook("library-page-crafting.content", self.library_page_categories)
         categories = self.call("crafting.categories", load_handlers=False)
         for cat in categories:
-            self.rhook("library-page-crafting-%s.content" % cat["id"], curry(self.library_page_recipes, cat))
+            if cat.get("library", True):
+                self.rhook("library-page-crafting-%s.content" % cat["id"], curry(self.library_page_recipes, cat))
 
     def library_index_pages(self, pages):
         pages.append({"page": "crafting", "order": 55})
@@ -1551,6 +1558,7 @@ class CraftingLibrary(ConstructorModule):
         }
         if render_content:
             categories = self.call("crafting.categories", load_handlers=False)
+            categories = [cat for cat in categories if cat.get("library", True)]
             vars = {
                 "categories": categories,
             }
@@ -1568,7 +1576,8 @@ class CraftingLibrary(ConstructorModule):
         if render_content:
             lst = self.objlist(DBCraftingRecipeList, query_index="category", query_equal=category["id"])
             lst.load(silent=True)
-            recipes = sorted(lst, cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)))
+            recipes = [rcp for rcp in lst if rcp.get("library", True)]
+            recipes.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)))
             rrecipes = []
             for rcp in recipes:
                 rrecipe = {

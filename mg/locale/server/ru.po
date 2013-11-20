@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-20 22:59+0100\n"
+"PO-Revision-Date: 2013-11-20 23:08+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -8049,11 +8049,17 @@ msgstr "В инвентаре показывать обратное значен
 msgid "Show smiles"
 msgstr "Показать смайлики"
 
+msgid "Show this category in the library"
+msgstr "Показывать этот раздел в библиотеке"
+
 msgid "Show this location in the text list of transitions"
 msgstr "Показывать эту локацию в текстовом списке переходов"
 
 msgid "Show this message to all non-authorized users"
 msgstr "Показывать это сообщение всем неавторизованным пользователям"
+
+msgid "Show this recipe in the library"
+msgstr "Показывать этот рецепт в библиотеке"
 
 #, python-format
 msgid "Shown: %s"
