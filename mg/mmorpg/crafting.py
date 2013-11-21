@@ -46,17 +46,18 @@ class Crafting(ConstructorModule):
 
     def gameinterface_buttons(self, buttons):
         funcs = self.call("globfunc.functions")
-        for func in funcs:
-            if func["tp"] == "crafting":
-                buttons.append({
-                    "id": func["id"],
-                    "href": "/globfunc/%s" % func["id"],
-                    "target": "main",
-                    "icon": "crafting.png",
-                    "title": self._("Crafting"),
-                    "block": "left-menu",
-                    "order": 9,
-                })
+        if funcs:
+            for func in funcs:
+                if func["tp"] == "crafting":
+                    buttons.append({
+                        "id": func["id"],
+                        "href": "/globfunc/%s" % func["id"],
+                        "target": "main",
+                        "icon": "crafting.png",
+                        "title": self._("Crafting"),
+                        "block": "left-menu",
+                        "order": 9,
+                    })
 
     def interface_craft(self, func_id, base_url, func, args, vars):
         req = self.req()
