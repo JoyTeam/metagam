@@ -29,6 +29,9 @@ class TelegramContragent(CassandraObject):
 
 class TelegramContragentList(CassandraObjectList):
     objcls = TelegramContragent
+    
+class TelegramUserSettings(CassandraObject):
+    clsname = "TelegramUserSettings"
 
 class TelegramsAdmin(Module):
     def register(self):
@@ -287,21 +290,21 @@ class Telegrams(Module):
         params = {}
         self.call("telegrams.params", params)
         try:
-            user = self.obj(User, user_uuid)
+            settings = self.obj(TelegramUserSettings, user_uuid)
         except ObjectNotFoundException:
-            self.call("web.not_found")
+            settings = self.obj(TelegramUserSettings, user_uuid, {})
         form = self.call("web.form")
         
         ignore_list_raw = req.param("ignore_list")
         
         if req.ok():
-            ignore_list = filter(lambda entry: True if len(entry) > 0 else False, map(lambda entry: entry.strip(), sorted(set(ignore_list_raw.split("\n")))))
+            ignore_list = filter(lambda entry: True if len(entry) > 0 else False, sorted(set(map(lambda entry: entry.strip().lower(), ignore_list_raw.split("\n")))))
             
             for entry in ignore_list:
-                if not re.match(ur'^[A-Za-z0-9_\-абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ ]+$', entry):
-                    form.error("ignore_list", self._("Name '%s' is incorrect") % entry)
-                    break
-                elif len(entry) > ignore_list_max_name_length:
+                #if not re.match(ur'^[A-Za-z0-9_\-абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ ]+$', entry):
+                #    form.error("ignore_list", self._("Name '%s' is incorrect") % entry)
+                #    break
+                if len(entry) > ignore_list_max_name_length:
                     form.error("ignore_list", self._("Name '%s' is incorrect") % entry)
                     break
                     
@@ -309,13 +312,13 @@ class Telegrams(Module):
                 form.error("ignore_list", self._("Your ignore list is too big"))
             
             if not form.errors:
-                user.set("telegrams.ignore_list", ignore_list)
-                user.store()
+                settings.set("ignore_list", ignore_list)
+                settings.store()
                 self.call("web.redirect", "/telegrams/list")
                 
         if not ignore_list_raw:
-            ignore_list_raw = "\n".join(user.get("telegrams.ignore_list", []))
-        form.textarea(self._("Enter the names of users whose messages you do not wish to receive(one per line)"), "ignore_list", ignore_list_raw)
+            ignore_list_raw = "\n".join(settings.get("ignore_list", []))
+        form.textarea(self._("Enter the names of users whose messages you do not wish to receive(one per line, case-insensitive)"), "ignore_list", ignore_list_raw)
         vars = {
             "title": self._("Ignore list"),
             "menu_left": [
@@ -332,11 +335,11 @@ class Telegrams(Module):
             return False
         
         try:
-            user = self.obj(User, uuid_to)
+            settings = self.obj(TelegramUserSettings, uuid_to)
         except ObjectNotFoundException:
             return False
         
-        ignore_list = user.get("telegrams.ignore_list", [])
+        ignore_list = settings.get("ignore_list", [])
         
         try:
             user_from = self.obj(User, uuid_from)
