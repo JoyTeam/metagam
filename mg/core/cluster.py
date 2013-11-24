@@ -545,7 +545,7 @@ class ClusterAdmin(mg.Module):
         dbconfig = inst.dbconfig
         params = ["memcached", "storage", "admin_user", "smtp_server", "mysql_write_server",
             "mysql_database", "mysql_user", "mysql_password", "wm_w3s_gate", "wm_login_gate",
-            "wm_passport_gate", "xsolla_gate", "locale", "mysql_read_server"]
+            "wm_passport_gate", "xsolla_gate", "xsolla_api_gate", "locale", "mysql_read_server"]
         if req.ok():
             errors = {}
             values = {}
@@ -576,6 +576,7 @@ class ClusterAdmin(mg.Module):
         fields.append({"name": "wm_login_gate", "label": self._("Gate to WebMoney login API"), "value": dbconfig.get("wm_login_gate", "localhost:86")})
         fields.append({"name": "wm_passport_gate", "label": self._("Gate to WebMoney passport API"), "value": dbconfig.get("wm_passport_gate", "localhost:87")})
         fields.append({"name": "xsolla_gate", "label": self._("Gate to secure.xsolla.com"), "value": dbconfig.get("xsolla_gate", "localhost:88")})
+        fields.append({"name": "xsolla_api_gate", "label": self._("Gate to api.xsolla.com"), "value": dbconfig.get("xsolla_api_gate", "localhost:89")})
         fields.append({"name": "locale", "label": self._("Server locale"), "value": dbconfig.get("locale", "en")})
         self.call("admin.form", fields=fields)
 
