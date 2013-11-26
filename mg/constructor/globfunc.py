@@ -64,7 +64,7 @@ class GlobalFunctions(ConstructorModule):
                     self.call("web.redirect", "/location")
                 # Function is available
                 if action is None:
-                    action = func["default_action"]
+                    action = func.get("default_action", "default")
                     args = ""
                 req.hook = fn_id
                 req.args = args
@@ -159,6 +159,16 @@ class GlobalFunctionsAdmin(ConstructorModule):
                     if max_order is None or fn.get("order", 0) > max_order:
                         max_order = fn.get("order", 0)
                 func["order"] = 0.0 if max_order is None else max_order + 10.0
+                # Prepopulate fields if "type" specified
+                tp = req.param("type").strip()
+                if tp:
+                    predefined = []
+                    self.call("admin-globfunc.predefined", predefined)
+                    for predef in predefined:
+                        if predef["type"] == tp:
+                            func["id"] = predef["id"]
+                            func["title"] = predef["title"]
+                            func["tp"] = predef["tp"]
             else:
                 fn_id = cmd
                 for fn in funcs:
@@ -234,7 +244,10 @@ class GlobalFunctionsAdmin(ConstructorModule):
                 self.call("admin-interfaces.form", fields, func)
             self.call("admin.form", fields=fields)
         rows = []
+        shown = set()
         for func in funcs:
+            if func.get("tp"):
+                shown.add(func["tp"])
             actions = []
             if func.get("custom"):
                 self.call("admin-interface-%s.actions" % func["tp"], "glob-%s" % func["id"], func, actions)
@@ -253,22 +266,43 @@ class GlobalFunctionsAdmin(ConstructorModule):
                 '<br />'.join(actions),
                 u'<hook:admin.link href="globfunc/editor/del/%s" title="%s" confirm="%s" />' % (func["id"], self._("delete"), self._("Are you sure want to delete this interface?")) if func.get("custom") else None,
             ])
+        tables = []
+        tables.append({
+            "links": [
+                {"hook": "globfunc/editor/new", "text": self._("New interface"), "lst": True},
+            ],
+            "header": [
+                self._("Code"),
+                self._("Title"),
+                self._("Order"),
+                self._("Actions"),
+                self._("Deletion"),
+            ],
+            "rows": rows,
+        })
+        # Not installed global interfaces
+        rows = []
+        predefined = []
+        self.call("admin-globfunc.predefined", predefined)
+        for func in predefined:
+            if func["tp"] not in shown:
+                rows.append([
+                    func["id"],
+                    htmlescape(func["title"]),
+                    u'<hook:admin.link href="globfunc/editor/new?type=%s" title="%s" />' % (func["type"], self._("install"))
+                ])
+        if rows:
+            tables.append({
+                "title": self._("globfuncs///Not installed"),
+                "header": [
+                    self._("Code"),
+                    self._("Title"),
+                    self._("Installation"),
+                ],
+                "rows": rows,
+            })
         vars = {
-            "tables": [
-                {
-                    "links": [
-                        {"hook": "globfunc/editor/new", "text": self._("New interface"), "lst": True},
-                    ],
-                    "header": [
-                        self._("Code"),
-                        self._("Title"),
-                        self._("Order"),
-                        self._("Actions"),
-                        self._("Deletion"),
-                    ],
-                    "rows": rows,
-                }
-            ]
+            "tables": tables
         }
         self.call("admin.response_template", "admin/common/tables.html", vars)
 

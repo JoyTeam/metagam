@@ -328,6 +328,11 @@ class QuestsAdmin(ConstructorModule):
         self.rhook("admin-gameinterface.design-files", self.design_files)
         self.rhook("quest-admin.update-quest-handlers", self.update_quest_handlers)
         self.rhook("ext-admin-quests.abort-activity", self.abort_activity, priv="quests.abort-activities")
+        self.rhook("advice-admin-crafting.index", self.advice_activities)
+        self.rhook("advice-admin-quests.index", self.advice_activities)
+
+    def advice_activities(self, hook, args, advice):
+        advice.append({"title": self._("Activities documentation"), "content": self._('You can find detailed information on the activities system in the <a href="//www.%s/doc/activities" target="_blank">activities page</a> in the reference manual.') % self.main_host, "order": 20})
 
     def design_files(self, files):
         files.append({"filename": "dialog.html", "description": self._("Quest dialog"), "doc": "/doc/quests"})
@@ -873,6 +878,8 @@ class QuestsAdmin(ConstructorModule):
                 return "online"
             elif val[0] == "offline":
                 return "offline"
+            elif val[0] == "crafted":
+                return "crafted"
             elif val[0] == "clicked":
                 return "clicked %s" % self.call("script.unparse-expression", val[1])
             elif val[0] == "charclass-selected":
@@ -995,6 +1002,8 @@ class QuestsAdmin(ConstructorModule):
                 res = "  " * indent + 'activity timer timeout=%s' % self.call("script.unparse-expression", options.get("timeout"))
                 if "text" in options:
                     res += " text=%s" % self.call("script.unparse-expression", self.call("script.unparse-text", options["text"]))
+                if "indicator" in options:
+                    res += " indicator=%s" % self.call("script.unparse-expression", options["indicator"])
                 res += "\n"
                 return res
             elif val[0] == "modremove":
@@ -1348,7 +1357,11 @@ class QuestsAdmin(ConstructorModule):
                             val = htmlescape(val)
                         state.append(u'activity.%s = <strong>%s</strong>' % (htmlescape(key), val))
                     state.sort()
-                    state.append('<pre class="admin-code">%s</pre>' % htmlescape(self.call("quest-admin.unparse-script", activity.handlers).strip()))
+                    atype = character.busy.get("atype")
+                    if atype:
+                        state.insert(0, self._("Activity type: %s") % htmlescape(atype))
+                    if activity.handlers:
+                        state.append('<pre class="admin-code">%s</pre>' % htmlescape(self.call("quest-admin.unparse-script", activity.handlers).strip()))
                     if req.has_access("quests.abort-activities"):
                         state.append('<hook:admin.link href="quests/abort-activity/%s" title="%s" />' % (character.uuid, self._("Abort activity")))
                     cur_activities.append([
@@ -1488,13 +1501,13 @@ class Quests(ConstructorModule):
             timer = char.modifiers.get("timer-:activity-done")
             if timer and timer["mods"]:
                 mod = timer["mods"][-1]
-                since_ts = mod.get("since_ts")
-                till_ts = mod.get("till_ts")
+                progress_expr = mod.get("progress_expr")
+                progress_till = mod.get("progress_till")
                 text = mod.get("text")
-                if since_ts and till_ts:
+                if progress_expr is not None and progress_till:
                     now = self.time()
-                    if now < till_ts:
-                        self.call("stream.character", char, "game", "activity_start", since_ts=since_ts, till_ts=till_ts, text=text)
+                    if now < progress_till:
+                        self.call("stream.character", char, "game", "activity_start", progress_expr=progress_expr, progress_till=progress_till, text=text)
                         return
         self.call("stream.character", char, "game", "activity_stop")
 
@@ -1807,7 +1820,6 @@ class Quests(ConstructorModule):
                                     if cmd[1]:
                                         item_type = self.call("script.evaluate-expression", cmd[1], globs=kwargs, description=eval_description)
                                         it_obj = self.item_type(item_type)
-                                        print "quantity=%s, fractions=%s" % (quantity, fractions)
                                         if fractions is not None:
                                             if fractions >= 1:
                                                 max_fractions = it_obj.get("fractions", 0)
@@ -1817,7 +1829,6 @@ class Quests(ConstructorModule):
                                             else:
                                                 deleted = 0
                                         elif quantity is None or quantity >= 1:
-                                            print "quantity=%s" % quantity
                                             deleted = char.inventory.take_type(item_type, quantity, "quest.take", quest=quest, any_dna=True)
                                         else:
                                             deleted = 0
@@ -1838,6 +1849,7 @@ class Quests(ConstructorModule):
                                             raise AbortHandler()
                                     elif cmd[2]:
                                         dna = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
+                                        dna = utf2str(dna)
                                         if quantity is None or quantity >= 1:
                                             it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
                                             if it_obj is None:
@@ -2062,11 +2074,15 @@ class Quests(ConstructorModule):
                                     if timeout > 0:
                                         since_ts = self.time()
                                         till_ts = since_ts + timeout
+                                        if "indicator" in options:
+                                            progress_expr = self.call("script.evaluate-expression", options["indicator"], globs=kwargs, description=lambda: self._("Progress bar indicator value"), keep_globs={"t": True})
+                                        else:
+                                            progress_expr = ["/", ["-", ["glob", "t"], since_ts], timeout]
                                         if "text" in options:
                                             text = self.call("script.evaluate-text", options["text"], globs=kwargs, description=lambda: self._("Progress bar text"))
                                         else:
                                             text = None
-                                        char.modifiers.add("timer-:activity-done", 1, self.now(timeout), since_ts=since_ts, till_ts=till_ts, text=text)
+                                        char.modifiers.add("timer-:activity-done", 1, self.now(timeout), progress_expr=progress_expr, progress_till=till_ts, text=text)
                                         self.call("quests.send-activity-modifier", char)
                                 elif cmd_code == "modremove":
                                     mid = cmd[1]

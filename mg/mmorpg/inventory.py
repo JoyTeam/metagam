@@ -108,6 +108,7 @@ class InventoryAdmin(ConstructorModule):
         self.rhook("objclasses.list", self.objclasses_list)
         self.rhook("advice-admin-inventory.index", self.advice_inventory)
         self.rhook("advice-admin-item-types.index", self.advice_inventory)
+        self.rhook("advice-admin-item-categories.index", self.advice_inventory)
         self.rhook("headmenu-admin-inventory.track", self.headmenu_inventory_track)
         self.rhook("ext-admin-inventory.track", self.admin_inventory_track, priv="inventory.track")
         self.rhook("auth.user-tables", self.user_tables)
@@ -654,7 +655,7 @@ class InventoryAdmin(ConstructorModule):
         # loading all item types
         rows = {}
         lst = self.objlist(DBItemTypeList, query_index="all")
-        lst.load()
+        lst.load(silent=True)
         lst.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
         for ent in lst:
             name = htmlescape(ent.get("name"))
@@ -2156,6 +2157,13 @@ class Inventory(ConstructorModule):
         self.rhook("inventory.render", self.inventory_render)
         self.rhook("item-types.item-type", self.item_types_item_type)
         self.rhook("item-types.item", self.item_types_item)
+        self.rhook("item-types.list", self.item_types_list)
+
+    def item_types_list(self):
+        lst = self.objlist(DBItemTypeList, query_index="all")
+        lst.load(silent=True)
+        lst.sort(cmp=lambda x, y: cmp(x.get("order", 0), y.get("order", 0)) or cmp(x.get("name"), y.get("name")))
+        return lst
 
     def item_types_item_type(self, uuid, dna_suffix=None, mods=None, db_item_type=None, db_params=None):
         uuid = utf2str(uuid)

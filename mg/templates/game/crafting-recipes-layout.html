@@ -1,0 +1,68 @@
+[%if error%]<div class="error-message crafting-error-message">[%error%]</div>[%end%]
+<div id="pages" class="crafting-menu pager-list"></div>
+[%foreach cat in categories%]
+<div id="page-[%cat.id%]" style="display: [%if cat.visible%]block[%else%]none[%end%]" class="pager-page">
+    <table class="recipes-table">
+    [%foreach recipe in cat.recipes%]
+        <tr>
+            <td class="recipe-image-td">[%if recipe.image%]<a href="[%base_url%]/craft/[%recipe.id%]"><img src="[%recipe.image%]" alt="" class="recipe-image" /></a>[%end%]</td>
+            <td class="recipe-info-td">
+                <a name="[%recipe.id%]"></a>
+                <div class="recipe-info-name">[%recipe.name%]</div>
+                [%if recipe.params%]
+                <div class="recipe-params">
+                    [%foreach param in recipe.params%]
+                    <div class="recipe-param">
+                        <span class="recipe-param-name">[%param.name%]</span>:
+                        <span class="recipe-param-value value">[%param.value%]</span>
+                        [%+ if param.unit%]<span class="recipe-param-unit unit">[%param.unit%]</span>[%end%]
+                    </div>
+                    [%end%]
+                </div>
+                [%end%]
+                [%if recipe.ingredients%]
+                <div class="recipe-params">
+                    <div class="recipe-param-header">[%Ingredients%]</div>
+                    [%foreach ing in recipe.ingredients%]
+                    <div class="recipe-param">
+                        <span class="recipe-param-name">[%ing.item_name%]</span>:
+                        <span class="recipe-param-value value [%+ if ing.enough%]enough[%else%]not-enough[%end%]">[%ing.quantity%]</span>
+                        [%+ if ing.unit%]<span class="recipe-param-unit unit">[%ing.unit%]</span>[%end%]
+                    </div>
+                    [%end%]
+                </div>
+                [%end%]
+                [%if recipe.production%]
+                <div class="recipe-params">
+                    <div class="recipe-param-header">[%Production%]</div>
+                    [%foreach prod in recipe.production%]
+                    <div class="recipe-param">
+                        <span class="recipe-param-name">[%prod.item_name%]</span>:
+                        <span class="recipe-param-value value">[%prod.quantity%]</span>
+                        [%+ if prod.unit%]<span class="recipe-param-unit unit">[%prod.unit%]</span>[%end%]
+                    </div>
+                    [%end%]
+                </div>
+                [%end%]
+                [%if recipe.description%]<div class="recipe-description">[%recipe.description%]</div>[%end%]
+                [%if recipe.errors%]
+                <div class="recipe-errors">
+                    [%foreach error in recipe.errors%]
+                    <div class="recipe-error">[%error.text%]</a>
+                    [%end%]
+                </div>
+                [%end%]
+                [%if recipe.actions%]
+                <div class="recipe-actions">
+                    [%foreach action in recipe.actions%]
+                    <a href="[%action.url%]">[%action.text%]</a>
+                    [%unless action.lst +%] / [%+ end%]
+                    [%end%]
+                </div>
+                [%end%]
+            </td>
+        </tr>
+    [%end%]
+    </table>
+</div>
+[%end%]

@@ -4,6 +4,9 @@ import re
 
 re_newline = re.compile(r'\n')
 
+ignore_list_max_name_length = 50
+ignore_list_max_length = 1000
+
 class Telegram(CassandraObject):
     clsname = "Telegram"
 
@@ -50,7 +53,7 @@ class Telegrams(Module):
         self.rhook("ext-telegrams.user", self.telegrams_user, priv="logged")
         self.rhook("socio.author_menu", self.socio_author_menu)
         self.rhook("objclasses.list", self.objclasses_list)
-        self.rhook("telegrams.check_ignore_list", self.check_ignore_list)
+        self.rhook("telegrams.check-ignore-list", self.check_ignore_list)
         self.rhook("ext-telegrams.ignore", self.ext_ignore, priv="logged")
 
     def objclasses_list(self, objclasses):
@@ -140,8 +143,8 @@ class Telegrams(Module):
                     message = htmlescape(message)
                     message = re_newline.sub('<br />', message)
                 form.error("content", message)
-            elif self.call("telegrams.check_ignore_list", user, recipient.uuid):
-                form.error("cname", self._("This user has forbidden you to send him a private messages"))
+            elif self.call("telegrams.check-ignore-list", user, recipient.uuid):
+                form.error("cname", self._("This user has forbidden you to send him private messages"))
             if not form.errors:
                 self.call("telegrams.send", user, recipient.uuid, self.call("socio.format_text", content))
                 self.call("web.redirect", "/telegrams/user/%s#reply-form" % recipient.uuid)
@@ -283,8 +286,6 @@ class Telegrams(Module):
         menu.append({"title": self._("Correspondence"), "href": "/telegrams/user/%s" % author_uuid})
 
     def ext_ignore(self):
-        ignore_list_max_name_length = 50
-        ignore_list_max_length = 1000
         req = self.req()
         user_uuid = req.user()
         params = {}
@@ -298,7 +299,7 @@ class Telegrams(Module):
         ignore_list_raw = req.param("ignore_list")
         
         if req.ok():
-            ignore_list = filter(lambda entry: True if len(entry) > 0 else False, sorted(set(map(lambda entry: entry.strip().lower(), ignore_list_raw.split("\n")))))
+            ignore_list = filter(lambda entry: True if entry else False, sorted(set(map(lambda entry: entry.strip().lower(), ignore_list_raw.split("\n")))))
             
             for entry in ignore_list:
                 #if not re.match(ur'^[A-Za-z0-9_\-абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ ]+$', entry):
@@ -318,7 +319,7 @@ class Telegrams(Module):
                 
         if not ignore_list_raw:
             ignore_list_raw = "\n".join(settings.get("ignore_list", []))
-        form.textarea(self._("Enter the names of users whose messages you do not wish to receive(one per line, case-insensitive)"), "ignore_list", ignore_list_raw)
+        form.textarea(self._("Enter the names of users whose messages you do not wish to receive (one per line, case-insensitive)"), "ignore_list", ignore_list_raw)
         vars = {
             "title": self._("Ignore list"),
             "menu_left": [
@@ -349,3 +350,5 @@ class Telegrams(Module):
         for entry in ignore_list:
             if entry.lower() == user_from.get("name").lower():
                 return True
+
+        return False

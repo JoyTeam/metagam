@@ -1052,10 +1052,14 @@ class Xsolla(Module):
         self.debug(u"Xsolla signing string '%s': %s", sign_str, sign)
         query = "xml=%s&sign=%s" % (urlencode(xmldata), urlencode(sign))
         self.debug(u"Xsolla urlencoded query: %s", query)
+        # Server
+        xsolla_api_gate = self.clconf("xsolla_api_gate", "localhost:89").split(":")
+        host = str(xsolla_api_gate[0])
+        port = int(xsolla_api_gate[1])
         try:
             with Timeout.push(90):
                 cnn = HTTPConnection()
-                cnn.connect(("api.xsolla.com", 80))
+                cnn.connect((host, port))
                 try:
                     request = HTTPRequest()
                     request.method = "POST"

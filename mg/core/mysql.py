@@ -44,7 +44,10 @@ class MySQL(object):
                         raise
                     # method is ready here
                     try:
+                        if hasattr(conn, "lastrowid"):
+                            delattr(conn, "lastrowid")
                         res = method(*args, **kwargs)
+                        self.lastrowid = getattr(conn, "lastrowid", None)
                     except Exception as e:
                         conn = None
                         self.pool.error(e)

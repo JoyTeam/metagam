@@ -7,6 +7,7 @@ re_visual_table = re.compile(r'^(-?(?:\d+|\d+\.\d+))\s*:\s*(.+)$')
 re_copy = re.compile(r'^copy/(.+)$')
 re_del = re.compile(r'^del/(.+)$')
 re_paramedit_args = re.compile(r'^([0-9a-f]+)/([a-zA-Z_][a-zA-Z0-9_]*)$')
+max_code_len = 30
 
 class Fake(ConstructorModule):
     pass
@@ -95,6 +96,8 @@ class ParamsAdmin(ConstructorModule):
                     errors["code"] = self._("This field is mandatory")
                 elif not re_valid_identifier.match(code):
                     errors["code"] = self._("Parameter identifier must start with latin letter or '_'. Other symbols may be latin letters, digits or '_'")
+                elif len(code) > max_code_len:
+                    errors["code"] = self._("Maximal parameter identifier length is %d") % max_code_len
                 elif code != param.get("code") and self.call("%s.param" % self.kind, code):
                     errors["code"] = self._("Parameter with the same code already exists")
                 else:
