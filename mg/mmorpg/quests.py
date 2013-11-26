@@ -1849,6 +1849,7 @@ class Quests(ConstructorModule):
                                             raise AbortHandler()
                                     elif cmd[2]:
                                         dna = self.call("script.evaluate-expression", cmd[2], globs=kwargs, description=eval_description)
+                                        dna = utf2str(dna)
                                         if quantity is None or quantity >= 1:
                                             it_obj, deleted = char.inventory.take_dna(dna, quantity, "quest.take", quest=quest)
                                             if it_obj is None:
