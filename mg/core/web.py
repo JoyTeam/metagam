@@ -678,6 +678,8 @@ class Web(Module):
             filename = filename.encode("utf-8")
         try:
             content = tpl_engine.process(filename, vars)
+        except TypeError as e:
+            raise TemplateException("security", unicode(e))
         except ValueError as e:
             raise TemplateException("security", unicode(e))
         except ImportError as e:
