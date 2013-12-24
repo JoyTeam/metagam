@@ -2327,7 +2327,7 @@ class Quests(ConstructorModule):
                                     try:
                                         combat = CombatInterface(self.app(), combat_id)
                                         result = combat.join(rmember)
-                                    except CombatUnavailable:
+                                    except CombatUnavailable as e:
                                         self.call("debug-channel.character", char, e.val, cls="quest-error", indent=indent+2)
                                         char.error(self._("Combat is unavailable"))
                                         raise AbortHandler()
