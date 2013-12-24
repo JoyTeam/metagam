@@ -1109,7 +1109,7 @@ class CraftingAdmin(ConstructorModule):
         self.call("admin.response_template", "admin/common/tables.html", vars)
 
     def load_item_types(self):
-        categories = self.call("item-types.categories", "admin")
+        categories = self.call("item-types.categories", "admin") or []
         item_types = self.call("item-types.list")
         valid_item_types = set()
         item_type_values = []
