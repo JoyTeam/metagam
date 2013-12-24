@@ -1088,6 +1088,8 @@ class Xsolla(Module):
                                     self.call("xsolla.send-activation-request")
                 finally:
                     cnn.close()
+        except HTTPError as e:
+            self.error("Error registering in the Xsolla system: %s", e)
         except IOError as e:
             self.error("Error registering in the Xsolla system: %s", e)
         except TimeoutError:
