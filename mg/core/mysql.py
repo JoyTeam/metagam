@@ -27,6 +27,7 @@ class MySQL(object):
         self.app = app
 
     def _execute(self, method_name, options, *args, **kwargs):
+        conn = None
         try:
             while True:
                 try:
