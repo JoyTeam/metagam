@@ -143,7 +143,7 @@ class Telegrams(Module):
                     message = htmlescape(message)
                     message = re_newline.sub('<br />', message)
                 form.error("content", message)
-            elif self.call("telegrams.check-ignore-list", user, recipient.uuid):
+            if not form.errors and self.call("telegrams.check-ignore-list", user, recipient.uuid):
                 form.error("cname", self._("This user has forbidden you to send him private messages"))
             if not form.errors:
                 self.call("telegrams.send", user, recipient.uuid, self.call("socio.format_text", content))
