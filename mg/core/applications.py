@@ -677,8 +677,8 @@ class Application(Loggable):
         "Create CassandraObjectList instance"
         return cls(self.db, uuids=uuids, **kwargs)
 
-    def lock(self, keys, patience=20, delay=0.1, ttl=30):
-        return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.instid) + "-")
+    def lock(self, keys, patience=20, delay=0.1, ttl=30, reason=None):
+        return MemcachedLock(self.mc, keys, patience, delay, ttl, value_prefix=str(self.inst.instid) + "-", reason=reason)
 
     def nowmonth(self):
         return datetime.datetime.utcnow().strftime("%Y-%m")

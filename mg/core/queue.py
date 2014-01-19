@@ -79,7 +79,7 @@ class Queue(Module):
         def insert():
             int_app.sql_write.do("insert into queue_tasks(id, cls, app, at, priority, `unique`, hook, data) values (?, ?, ?, ?, ?, ?, ?, ?)", uuid4().hex, app_cls, app_tag, at, int(priority), unique, hook, json.dumps(args))
         if unique is not None:
-            with int_app.lock(["queue"]):
+            with int_app.lock(["queue"], reason="insert-unique-queue-task"):
                 # Not reliable. May lose queue task if interrupted between queries.
                 # Problem will be fixed automatically at midnight app.check.
                 int_app.sql_write.do("delete from queue_tasks where app=? and `unique`=?", app_tag, unique)
@@ -156,7 +156,7 @@ class QueueRunner(Module):
                 # Free tasks locked too long
                 self.sql_write.do("update queue_tasks set locked='', locked_till=null, priority=priority-1 where locked_till<?", self.now())
                 while True:
-                    lock = self.lock(["queue"])
+                    lock = self.lock(["queue"], reason="execute-queue")
                     if not lock.trylock():
                         return
                     try:
