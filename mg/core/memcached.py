@@ -368,7 +368,7 @@ class MemcachedLock(object):
                     logging.getLogger("mg.core.memcached.MemcachedLock").error(traceback.format_stack())
                     for key in self.keys:
                         self.mc.set(key, self.value, self.ttl)
-                    ogging.getLogger("mg.core.memcached.MemcachedLock").warning("[%s] Locked keys % because of timeout" % (self.value, locked))
+                    logging.getLogger("mg.core.memcached.MemcachedLock").warning("[%s] Locked keys % because of timeout" % (self.value, locked))
                     self.locked = time.time()
                     self.onlocked()
                     return
