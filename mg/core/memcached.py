@@ -356,7 +356,7 @@ class MemcachedLock(object):
                         badlock = (key, self.mc.get(key))
                         break
                 if success:
-                    logging.getLogger("mg.core.memcached.MemcachedLock").debug("[%s] Locked keys %s" % (self.value, locked))
+                    logging.getLogger("mg.core.memcached.MemcachedLock").debug("[%s] Locked keys %s", self.value, locked)
                     self.locked = time.time()
                     self.onlocked()
                     return
@@ -364,16 +364,16 @@ class MemcachedLock(object):
                 if start is None:
                     start = time.time()
                 elif time.time() > start + self.patience:
-                    logging.getLogger("mg.core.memcached.MemcachedLock").error("[%s] Timeout waiting lock %s (locked by %s)" % (self.value, badlock[0], badlock[1]))
+                    logging.getLogger("mg.core.memcached.MemcachedLock").error("[%s] Timeout waiting lock %s (locked by %s)", self.value, badlock[0], badlock[1])
                     logging.getLogger("mg.core.memcached.MemcachedLock").error(traceback.format_stack())
                     for key in self.keys:
                         self.mc.set(key, self.value, self.ttl)
-                    logging.getLogger("mg.core.memcached.MemcachedLock").warning("[%s] Locked keys % because of timeout" % (self.value, locked))
+                    logging.getLogger("mg.core.memcached.MemcachedLock").warning("[%s] Locked keys %s because of timeout", self.value, locked)
                     self.locked = time.time()
                     self.onlocked()
                     return
             except Exception:
-                logging.getLogger("mg.core.memcached.MemcachedLock").error("[%s] Exception during locking. Unlock everything immediately" % self.value)
+                logging.getLogger("mg.core.memcached.MemcachedLock").error("[%s] Exception during locking. Unlock everything immediately", self.value)
                 for k in locked:
                     self.mc.delete(k)
                 raise
@@ -385,9 +385,9 @@ class MemcachedLock(object):
             if time.time() < self.locked + self.ttl:
                 for key in self.keys:
                     self.mc.delete(key)
-                logging.getLogger("mg.core.memcached.MemcachedLock").debug("[%s] Unlocked keys %s" % (self.value, self.keys))
+                logging.getLogger("mg.core.memcached.MemcachedLock").debug("[%s] Unlocked keys %s", self.value, self.keys)
             else:
-                logging.getLogger("mg.core.memcached.MemcachedLock").warning("[%s] Not locked keys %s because of ttl expired" % (self.value, self.keys))
+                logging.getLogger("mg.core.memcached.MemcachedLock").warning("[%s] Not locked keys %s because of ttl expired", self.value, self.keys)
             self.locked = None
             self.onunlocked()
 
@@ -400,16 +400,16 @@ class MemcachedLock(object):
                 if self.mc.add(key, self.value, self.ttl) != MemcacheResult.NOT_STORED:
                     locked.append(key)
                 else:
-                    logging.getLogger("mg.core.memcached.MemcachedLock").debug("[%s] Trylock failed. Rolling back keys %s" % (self.value, locked))
+                    logging.getLogger("mg.core.memcached.MemcachedLock").debug("[%s] Trylock failed. Rolling back keys %s", self.value, locked)
                     for k in locked:
                         self.mc.delete(k)
                     return False
         except Exception:
-            logging.getLogger("mg.core.memcached.MemcachedLock").error("[%s] Exception during trylock. Unlock everything immediately" % self.value)
+            logging.getLogger("mg.core.memcached.MemcachedLock").error("[%s] Exception during trylock. Unlock everything immediately", self.value)
             for k in locked:
                 self.mc.delete(k)
             raise
-        logging.getLogger("mg.core.memcached.MemcachedLock").debug("[%s] Trylocked keys %s" % (self.value, locked))
+        logging.getLogger("mg.core.memcached.MemcachedLock").debug("[%s] Trylocked keys %s", self.value, locked)
         self.locked = time.time()
         self.onlocked()
         return True
