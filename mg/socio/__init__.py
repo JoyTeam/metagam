@@ -1,4 +1,5 @@
 #!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
 
 # This file is a part of Metagam project.
 #
@@ -14,8 +15,6 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with Metagam.  If not, see <http://www.gnu.org/licenses/>.
-
-# -*- coding: utf-8 -*-
 
 from mg import *
 from operator import itemgetter
