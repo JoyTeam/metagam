@@ -1,20 +1,3 @@
-#!/usr/bin/python2.6
-
-# This file is a part of Metagam project.
-#
-# Metagam is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# any later version.
-# 
-# Metagam is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# 
-# You should have received a copy of the GNU General Public License
-# along with Metagam.  If not, see <http://www.gnu.org/licenses/>.
-
 from mg.constructor import *
 from mg.mmorpg.crafting_classes import *
 import mg
@@ -84,7 +67,7 @@ class Crafting(ConstructorModule):
         enabled_recipes = func.get("crafting_recipes", {})
         if args not in enabled_recipes:
             char.error(self._("This recipe is not available in this place"))
-            self.call("web.redirect", )
+            self.call("web.redirect", redirect_url)
         globs = {"char": char}
         char_params = self.call("characters.params")
         lang = self.call("l10n.lang")
