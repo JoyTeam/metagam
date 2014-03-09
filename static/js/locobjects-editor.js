@@ -3,7 +3,7 @@ var is_chrome = window.chrome;
 function createImage()
 {
     if (is_chrome) {
-        return document.createElement('image');
+        return document.createElement('img');
     } else {
         return new Image();
     }
