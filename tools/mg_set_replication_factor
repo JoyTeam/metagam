@@ -1,0 +1,49 @@
+#!/usr/bin/python2.6
+# -*- coding: utf-8 -*-
+
+from mg import *
+from concurrence import quit
+from mg.constructor.processes import ConstructorInstance
+import mg
+import os
+import logging
+import sys
+import json
+import re
+import time
+
+def main():
+	if len(sys.argv) != 2:
+	    print "usage: mg_db_configure <keyspace>"
+	    os._exit(1)
+	inst = ConstructorInstance("db_cleanup", "metagam")
+	db = inst.dbpool.sys_connection()
+	while True:
+	    versions = db.cass.describe_schema_versions()
+	    ver_list = [v for v in versions.keys() if v != 'UNREACHABLE']
+	    if len(ver_list) < 2:
+		print "Cluster schema agree: %s" % versions
+		break
+	    else:
+		print "Cluster schema not yet agree: %s" % versions
+		Tasklet.sleep(3)
+	db.cass.set_keyspace("system")
+	ksdef = db.cass.describe_keyspace(sys.argv[1])
+	print ksdef.strategy_options["replication_factor"]
+	ksdef.cf_defs = []
+	ksdef.strategy_options["replication_factor"] = '1'
+	db.cass.system_update_keyspace(ksdef)
+	while True:
+	    versions = db.cass.describe_schema_versions()
+	    ver_list = [v for v in versions.keys() if v != 'UNREACHABLE']
+	    if len(ver_list) < 2:
+		print "Cluster schema agree: %s" % versions
+		break
+	    else:
+		print "Cluster schema not yet agree: %s" % versions
+		Tasklet.sleep(3)
+	sys.stdout.flush()
+	os._exit(0)
+
+mg.dispatch(main)
+
