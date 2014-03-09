@@ -76,8 +76,6 @@ deploy: translations
 	@cp -R mg static perl depl/
 	@find depl/mg \( -name '*.py' -or -name '.hg*' -or -name '*.po' -or -name '*.pot' \) -exec rm -rf {} \;
 	@find depl/static -name robots.txt -exec rm -rf {} \;
-	@echo Uploading package to mg-storage...
-	@rsync --links --delete -r depl/* mg-storage@213.248.47.138:/home/mg-storage/mg/
-	@echo Deploying to servers...
-	@knife ssh -a normal.ipaddress roles:mmoconstructor 'sudo chef-client -l error'
+	@echo Deploying to the server...
+	@rsync --links --delete -r depl/* 144.76.27.17:/home/mg/
 	@echo Success
