@@ -167,7 +167,7 @@ sql_table('queue_tasks',
 		'index' => 'id',
 		'index' => 'app,unique',
 		'index' => 'cls,locked,at',
-		'index' => 'locked_till',
+		'index' => 'cls,locked_till',
 	]
 );
 sql_table('modifiers',
