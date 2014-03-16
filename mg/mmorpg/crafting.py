@@ -1321,7 +1321,7 @@ class CraftingAdmin(ConstructorModule):
     def admin_recipe_production(self, recipe, args):
         req = self.req()
         item_type_values, valid_item_types = self.load_item_types()
-        params = self.call("item-types.params")
+        params = self.call("item-types.params") or []
         production = recipe.get("production", [])
         m = re_del.match(args)
         if m:
