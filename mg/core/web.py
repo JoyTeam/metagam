@@ -151,7 +151,10 @@ class Request(object):
         header = self.environ.get("HTTP_COOKIE")
         self._cookies = Cookie.SimpleCookie()
         if header is not None:
-            self._cookies.load(header)
+            try:
+                self._cookies.load(header)
+            except CookieError:
+                self.warning("Invalid cookie received: %s", header)
 
     def cookies(self):
         "Get cookies of the query"
