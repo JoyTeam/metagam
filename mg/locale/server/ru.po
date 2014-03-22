@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: ru\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 11:22+0400\n"
-"PO-Revision-Date: 2013-11-26 10:30+0100\n"
+"PO-Revision-Date: 2014-03-22 09:25+0100\n"
 "Last-Translator: Alexander Lourier <aml@rulezz.ru>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "Language: ru\n"
@@ -8895,6 +8895,9 @@ msgstr "Это - категория для всех предметов, не п�
 
 msgid "This category is opened by default"
 msgstr "Эта категория открывается по умолчанию"
+
+msgid "This character doesn't have inventory"
+msgstr "У этого персонажа нет инвентаря"
 
 msgid "This class variant is visible in the API"
 msgstr "Публиковать информацию об этом варианте класса в API"

@@ -68,6 +68,9 @@ class Crafting(ConstructorModule):
         if args not in enabled_recipes:
             char.error(self._("This recipe is not available in this place"))
             self.call("web.redirect", redirect_url)
+        if not char.inventory:
+            char.error(self._("This character doesn't have inventory"))
+            self.call("web.redirect", redirect_url)
         globs = {"char": char}
         char_params = self.call("characters.params")
         lang = self.call("l10n.lang")
